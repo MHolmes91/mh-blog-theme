@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=PT+Sans:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #faf7ff;
+  --color-surface: #ffffff;
+  --color-text: #20172b;
+  --color-accent: #7c3aed;
+}
+
+body {
+  font-family: 'Lato', sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'PT Sans', sans-serif;
+}
+
+[x-cloak] {
+  display: none !important;
+}

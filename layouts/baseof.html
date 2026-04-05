@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="{{ site.Language.LanguageCode | default site.LanguageCode }}">
+  <head>
+    {{ partial "head.html" . }}
+  </head>
+  <body id="top" x-data="siteUi('{{ "index.json" | relURL }}')" :data-theme="theme">
+    {{ partial "header.html" . }}
+    <main :aria-hidden="searchOpen">
+      {{ block "main" . }}{{ end }}
+    </main>
+    {{ partial "dock.html" . }}
+    {{ partial "footer.html" . }}
+    {{ $js := resources.Get "js/app.js" | js.Build | fingerprint }}
+    <script defer src="{{ $js.RelPermalink }}"></script>
+  </body>
+</html>

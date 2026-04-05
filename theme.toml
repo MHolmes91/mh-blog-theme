@@ -1,0 +1,6 @@
+name = "MH Blog Theme"
+min_version = "0.146.0"
+
+[hugo]
+min = "0.146.0"
+extended = true

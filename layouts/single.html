@@ -1,0 +1,14 @@
+{{ define "main" }}
+  <div id="reading-progress" class="fixed top-0 left-0 z-50 h-1 bg-purple-600" style="width:0%"></div>
+  <section class="mx-auto grid max-w-6xl gap-10 px-6 py-10 lg:grid-cols-[minmax(0,1fr)_280px]">
+    <article id="post-content" class="min-w-0 space-y-6">
+      {{ with .Params.featuredImage }}<img src="{{ . }}" alt="" class="w-full rounded-2xl object-cover">{{ end }}
+      <header class="space-y-3">
+        <h1 class="text-4xl font-bold">{{ .Title }}</h1>
+        {{ partial "post-meta.html" . }}
+      </header>
+      <div class="prose prose-slate max-w-none">{{ .Content }}</div>
+    </article>
+    {{ partial "toc.html" . }}
+  </section>
+{{ end }}
