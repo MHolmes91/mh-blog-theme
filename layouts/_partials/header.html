@@ -4,6 +4,18 @@
       <span class="inline-flex h-8 w-8 items-center justify-center rounded bg-purple-600 text-white">M</span>
       <span>{{ site.Title }}</span>
     </a>
-    <span aria-label="Search" class="rounded border border-purple-300 px-3 py-2 text-sm text-purple-700">Search</span>
+    <div class="flex items-center gap-3">
+      <button type="button" aria-label="Search" @click="openSearch" class="rounded border border-purple-300 px-3 py-2">Search</button>
+      <div x-show="searchOpen" class="fixed inset-0 z-50 bg-black/40 p-6">
+        <div class="mx-auto max-w-2xl rounded-2xl bg-white p-4">
+          <input x-model="query" placeholder="Search posts" class="w-full rounded border border-purple-300 px-3 py-2">
+          <div class="mt-4 space-y-2">
+            <template x-for="result in results" :key="result.permalink">
+              <a :href="result.permalink" x-text="result.title" class="block rounded border border-purple-200 px-3 py-2"></a>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </header>

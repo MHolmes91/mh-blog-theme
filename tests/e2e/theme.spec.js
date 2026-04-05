@@ -45,3 +45,18 @@ test('taxonomy index pages do not show post read time metadata', async ({ page }
   await expect(page.getByRole('main').getByRole('link', { name: 'Theme', exact: true })).toBeVisible()
   await expect(page.getByText(/min read/)).toHaveCount(0)
 })
+
+test('search opens and shows matching posts', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Search' }).click()
+  await page.getByPlaceholder('Search posts').fill('paragraph')
+
+  await expect(page.getByRole('link', { name: 'First Post' })).toBeVisible()
+})
+
+test('back to top returns to the top of the page', async ({ page }) => {
+  await page.goto('/posts/first-post/')
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+  await page.getByRole('button', { name: 'Back to top' }).click()
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(20)
+})
