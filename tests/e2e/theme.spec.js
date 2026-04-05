@@ -11,3 +11,19 @@ test('home page renders shared chrome', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Back to top' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Back to top' })).toHaveAttribute('href', '#top')
 })
+
+test('home page shows intro and recent posts', async ({ page }) => {
+  await page.goto('/')
+
+  await expect(page.getByText("Mark's Notes")).toBeVisible()
+  await expect(page.getByRole('link', { name: 'First Post' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Second Post' })).toBeVisible()
+})
+
+test('archive page lists all posts', async ({ page }) => {
+  await page.goto('/archives/')
+
+  await expect(page.getByRole('heading', { name: 'Archives' })).toBeVisible()
+  await expect(page.getByText('First Post')).toBeVisible()
+  await expect(page.getByText('Second Post')).toBeVisible()
+})
