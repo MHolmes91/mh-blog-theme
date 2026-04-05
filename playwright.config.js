@@ -1,13 +1,11 @@
 import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
-  testDir: './tests/e2e',
   use: {
     baseURL: 'http://127.0.0.1:1313'
   },
   webServer: {
-    command: 'hugo server --source exampleSite --themesDir .. --disableFastRender --port 1313',
-    url: 'http://127.0.0.1:1313',
-    reuseExistingServer: true
+    command: 'hugo server --source exampleSite --themesDir ..',
+    url: 'http://127.0.0.1:1313'
   }
 })

@@ -1,7 +1,4 @@
 {
-  "name": "mh-blog-theme",
-  "private": true,
-  "type": "module",
   "scripts": {
     "dev": "hugo server --source exampleSite --themesDir ..",
     "build": "hugo --source exampleSite --themesDir ..",
