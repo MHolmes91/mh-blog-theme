@@ -1,0 +1,12 @@
+name = "MH Blog Theme"
+license = "MIT"
+description = "A Hugo blog theme with Alpine.js and TailwindCSS."
+homepage = "https://example.com/mh-blog-theme"
+min_version = "0.146.0"
+
+[author]
+name = "Mark"
+
+[hugo]
+min = "0.146.0"
+extended = true
