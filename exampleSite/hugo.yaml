@@ -3,6 +3,12 @@ languageCode: en-us
 title: MH Blog Theme
 theme: mh-blog-theme
 
+outputs:
+  home:
+    - html
+    - rss
+    - json
+
 taxonomies:
   tag: tags
   series: series

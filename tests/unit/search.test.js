@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
 import { filterSearchRecords, collectMatches } from '../../assets/js/lib/search.js'
 
 describe('filterSearchRecords', () => {
@@ -16,5 +17,13 @@ describe('collectMatches', () => {
   it('returns ordered text matches for highlighting', () => {
     const matches = collectMatches('Search should find this paragraph.', 'find')
     expect(matches[0]).toEqual({ start: 14, end: 18 })
+  })
+})
+
+describe('search index template', () => {
+  it('uses the markdown heading regex expected by Hugo findRE', () => {
+    const template = readFileSync(new URL('../../layouts/index.json', import.meta.url), 'utf8')
+
+    expect(template).toContain('(?m)^##+\\s+.+$')
   })
 })
