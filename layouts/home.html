@@ -5,7 +5,7 @@
       <p class="mt-3 text-base">{{ site.Params.intro.body }}</p>
     </div>
     <div class="space-y-4">
-      {{ range first 10 (where site.RegularPages "Section" "posts") }}
+      {{ range first 10 (where site.RegularPages.ByDate.Reverse "Section" "posts") }}
         {{ partial "post-card.html" . }}
       {{ end }}
     </div>

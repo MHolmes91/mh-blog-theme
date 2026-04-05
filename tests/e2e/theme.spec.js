@@ -27,3 +27,21 @@ test('archive page lists all posts', async ({ page }) => {
   await expect(page.getByText('First Post')).toBeVisible()
   await expect(page.getByText('Second Post')).toBeVisible()
 })
+
+test('posts list page shows post summaries', async ({ page }) => {
+  await page.goto('/posts/')
+
+  await expect(page.getByRole('heading', { name: 'Posts' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'First Post' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Second Post' })).toBeVisible()
+  await expect(page.getByText('A searchable post with headings.')).toBeVisible()
+})
+
+test('taxonomy index pages do not show post read time metadata', async ({ page }) => {
+  await page.goto('/tags/')
+
+  await expect(page.getByRole('heading', { name: 'Tags' })).toBeVisible()
+  await expect(page.getByRole('main').getByRole('link', { name: 'Hugo', exact: true })).toBeVisible()
+  await expect(page.getByRole('main').getByRole('link', { name: 'Theme', exact: true })).toBeVisible()
+  await expect(page.getByText(/min read/)).toHaveCount(0)
+})
