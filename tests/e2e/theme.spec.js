@@ -18,6 +18,14 @@ test('home page shows intro and recent posts', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Second Post' })).toBeVisible()
 })
 
+test('home page metadata uses the site title', async ({ page }) => {
+  await page.goto('/')
+
+  await expect(page).toHaveTitle('MH Blog Theme')
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', 'MH Blog Theme')
+  await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute('content', 'MH Blog Theme')
+})
+
 test('archive page lists all posts', async ({ page }) => {
   await page.goto('/archives/')
 
@@ -69,7 +77,12 @@ test('single post exposes canonical and social metadata', async ({ page }) => {
   await page.goto('/posts/first-post/')
 
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/posts\/first-post\/$/)
-  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', 'First Post')
+  await expect(page).toHaveTitle('First Post | MH Blog Theme')
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', 'First Post | MH Blog Theme')
+  await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute('content', 'First Post | MH Blog Theme')
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /\/images\/post-1\.jpg$/)
+  await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute('content', /\/images\/post-1\.jpg$/)
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image')
 })
 
 test('post without optional metadata still renders', async ({ page }) => {
@@ -77,4 +90,7 @@ test('post without optional metadata still renders', async ({ page }) => {
 
   await expect(page.getByRole('heading', { name: 'Second Post' })).toBeVisible()
   await expect(page.locator('article img')).toHaveCount(0)
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary')
+  await expect(page.locator('meta[property="og:image"]')).toHaveCount(0)
+  await expect(page.locator('meta[name="twitter:image"]')).toHaveCount(0)
 })
