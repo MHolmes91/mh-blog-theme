@@ -8,6 +8,18 @@ export function filterSearchRecords(records, query) {
   })
 }
 
+export async function loadSearchRecords(fetchImpl, searchUrl) {
+  try {
+    const response = await fetchImpl(searchUrl)
+    if (!response.ok) return []
+
+    const records = await response.json()
+    return Array.isArray(records) ? records : []
+  } catch {
+    return []
+  }
+}
+
 export function collectMatches(text, query) {
   const source = text.toLowerCase()
   const needle = query.trim().toLowerCase()

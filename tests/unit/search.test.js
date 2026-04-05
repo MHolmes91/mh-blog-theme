@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { filterSearchRecords, collectMatches } from '../../assets/js/lib/search.js'
+import { filterSearchRecords, collectMatches, loadSearchRecords } from '../../assets/js/lib/search.js'
 
 describe('filterSearchRecords', () => {
   it('returns matching posts by title, summary, and content', () => {
@@ -25,5 +25,13 @@ describe('search index template', () => {
     const template = readFileSync(new URL('../../layouts/index.json', import.meta.url), 'utf8')
 
     expect(template).toContain('(?m)^##+\\s+.+$')
+  })
+})
+
+describe('loadSearchRecords', () => {
+  it('returns an empty array when the search index request fails', async () => {
+    const fetchImpl = async () => ({ ok: false, json: async () => [] })
+
+    await expect(loadSearchRecords(fetchImpl, '/index.json')).resolves.toEqual([])
   })
 })

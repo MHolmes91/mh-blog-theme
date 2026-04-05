@@ -66,11 +66,53 @@ test('search opens and shows matching posts', async ({ page }) => {
   await expect(page.getByPlaceholder('Search posts')).toBeHidden()
 })
 
+test('search overlay starts hidden', async ({ page }) => {
+  await page.goto('/')
+
+  await expect(page.getByPlaceholder('Search posts')).toBeHidden()
+})
+
+test('search stays safe when JavaScript is unavailable', async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false })
+  const page = await context.newPage()
+
+  await page.goto('/')
+  await expect(page.getByPlaceholder('Search posts')).toBeHidden()
+
+  await context.close()
+})
+
+test('search stays open and empty when the search index is unavailable', async ({ page }) => {
+  await page.route('**/index.json', async (route) => {
+    await route.fulfill({ status: 404, contentType: 'application/json', body: '[]' })
+  })
+
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Search' }).click()
+  await page.getByPlaceholder('Search posts').fill('paragraph')
+
+  await expect(page.getByPlaceholder('Search posts')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'First Post' })).toHaveCount(0)
+})
+
 test('back to top returns to the top of the page', async ({ page }) => {
   await page.goto('/posts/first-post/')
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
   await page.getByRole('button', { name: 'Back to top' }).click()
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(20)
+})
+
+test('single posts update the reading progress bar while scrolling', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 400 })
+  await page.goto('/posts/first-post/')
+
+  await expect(page.locator('#reading-progress')).toHaveAttribute('style', /width:\s*0%/)
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2))
+
+  await expect
+    .poll(async () => Number.parseInt(await page.locator('#reading-progress').evaluate((node) => node.style.width), 10))
+    .toBeGreaterThan(0)
 })
 
 test('single post exposes canonical and social metadata', async ({ page }) => {
