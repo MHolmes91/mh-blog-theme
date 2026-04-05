@@ -106,13 +106,42 @@ test('single posts update the reading progress bar while scrolling', async ({ pa
   await page.setViewportSize({ width: 1280, height: 400 })
   await page.goto('/posts/first-post/')
 
+  await page.evaluate(() => {
+    const postContent = document.getElementById('post-content')
+    if (!postContent) throw new Error('Expected #post-content')
+
+    const filler = document.createElement('div')
+    filler.style.height = '1600px'
+    postContent.appendChild(filler)
+    window.dispatchEvent(new Event('resize'))
+  })
+
   await expect(page.locator('#reading-progress')).toHaveAttribute('style', /width:\s*0%/)
 
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2))
+  await page.evaluate(() => {
+    const postContent = document.getElementById('post-content')
+    if (!postContent) throw new Error('Expected #post-content')
+
+    const contentTop = window.scrollY + postContent.getBoundingClientRect().top
+    const maxScroll = Math.max(postContent.offsetHeight - window.innerHeight, 1)
+
+    window.scrollTo(0, contentTop + maxScroll / 2)
+  })
 
   await expect
     .poll(async () => Number.parseInt(await page.locator('#reading-progress').evaluate((node) => node.style.width), 10))
     .toBeGreaterThan(0)
+
+  await page.evaluate(() => {
+    const postContent = document.getElementById('post-content')
+    if (!postContent) throw new Error('Expected #post-content')
+
+    window.scrollTo(0, postContent.offsetTop + postContent.offsetHeight - window.innerHeight)
+  })
+
+  await expect
+    .poll(async () => Number.parseInt(await page.locator('#reading-progress').evaluate((node) => node.style.width), 10))
+    .toBe(100)
 })
 
 test('single post exposes canonical and social metadata', async ({ page }) => {
@@ -125,6 +154,11 @@ test('single post exposes canonical and social metadata', async ({ page }) => {
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /\/images\/post-1\.jpg$/)
   await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute('content', /\/images\/post-1\.jpg$/)
   await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image')
+
+  const socialImageUrl = await page.locator('meta[property="og:image"]').getAttribute('content')
+  const socialImageResponse = socialImageUrl ? await page.request.get(socialImageUrl) : null
+
+  expect(socialImageResponse?.ok()).toBe(true)
 })
 
 test('post without optional metadata still renders', async ({ page }) => {

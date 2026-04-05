@@ -12,13 +12,16 @@ Alpine.data('siteUi', (searchUrl) => ({
   init() {
     const updateReadingProgress = () => {
       const progressBar = document.getElementById('reading-progress')
-      if (!progressBar) return
+      const postContent = document.getElementById('post-content')
+      if (!progressBar || !postContent) return
 
+      const { top } = postContent.getBoundingClientRect()
       const scrollTop = window.scrollY
+      const contentTop = scrollTop + top
       const progress = getReadingProgress({
         scrollTop,
-        contentTop: 0,
-        contentHeight: document.documentElement.scrollHeight,
+        contentTop,
+        contentHeight: postContent.offsetHeight,
         viewportHeight: window.innerHeight
       })
 
