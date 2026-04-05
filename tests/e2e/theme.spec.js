@@ -64,3 +64,17 @@ test('back to top returns to the top of the page', async ({ page }) => {
   await page.getByRole('button', { name: 'Back to top' }).click()
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(20)
 })
+
+test('single post exposes canonical and social metadata', async ({ page }) => {
+  await page.goto('/posts/first-post/')
+
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/posts\/first-post\/$/)
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', 'First Post')
+})
+
+test('post without optional metadata still renders', async ({ page }) => {
+  await page.goto('/posts/second-post/')
+
+  await expect(page.getByRole('heading', { name: 'Second Post' })).toBeVisible()
+  await expect(page.locator('article img')).toHaveCount(0)
+})
