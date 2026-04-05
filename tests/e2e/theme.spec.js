@@ -6,10 +6,8 @@ test('home page renders shared chrome', async ({ page }) => {
   await expect(page.getByRole('banner')).toContainText('MH Blog Theme')
   await expect(page.getByRole('contentinfo')).toContainText('GitHub')
   await expect(page.getByRole('link', { name: 'GitHub' })).toHaveAttribute('href', 'https://github.com/example')
-  await expect(page.getByText('Search', { exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Search' })).toHaveCount(0)
-  await expect(page.getByRole('link', { name: 'Back to top' })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Back to top' })).toHaveAttribute('href', '#top')
+  await expect(page.getByRole('button', { name: 'Search' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Back to top' })).toBeVisible()
 })
 
 test('home page shows intro and recent posts', async ({ page }) => {
@@ -52,6 +50,12 @@ test('search opens and shows matching posts', async ({ page }) => {
   await page.getByPlaceholder('Search posts').fill('paragraph')
 
   await expect(page.getByRole('link', { name: 'First Post' })).toBeVisible()
+  await page.getByRole('button', { name: 'Close search' }).click()
+  await expect(page.getByPlaceholder('Search posts')).toBeHidden()
+
+  await page.getByRole('button', { name: 'Search' }).click()
+  await page.keyboard.press('Escape')
+  await expect(page.getByPlaceholder('Search posts')).toBeHidden()
 })
 
 test('back to top returns to the top of the page', async ({ page }) => {
