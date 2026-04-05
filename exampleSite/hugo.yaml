@@ -1,0 +1,19 @@
+baseURL: https://example.org/
+languageCode: en-us
+title: MH Blog Theme
+theme: mh-blog-theme
+
+taxonomies:
+  tag: tags
+  series: series
+
+params:
+  description: Example site for MH Blog Theme
+  siteIcon: /favicon.svg
+  intro:
+    title: Mark's Notes
+    body: Functional Hugo theme fixture content.
+  socials:
+    - name: GitHub
+      url: https://github.com/example
+      icon: github
