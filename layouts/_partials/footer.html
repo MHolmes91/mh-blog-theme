@@ -1,6 +1,7 @@
+{{ $github := index (where site.Params.socials "name" "GitHub") 0 }}
 <footer role="contentinfo" class="border-t border-purple-200 px-6 py-6 text-sm">
   <div class="mx-auto flex max-w-6xl items-center justify-between">
-    <a href="https://github.com/example">GitHub</a>
+    {{ with $github }}<a href="{{ .url }}">{{ .name }}</a>{{ end }}
     <span>Copyright {{ now.Year }}</span>
   </div>
 </footer>
