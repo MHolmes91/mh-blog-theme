@@ -252,28 +252,73 @@ test("post headings link to their own anchors", async ({ page }) => {
 test("content headings use distinct hierarchy styles", async ({ page }) => {
   await page.goto("/posts/toc-stress-post/");
 
-  const h2Size = await page
-    .locator("#large-section-one")
-    .evaluate((node) => getComputedStyle(node).fontSize);
-  const h3Size = await page
-    .locator("#nested-layer-a")
-    .evaluate((node) => getComputedStyle(node).fontSize);
-  const h4Size = await page
-    .locator("#deep-detail-i")
-    .evaluate((node) => getComputedStyle(node).fontSize);
+  const contentBody = page.locator("#post-content [data-content-body]");
 
-  expect(h2Size).not.toBe(h3Size);
-  expect(h3Size).not.toBe(h4Size);
+  await expect(contentBody).toHaveCount(1);
+
+  const h2Styles = await contentBody.locator("#large-section-one").evaluate((node) => {
+    const styles = getComputedStyle(node);
+
+    return {
+      fontSize: Number.parseFloat(styles.fontSize),
+      marginTop: Number.parseFloat(styles.marginTop),
+      marginBottom: Number.parseFloat(styles.marginBottom),
+    };
+  });
+  const h3Styles = await contentBody.locator("#nested-layer-a").evaluate((node) => {
+    const styles = getComputedStyle(node);
+
+    return {
+      fontSize: Number.parseFloat(styles.fontSize),
+      marginTop: Number.parseFloat(styles.marginTop),
+      marginBottom: Number.parseFloat(styles.marginBottom),
+    };
+  });
+  const h4Styles = await contentBody.locator("#deep-detail-i").evaluate((node) => {
+    const styles = getComputedStyle(node);
+
+    return {
+      fontSize: Number.parseFloat(styles.fontSize),
+      marginTop: Number.parseFloat(styles.marginTop),
+      marginBottom: Number.parseFloat(styles.marginBottom),
+    };
+  });
+
+  expect(h2Styles.fontSize).toBeGreaterThan(h3Styles.fontSize);
+  expect(h3Styles.fontSize).toBeGreaterThan(h4Styles.fontSize);
+  expect(h2Styles.marginTop).toBeGreaterThan(h3Styles.marginTop);
+  expect(h3Styles.marginTop).toBeGreaterThan(h4Styles.marginTop);
+  expect(h2Styles.marginBottom).toBeGreaterThan(h4Styles.marginBottom);
 });
 
 test("code blocks use Roboto Mono", async ({ page }) => {
   await page.goto("/posts/shortcodes-builtins/");
 
+  const contentBody = page.locator("#post-content [data-content-body]");
+
+  await expect(contentBody).toHaveCount(1);
+
   const codeFont = await page
-    .locator("article .highlight code")
+    .locator("#post-content [data-content-body] .highlight code")
+    .evaluate((node) => getComputedStyle(node).fontFamily);
+
+  await contentBody.evaluate((node) => {
+    const inlineCode = document.createElement("code");
+    inlineCode.textContent = "inline-example";
+
+    const paragraph = document.createElement("p");
+    paragraph.append("Inline ", inlineCode, " sample");
+
+    node.appendChild(paragraph);
+  });
+
+  const inlineCodeFont = await contentBody
+    .locator("p code")
+    .last()
     .evaluate((node) => getComputedStyle(node).fontFamily);
 
   expect(codeFont.toLowerCase()).toContain("roboto mono");
+  expect(inlineCodeFont.toLowerCase()).not.toContain("roboto mono");
 });
 
 test("post metadata tags and series are clickable taxonomy links", async ({

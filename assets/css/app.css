@@ -67,27 +67,27 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.02em;
 }
 
-#post-content .prose h2 {
+#post-content [data-content-body] h2 {
   font-size: 2rem;
   margin-top: 2.5rem;
   margin-bottom: 1rem;
 }
 
-#post-content .prose h3 {
+#post-content [data-content-body] h3 {
   font-size: 1.5rem;
   margin-top: 2rem;
   margin-bottom: 0.75rem;
 }
 
-#post-content .prose h4 {
+#post-content [data-content-body] h4 {
   font-size: 1.125rem;
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;
 }
 
-#post-content .prose pre,
-#post-content .prose code,
-#post-content .prose .highlight code {
+#post-content [data-content-body] pre,
+#post-content [data-content-body] pre code,
+#post-content [data-content-body] .highlight code {
   font-family: 'Roboto Mono', monospace;
 }
 

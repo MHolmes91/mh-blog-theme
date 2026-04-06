@@ -7,7 +7,7 @@
         <h1 class="text-4xl font-bold">{{ .Title }}</h1>
         {{ partial "post-meta.html" (dict "page" . "linked" true) }}
       </header>
-      <div class="prose prose-slate max-w-none">{{ .Content }}</div>
+      <div class="prose prose-slate max-w-none" data-content-body>{{ .Content }}</div>
     </article>
     {{ partial "toc.html" . }}
   </section>
