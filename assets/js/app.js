@@ -10,7 +10,15 @@ Alpine.data('siteUi', (searchUrl) => ({
   query: '',
   records: [],
   searchOpen: false,
+  theme: resolveTheme({
+    systemPrefersDark: window.matchMedia('(prefers-color-scheme: dark)').matches
+  }),
   init() {
+    const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const syncTheme = ({ matches }) => {
+      this.theme = resolveTheme({ systemPrefersDark: matches })
+    }
+
     const updateActiveTocEntry = () => {
       const toc = document.getElementById('TableOfContents')
       if (!toc) return
@@ -58,6 +66,8 @@ Alpine.data('siteUi', (searchUrl) => ({
       progressBar.style.width = `${progress}%`
     }
 
+    syncTheme(colorSchemeQuery)
+    colorSchemeQuery.addEventListener('change', syncTheme)
     updateReadingProgress()
     updateActiveTocEntry()
     window.addEventListener('scroll', updateReadingProgress, { passive: true })
@@ -80,11 +90,7 @@ Alpine.data('siteUi', (searchUrl) => ({
   },
   backToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  },
-  theme: resolveTheme({
-    storedTheme: null,
-    systemPrefersDark: window.matchMedia('(prefers-color-scheme: dark)').matches
-  })
+  }
 }))
 
 Alpine.start()

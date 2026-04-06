@@ -18,12 +18,57 @@ test('home page shows intro and recent posts', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Second Post' })).toBeVisible()
 })
 
+test('home page separates intro and recent posts with structural dividers', async ({ page }) => {
+  await page.goto('/')
+
+  await expect(page.locator('main hr')).toHaveCount(7)
+  await expect(page.getByText("Mark's Notes")).toBeVisible()
+  await expect(page.getByRole('link', { name: 'TOC Stress Post' })).toBeVisible()
+})
+
 test('home page metadata uses the site title', async ({ page }) => {
   await page.goto('/')
 
   await expect(page).toHaveTitle('MH Blog Theme')
   await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', 'MH Blog Theme')
   await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute('content', 'MH Blog Theme')
+})
+
+test('browser dark preference controls theme even with a conflicting stored value', async ({ browser }) => {
+  const context = await browser.newContext({ colorScheme: 'dark' })
+  await context.addInitScript(() => {
+    window.localStorage.setItem('theme', 'light')
+  })
+  const page = await context.newPage()
+
+  await page.goto('/')
+
+  await expect(page.locator('body')).toHaveAttribute('data-theme', 'dark')
+  await context.close()
+})
+
+test('browser dark preference sets the palette even when JavaScript is unavailable', async ({ browser }) => {
+  const context = await browser.newContext({ colorScheme: 'dark', javaScriptEnabled: false })
+  const page = await context.newPage()
+
+  await page.goto('/')
+
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(17, 24, 39)')
+   await expect(page.getByRole('banner')).toHaveCSS('background-color', 'rgb(31, 41, 55)')
+  await context.close()
+})
+
+test('theme preference updates the page palette while the page is open', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' })
+  await page.goto('/')
+
+  await expect(page.locator('body')).toHaveAttribute('data-theme', 'light')
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(250, 247, 255)')
+
+  await page.emulateMedia({ colorScheme: 'dark' })
+
+  await expect(page.locator('body')).toHaveAttribute('data-theme', 'dark')
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(17, 24, 39)')
 })
 
 test('archive page lists all posts', async ({ page }) => {
@@ -42,6 +87,14 @@ test('archive page includes new fixture posts', async ({ page }) => {
   await expect(page.getByText('Series Part 4')).toBeVisible()
 })
 
+test('archive page uses divider-based row summaries', async ({ page }) => {
+  await page.goto('/archives/')
+
+  await expect(page.locator('main article')).toHaveCount(8)
+  await expect(page.locator('main hr')).toHaveCount(7)
+  await expect(page.locator('main article').first()).not.toHaveClass(/rounded-2xl/)
+})
+
 test('posts list page shows post summaries', async ({ page }) => {
   await page.goto('/posts/')
 
@@ -52,6 +105,21 @@ test('posts list page shows post summaries', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Built-In Shortcodes Post' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Series Part 4' })).toBeVisible()
   await expect(page.getByText('A searchable post with headings.')).toBeVisible()
+})
+
+test('posts list page uses divider-based row summaries', async ({ page }) => {
+  await page.goto('/posts/')
+
+  await expect(page.locator('main article')).toHaveCount(8)
+  await expect(page.locator('main hr')).toHaveCount(7)
+  await expect(page.locator('main article').first()).not.toHaveClass(/rounded-2xl/)
+})
+
+test('posts list page reuses the shared browsing surface styling', async ({ page }) => {
+  await page.goto('/posts/')
+
+  await expect(page.getByRole('heading', { name: 'Posts' })).toHaveClass(/font-extrabold/)
+  await expect(page.locator('main hr').first()).toHaveClass(/border-purple-200/)
 })
 
 test('taxonomy index pages do not show post read time metadata', async ({ page }) => {
@@ -72,6 +140,15 @@ test('tag term page includes multiple fixture types', async ({ page }) => {
   await expect(page.getByText('Series Part 2')).toBeVisible()
   await expect(page.getByText('Series Part 3')).toBeVisible()
   await expect(page.getByText('Series Part 4')).toBeVisible()
+})
+
+test('tag term pages render row summaries instead of cards', async ({ page }) => {
+  await page.goto('/tags/fixture/')
+
+  await expect(page.getByRole('heading', { name: 'Fixture' })).toBeVisible()
+  await expect(page.locator('main article')).toHaveCount(6)
+  await expect(page.locator('main article').first()).not.toHaveClass(/rounded-2xl/)
+  await expect(page.locator('main hr')).toHaveCount(5)
 })
 
 test('search opens and shows matching posts', async ({ page }) => {
@@ -234,11 +311,11 @@ test('post without optional metadata still renders', async ({ page }) => {
   await expect(page.locator('meta[name="twitter:image"]')).toHaveCount(0)
 })
 
-test('shortcodes fixture renders built-in shortcode content with featured image', async ({ page }) => {
+test('shortcodes fixture renders visible built-in shortcode output', async ({ page }) => {
   await page.goto('/posts/shortcodes-builtins/')
 
   await expect(page.getByRole('heading', { name: 'Built-In Shortcodes Post' })).toBeVisible()
-  await expect(page.locator('article img')).toHaveAttribute('src', /\/images\/post-1\.jpg$/)
+  await expect(page.locator('article .highlight')).toBeVisible()
   await expect(page.locator('article .highlight code')).toContainText('func main()')
   await expect(page.locator('article .highlight code')).toContainText('hello from shortcode fixture')
   await expect(page.getByRole('main')).not.toContainText('{{< highlight go >}}')

@@ -1,11 +1,55 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=PT+Sans:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
   --color-bg: #faf7ff;
   --color-surface: #ffffff;
   --color-text: #20172b;
+  --color-muted: #5b5565;
+  --color-border: #e9d5ff;
   --color-accent: #7c3aed;
+}
+
+:root {
+  --color-bg: #faf7ff;
+  --color-surface: #ffffff;
+  --color-text: #20172b;
+  --color-muted: #5b5565;
+  --color-border: #e9d5ff;
+  --color-accent: #7c3aed;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #111827;
+    --color-surface: #1f2937;
+    --color-text: #f5f3ff;
+    --color-muted: #cbd5e1;
+    --color-border: #4c1d95;
+    --color-accent: #a78bfa;
+    color-scheme: dark;
+  }
+}
+
+body[data-theme='light'] {
+  --color-bg: #faf7ff;
+  --color-surface: #ffffff;
+  --color-text: #20172b;
+  --color-muted: #5b5565;
+  --color-border: #e9d5ff;
+  --color-accent: #7c3aed;
+  color-scheme: light;
+}
+
+body[data-theme='dark'] {
+  --color-bg: #111827;
+  --color-surface: #1f2937;
+  --color-text: #f5f3ff;
+  --color-muted: #cbd5e1;
+  --color-border: #4c1d95;
+  --color-accent: #a78bfa;
+  color-scheme: dark;
 }
 
 body {
@@ -15,7 +59,35 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'PT Sans', sans-serif;
+  font-family: 'Lato', sans-serif;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+:is(:root, body[data-theme]) .bg-white,
+:is(:root, body[data-theme]) .bg-white\/90 {
+  background-color: var(--color-surface);
+}
+
+:is(:root, body[data-theme]) hr,
+:is(:root, body[data-theme]) .border-purple-200,
+:is(:root, body[data-theme]) .border-purple-300,
+:is(:root, body[data-theme]) .border-slate-200 {
+  border-color: var(--color-border);
+}
+
+:is(:root, body[data-theme]) .bg-purple-600 {
+  background-color: var(--color-accent);
+}
+
+:is(:root, body[data-theme]) .text-slate-500,
+:is(:root, body[data-theme]) .text-slate-600 {
+  color: var(--color-muted);
+}
+
+:is(:root, body[data-theme]) .text-purple-700 {
+  color: var(--color-accent);
 }
 
 [x-cloak] {

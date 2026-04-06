@@ -11,4 +11,11 @@ describe('theme bootstrap files', () => {
     expect(themeToml).toContain('name = "MH Blog Theme"')
     expect(themeToml).toContain('min_version = "0.146.0"')
   })
+
+  it('imports the heading font weight used by the stylesheet', () => {
+    const css = fs.readFileSync(new URL('../../assets/css/app.css', import.meta.url), 'utf8')
+
+    expect(css).toContain('family=Lato:wght@400;700;800')
+    expect(css).toContain('font-weight: 800;')
+  })
 })

@@ -1,4 +1,3 @@
-export function resolveTheme({ storedTheme, systemPrefersDark }) {
-  if (storedTheme === 'dark' || storedTheme === 'light') return storedTheme
+export function resolveTheme({ systemPrefersDark }) {
   return systemPrefersDark ? 'dark' : 'light'
 }

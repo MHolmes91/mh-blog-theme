@@ -1,12 +1,13 @@
 {{ define "main" }}
-  <section class="mx-auto grid max-w-6xl gap-8 px-6 py-10 lg:grid-cols-[1fr_2fr]">
-    <div class="rounded-2xl border border-purple-200 bg-white p-6">
-      <h1 class="text-3xl font-bold">{{ site.Params.intro.title }}</h1>
-      <p class="mt-3 text-base">{{ site.Params.intro.body }}</p>
+  <section class="mx-auto grid max-w-6xl gap-8 px-6 py-10 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-10">
+    <div class="lg:border-r lg:border-purple-200 lg:pr-8">
+      <h1 class="text-3xl font-extrabold tracking-tight">{{ site.Params.intro.title }}</h1>
+      <p class="mt-3 text-base leading-7">{{ site.Params.intro.body }}</p>
     </div>
-    <div class="space-y-4">
-      {{ range first 10 (where site.RegularPages.ByDate.Reverse "Section" "posts") }}
-        {{ partial "post-card.html" . }}
+    <div>
+      {{ range $index, $page := first 10 (where site.RegularPages.ByDate.Reverse "Section" "posts") }}
+        {{ if gt $index 0 }}<hr class="border-purple-200">{{ end }}
+        {{ partial "post-row.html" $page }}
       {{ end }}
     </div>
   </section>
