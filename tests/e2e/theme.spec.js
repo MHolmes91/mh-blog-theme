@@ -63,6 +63,14 @@ test('archive page includes new fixture posts', async ({ page }) => {
   await expect(page.getByText('Series Part 4')).toBeVisible()
 })
 
+test('archive page uses divider-based row summaries', async ({ page }) => {
+  await page.goto('/archives/')
+
+  await expect(page.locator('main article')).toHaveCount(8)
+  await expect(page.locator('main hr')).toHaveCount(7)
+  await expect(page.locator('main article').first()).not.toHaveClass(/rounded-2xl/)
+})
+
 test('posts list page shows post summaries', async ({ page }) => {
   await page.goto('/posts/')
 
@@ -106,6 +114,8 @@ test('tag term page includes multiple fixture types', async ({ page }) => {
 test('tag term pages render row summaries instead of cards', async ({ page }) => {
   await page.goto('/tags/fixture/')
 
+  await expect(page.getByRole('heading', { name: 'Fixture' })).toBeVisible()
+  await expect(page.locator('main article')).toHaveCount(6)
   await expect(page.locator('main article').first()).not.toHaveClass(/rounded-2xl/)
   await expect(page.locator('main hr')).toHaveCount(5)
 })
