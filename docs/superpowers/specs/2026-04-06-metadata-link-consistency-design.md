@@ -17,30 +17,34 @@ The accessibility and interaction restructuring applies only to list-style surfa
 
 ## Current Problem
 
-The shared metadata partial currently renders tags and series as plain text unless the caller opts into linked mode. Some list-style surfaces wrap the entire row or card inside a single anchor. That makes it impossible to expose individually clickable metadata links there without creating invalid nested anchors or relying on JavaScript click suppression.
+The shared metadata partial currently mixes post metadata and taxonomy metadata in one template, and it renders tags and series as plain text unless the caller opts into linked mode. Some list-style surfaces wrap the entire row inside a single anchor. That makes it impossible to expose individually clickable metadata links there without creating invalid nested anchors or relying on JavaScript click suppression.
 
 As a result, the app currently has inconsistent series/tag presentation and an interaction model on rows that blocks accessible independent metadata links.
 
 ## Chosen Approach
 
-Use one shared metadata rendering path for the visual treatment and add surface-aware structure where needed.
+Split post metadata and taxonomy metadata into separate partials, then use surface-aware structure where needed.
 
-- Keep a shared metadata partial as the single source of truth for rendering post metadata.
+- Keep `post-meta.html` focused on date and reading time.
+- Add `post-taxonomy.html` as the single source of truth for rendering series links and tag chips.
 - Make series render as obvious links everywhere.
 - Make tags render as linked chips everywhere.
-- Introduce a surface mode so list-style surfaces can use the same metadata output without relying on a wrapper anchor around the whole row.
+- Introduce a surface mode on the taxonomy partial so list-style surfaces can use the same taxonomy output without relying on a wrapper anchor around the whole row.
 - Restructure row-like templates so the main post navigation is a dedicated title/summary link, while series and tag links remain separate interactive elements.
 
 This is preferred over JavaScript event suppression or separate duplicated partials because it preserves accessibility and consistency with the smallest durable template change.
 
 ## Rendering Design
 
-### Shared Metadata Treatment
+### Shared Partial Treatment
 
-The shared metadata partial should render:
+`post-meta.html` should render:
 
 - date
 - reading time where already applicable
+
+`post-taxonomy.html` should render:
+
 - series as plain text links
 - tags as linked chips
 
@@ -48,7 +52,7 @@ The visual style for series and tags should match the established View All Posts
 
 ### Surface-Aware Structure
 
-The metadata partial should accept enough context to distinguish between at least:
+The taxonomy partial should accept enough context to distinguish between at least:
 
 - single-post rendering
 - list-style rendering
@@ -62,8 +66,8 @@ List-style surfaces must no longer use a single anchor that wraps both the post 
 Instead:
 
 - the title remains a normal post link
-- the summary may remain inside the main post link if that matches the existing browsing pattern
-- the metadata block sits outside that post link
+- the summary will remain inside the main post link
+- the date and reading time will remain inside the main post link
 - each series link is its own anchor
 - each tag chip is its own anchor
 
@@ -77,13 +81,14 @@ This ensures:
 
 ## Affected Templates
 
-Expected template changes are limited to the shared metadata partial and the list-style surfaces that currently depend on wrapper anchors around the full card or row.
+Expected template changes are limited to the split metadata partials and the list-style surfaces that currently depend on wrapper anchors around the full row.
 
 At minimum, inspect and update as needed:
 
 - `layouts/_partials/post-meta.html`
+- `layouts/_partials/post-taxonomy.html`
 - `layouts/_partials/post-row.html`
-- `layouts/_partials/post-card.html`
+- `layouts/_partials/post-card.html` if it is confirmed to be unused, remove it as dead code rather than updating it
 
 Any other template reusing the same wrapper-anchor pattern should be brought into the same structure if it renders series or tags.
 
