@@ -25,6 +25,7 @@
 ### Task 1: Move To Lato-Only Typography And Browser-Only Theme Preference
 
 **Files:**
+
 - Modify: `assets/css/app.css`
 - Modify: `assets/js/lib/theme.js`
 - Modify: `assets/js/app.js`
@@ -33,25 +34,31 @@
 - [ ] **Step 1: Write the failing integration coverage for Lato-only and browser-only theme behavior**
 
 ```js
-test('home page uses Lato-only typography styling', async ({ page }) => {
-  await page.goto('/')
+test("home page uses Lato-only typography styling", async ({ page }) => {
+  await page.goto("/");
 
-  const bodyFont = await page.locator('body').evaluate((node) => getComputedStyle(node).fontFamily)
-  const headingFont = await page.getByRole('heading', { name: "Mark's Notes" }).evaluate((node) => getComputedStyle(node).fontFamily)
+  const bodyFont = await page
+    .locator("body")
+    .evaluate((node) => getComputedStyle(node).fontFamily);
+  const headingFont = await page
+    .getByRole("heading", { name: "Mark's Notes" })
+    .evaluate((node) => getComputedStyle(node).fontFamily);
 
-  expect(bodyFont).toContain('Lato')
-  expect(headingFont).toContain('Lato')
-})
+  expect(bodyFont).toContain("Lato");
+  expect(headingFont).toContain("Lato");
+});
 
-test('browser dark preference controls theme without stored override state', async ({ browser }) => {
-  const context = await browser.newContext({ colorScheme: 'dark' })
-  const page = await context.newPage()
+test("browser dark preference controls theme without stored override state", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ colorScheme: "dark" });
+  const page = await context.newPage();
 
-  await page.goto('/')
+  await page.goto("/");
 
-  await expect(page.locator('body')).toHaveAttribute('data-theme', 'dark')
-  await context.close()
-})
+  await expect(page.locator("body")).toHaveAttribute("data-theme", "dark");
+  await context.close();
+});
 ```
 
 - [ ] **Step 2: Run tests to verify they fail**
@@ -63,7 +70,7 @@ Expected: FAIL because headings still use `PT Sans` and the theme logic may stil
 
 ```css
 /* assets/css/app.css */
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap");
 @import "tailwindcss";
 
 @theme {
@@ -74,13 +81,18 @@ Expected: FAIL because headings still use `PT Sans` and the theme logic may stil
 }
 
 body {
-  font-family: 'Lato', sans-serif;
+  font-family: "Lato", sans-serif;
   background: var(--color-bg);
   color: var(--color-text);
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Lato', sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Lato", sans-serif;
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.02em;
@@ -98,15 +110,15 @@ a:visited {
 ```js
 // assets/js/lib/theme.js
 export function resolveTheme({ systemPrefersDark }) {
-  return systemPrefersDark ? 'dark' : 'light'
+  return systemPrefersDark ? "dark" : "light";
 }
 ```
 
 ```js
 // assets/js/app.js (theme call site only)
 theme: resolveTheme({
-  systemPrefersDark: window.matchMedia('(prefers-color-scheme: dark)').matches
-})
+  systemPrefersDark: window.matchMedia("(prefers-color-scheme: dark)").matches,
+});
 ```
 
 - [ ] **Step 4: Run tests to verify they pass**
@@ -124,6 +136,7 @@ git commit -m "style: switch to lato-only typography"
 ### Task 2: Introduce A Dedicated Row Summary Partial
 
 **Files:**
+
 - Create: `layouts/_partials/post-row.html`
 - Modify: `layouts/_partials/post-meta.html`
 - Modify: `tests/e2e/theme.spec.js`
@@ -131,13 +144,15 @@ git commit -m "style: switch to lato-only typography"
 - [ ] **Step 1: Write the failing integration coverage for row summaries**
 
 ```js
-test('posts list page uses divider-based row summaries', async ({ page }) => {
-  await page.goto('/posts/')
+test("posts list page uses divider-based row summaries", async ({ page }) => {
+  await page.goto("/posts/");
 
-  await expect(page.locator('main article')).toHaveCount(8)
-  await expect(page.locator('main hr')).toHaveCount(7)
-  await expect(page.locator('main article').first()).not.toHaveClass(/rounded-2xl/)
-})
+  await expect(page.locator("main article")).toHaveCount(8);
+  await expect(page.locator("main hr")).toHaveCount(7);
+  await expect(page.locator("main article").first()).not.toHaveClass(
+    /rounded-2xl/,
+  );
+});
 ```
 
 - [ ] **Step 2: Run tests to verify they fail**
@@ -162,7 +177,7 @@ Expected: FAIL because list pages still use card-style summary markup without `h
 <!-- layouts/_partials/post-meta.html -->
 <div class="flex flex-wrap gap-3 text-sm text-slate-500">
   <span>{{ .Date | time.Format ":date_medium" }}</span>
-  <span>{{ .ReadingTime }} min read</span>
+  <span>{{ .ReadingTime }} min</span>
   {{ with .Params.tags }}<span>{{ delimit . ", " }}</span>{{ end }}
   {{ with .Params.series }}<span>{{ delimit . ", " }}</span>{{ end }}
 </div>
@@ -183,6 +198,7 @@ git commit -m "feat: add row summary partial"
 ### Task 3: Apply Row Layout To Home And List Surfaces
 
 **Files:**
+
 - Modify: `layouts/home.html`
 - Modify: `layouts/list.html`
 - Optionally modify: `layouts/archives.html`
@@ -191,20 +207,28 @@ git commit -m "feat: add row summary partial"
 - [ ] **Step 1: Write the failing integration coverage for the new home/list layout**
 
 ```js
-test('home page separates intro and recent posts with structural dividers', async ({ page }) => {
-  await page.goto('/')
+test("home page separates intro and recent posts with structural dividers", async ({
+  page,
+}) => {
+  await page.goto("/");
 
-  await expect(page.locator('main hr')).toHaveCount(7)
-  await expect(page.getByText("Mark's Notes")).toBeVisible()
-  await expect(page.getByRole('link', { name: 'TOC Stress Post' })).toBeVisible()
-})
+  await expect(page.locator("main hr")).toHaveCount(7);
+  await expect(page.getByText("Mark's Notes")).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "TOC Stress Post" }),
+  ).toBeVisible();
+});
 
-test('tag term pages render row summaries instead of cards', async ({ page }) => {
-  await page.goto('/tags/fixture/')
+test("tag term pages render row summaries instead of cards", async ({
+  page,
+}) => {
+  await page.goto("/tags/fixture/");
 
-  await expect(page.locator('main article').first()).not.toHaveClass(/rounded-2xl/)
-  await expect(page.locator('main hr')).toHaveCount(5)
-})
+  await expect(page.locator("main article").first()).not.toHaveClass(
+    /rounded-2xl/,
+  );
+  await expect(page.locator("main hr")).toHaveCount(5);
+});
 ```
 
 - [ ] **Step 2: Run tests to verify they fail**
@@ -268,18 +292,26 @@ git commit -m "style: apply row layout to browsing surfaces"
 ### Task 4: Strengthen Shortcode Integration Coverage And Final Verification
 
 **Files:**
+
 - Modify: `tests/e2e/theme.spec.js`
 
 - [ ] **Step 1: Write the failing shortcode integration assertions**
 
 ```js
-test('shortcode fixture shows visible output for supported shortcode blocks', async ({ page }) => {
-  await page.goto('/posts/shortcodes-builtins/')
+test("shortcode fixture shows visible output for supported shortcode blocks", async ({
+  page,
+}) => {
+  await page.goto("/posts/shortcodes-builtins/");
 
-  await expect(page.locator('article .highlight')).toBeVisible()
-  await expect(page.locator('article .highlight code')).toContainText('func main()')
-  await expect(page.locator('article img')).toHaveAttribute('src', /\/images\/post-1\.jpg$/)
-})
+  await expect(page.locator("article .highlight")).toBeVisible();
+  await expect(page.locator("article .highlight code")).toContainText(
+    "func main()",
+  );
+  await expect(page.locator("article img")).toHaveAttribute(
+    "src",
+    /\/images\/post-1\.jpg$/,
+  );
+});
 ```
 
 - [ ] **Step 2: Run tests to verify they fail**

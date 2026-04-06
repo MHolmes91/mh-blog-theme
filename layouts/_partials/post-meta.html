@@ -1,10 +1,12 @@
 <div class="flex flex-wrap gap-3 text-sm text-slate-500">
   <span>{{ .Date | time.Format ":date_medium" }}</span>
-  <span>{{ .ReadingTime }} min read</span>
+  <span class="inline-flex items-center gap-1.5">
+    {{ partial "icon.html" (dict "name" "timer" "class" "h-4 w-4") }}
+    <span>{{ .ReadingTime }} min</span>
+  </span>
   {{ with .Params.tags }}
-    <span>{{ delimit . ", " }}</span>
-  {{ end }}
-  {{ with .Params.series }}
-    <span>{{ delimit . ", " }}</span>
+  <span>{{ delimit . ", " }}</span>
+  {{ end }} {{ with .Params.series }}
+  <span>{{ delimit . ", " }}</span>
   {{ end }}
 </div>

@@ -52,6 +52,7 @@
 ### Task 1: Bootstrap Theme Tooling And Metadata
 
 **Files:**
+
 - Create: `package.json`
 - Create: `vitest.config.js`
 - Create: `playwright.config.js`
@@ -61,20 +62,25 @@
 
 ```js
 // tests/unit/theme-config.test.js
-import { describe, expect, it } from 'vitest'
-import fs from 'node:fs'
+import { describe, expect, it } from "vitest";
+import fs from "node:fs";
 
-describe('theme bootstrap files', () => {
-  it('declares the theme metadata and test scripts', () => {
-    const pkg = JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta.url)))
-    const themeToml = fs.readFileSync(new URL('../../theme.toml', import.meta.url), 'utf8')
+describe("theme bootstrap files", () => {
+  it("declares the theme metadata and test scripts", () => {
+    const pkg = JSON.parse(
+      fs.readFileSync(new URL("../../package.json", import.meta.url)),
+    );
+    const themeToml = fs.readFileSync(
+      new URL("../../theme.toml", import.meta.url),
+      "utf8",
+    );
 
-    expect(pkg.scripts.test).toBe('vitest run')
-    expect(pkg.scripts['test:e2e']).toBe('playwright test')
-    expect(themeToml).toContain('name = "MH Blog Theme"')
-    expect(themeToml).toContain('min_version = "0.146.0"')
-  })
-})
+    expect(pkg.scripts.test).toBe("vitest run");
+    expect(pkg.scripts["test:e2e"]).toBe("playwright test");
+    expect(themeToml).toContain('name = "MH Blog Theme"');
+    expect(themeToml).toContain('min_version = "0.146.0"');
+  });
+});
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -107,31 +113,32 @@ Expected: FAIL with file-not-found errors for `package.json` and `theme.toml`
 
 ```js
 // vitest.config.js
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    environment: 'node',
-    include: ['tests/unit/**/*.test.js']
-  }
-})
+    environment: "node",
+    include: ["tests/unit/**/*.test.js"],
+  },
+});
 ```
 
 ```js
 // playwright.config.js
-import { defineConfig } from '@playwright/test'
+import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: "./tests/e2e",
   use: {
-    baseURL: 'http://127.0.0.1:1313'
+    baseURL: "http://127.0.0.1:1313",
   },
   webServer: {
-    command: 'hugo server --source exampleSite --themesDir .. --disableFastRender --port 1313',
-    url: 'http://127.0.0.1:1313',
-    reuseExistingServer: true
-  }
-})
+    command:
+      "hugo server --source exampleSite --themesDir .. --disableFastRender --port 1313",
+    url: "http://127.0.0.1:1313",
+    reuseExistingServer: true,
+  },
+});
 ```
 
 ```toml
@@ -165,6 +172,7 @@ git commit -m "chore: bootstrap theme tooling"
 ### Task 2: Create Example Site And YAML-First Configuration
 
 **Files:**
+
 - Create: `exampleSite/hugo.yaml`
 - Create: `exampleSite/content/_index.md`
 - Create: `exampleSite/content/posts/first-post.md`
@@ -175,18 +183,21 @@ git commit -m "chore: bootstrap theme tooling"
 
 ```js
 // tests/unit/example-site.test.js
-import { describe, expect, it } from 'vitest'
-import fs from 'node:fs'
+import { describe, expect, it } from "vitest";
+import fs from "node:fs";
 
-describe('example site', () => {
-  it('uses hugo.yaml and points to the theme', () => {
-    const yaml = fs.readFileSync(new URL('../../exampleSite/hugo.yaml', import.meta.url), 'utf8')
+describe("example site", () => {
+  it("uses hugo.yaml and points to the theme", () => {
+    const yaml = fs.readFileSync(
+      new URL("../../exampleSite/hugo.yaml", import.meta.url),
+      "utf8",
+    );
 
-    expect(yaml).toContain('theme: mh-blog-theme')
-    expect(yaml).toContain('taxonomies:')
-    expect(yaml).toContain('series: series')
-  })
-})
+    expect(yaml).toContain("theme: mh-blog-theme");
+    expect(yaml).toContain("taxonomies:");
+    expect(yaml).toContain("series: series");
+  });
+});
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -220,23 +231,23 @@ params:
 ```
 
 ```md
-<!-- exampleSite/content/_index.md -->
----
-title: Home
----
+## <!-- exampleSite/content/_index.md -->
+
+## title: Home
 
 Welcome to the example site.
 ```
 
 ```md
-<!-- exampleSite/content/posts/first-post.md -->
----
+## <!-- exampleSite/content/posts/first-post.md -->
+
 title: First Post
 date: 2026-04-05
 summary: A searchable post with headings.
 tags: [hugo, theme]
 series: [build-notes]
 featuredImage: /images/post-1.jpg
+
 ---
 
 ## Intro
@@ -249,11 +260,12 @@ This section exists for the table of contents.
 ```
 
 ```md
-<!-- exampleSite/content/posts/second-post.md -->
----
+## <!-- exampleSite/content/posts/second-post.md -->
+
 title: Second Post
 date: 2026-04-04
 summary: A post without optional metadata.
+
 ---
 
 ## Plain Post
@@ -262,10 +274,11 @@ This post omits tags, series, and featured image.
 ```
 
 ```md
-<!-- exampleSite/content/archives/_index.md -->
----
+## <!-- exampleSite/content/archives/_index.md -->
+
 title: Archives
 layout: archives
+
 ---
 ```
 
@@ -284,6 +297,7 @@ git commit -m "chore: add example site fixtures"
 ### Task 3: Build The Base Layout, Fonts, And Shared Chrome
 
 **Files:**
+
 - Create: `assets/css/app.css`
 - Create: `layouts/baseof.html`
 - Create: `layouts/_partials/head.html`
@@ -296,15 +310,15 @@ git commit -m "chore: add example site fixtures"
 
 ```js
 // tests/e2e/theme.spec.js
-import { test, expect } from '@playwright/test'
+import { test, expect } from "@playwright/test";
 
-test('home page renders shared chrome', async ({ page }) => {
-  await page.goto('/')
+test("home page renders shared chrome", async ({ page }) => {
+  await page.goto("/");
 
-  await expect(page.getByRole('banner')).toContainText('MH Blog Theme')
-  await expect(page.getByRole('contentinfo')).toContainText('GitHub')
-  await expect(page.getByRole('button', { name: 'Back to top' })).toBeVisible()
-})
+  await expect(page.getByRole("banner")).toContainText("MH Blog Theme");
+  await expect(page.getByRole("contentinfo")).toContainText("GitHub");
+  await expect(page.getByRole("button", { name: "Back to top" })).toBeVisible();
+});
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -316,7 +330,7 @@ Expected: FAIL because no Hugo layout files exist yet
 
 ```css
 /* assets/css/app.css */
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=PT+Sans:wght@400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=PT+Sans:wght@400;700&display=swap");
 @import "tailwindcss";
 
 @theme {
@@ -327,13 +341,18 @@ Expected: FAIL because no Hugo layout files exist yet
 }
 
 body {
-  font-family: 'Lato', sans-serif;
+  font-family: "Lato", sans-serif;
   background: var(--color-bg);
   color: var(--color-text);
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'PT Sans', sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "PT Sans", sans-serif;
 }
 ```
 
@@ -416,6 +435,7 @@ git commit -m "feat: add shared theme shell"
 ### Task 4: Add Home, List, Archive, And Post Card Templates
 
 **Files:**
+
 - Create: `layouts/home.html`
 - Create: `layouts/list.html`
 - Create: `layouts/archives.html`
@@ -425,23 +445,23 @@ git commit -m "feat: add shared theme shell"
 - [ ] **Step 1: Write the failing integration test**
 
 ```js
-import { test, expect } from '@playwright/test'
+import { test, expect } from "@playwright/test";
 
-test('home page shows intro and recent posts', async ({ page }) => {
-  await page.goto('/')
+test("home page shows intro and recent posts", async ({ page }) => {
+  await page.goto("/");
 
-  await expect(page.getByText("Mark's Notes")).toBeVisible()
-  await expect(page.getByRole('link', { name: 'First Post' })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Second Post' })).toBeVisible()
-})
+  await expect(page.getByText("Mark's Notes")).toBeVisible();
+  await expect(page.getByRole("link", { name: "First Post" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Second Post" })).toBeVisible();
+});
 
-test('archive page lists all posts', async ({ page }) => {
-  await page.goto('/archives/')
+test("archive page lists all posts", async ({ page }) => {
+  await page.goto("/archives/");
 
-  await expect(page.getByRole('heading', { name: 'Archives' })).toBeVisible()
-  await expect(page.getByText('First Post')).toBeVisible()
-  await expect(page.getByText('Second Post')).toBeVisible()
-})
+  await expect(page.getByRole("heading", { name: "Archives" })).toBeVisible();
+  await expect(page.getByText("First Post")).toBeVisible();
+  await expect(page.getByText("Second Post")).toBeVisible();
+});
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -507,7 +527,7 @@ Expected: FAIL because the page templates do not exist
 <!-- layouts/_partials/post-meta.html -->
 <div class="flex flex-wrap gap-3 text-sm text-slate-500">
   <span>{{ .Date | time.Format ":date_medium" }}</span>
-  <span>{{ .ReadingTime }} min read</span>
+  <span>{{ .ReadingTime }} min</span>
   {{ with .Params.tags }}<span>{{ delimit . ", " }}</span>{{ end }}
   {{ with .Params.series }}<span>{{ delimit . ", " }}</span>{{ end }}
 </div>
@@ -528,6 +548,7 @@ git commit -m "feat: add home and listing templates"
 ### Task 5: Add Single Post Layout With TOC And Reading Progress Helpers
 
 **Files:**
+
 - Create: `assets/js/lib/toc.js`
 - Create: `assets/js/lib/progress.js`
 - Create: `layouts/single.html`
@@ -539,32 +560,39 @@ git commit -m "feat: add home and listing templates"
 
 ```js
 // tests/unit/toc.test.js
-import { describe, expect, it } from 'vitest'
-import { pickActiveHeading } from '../../assets/js/lib/toc.js'
+import { describe, expect, it } from "vitest";
+import { pickActiveHeading } from "../../assets/js/lib/toc.js";
 
-describe('pickActiveHeading', () => {
-  it('returns the last heading above the viewport threshold', () => {
+describe("pickActiveHeading", () => {
+  it("returns the last heading above the viewport threshold", () => {
     const headings = [
-      { id: 'intro', top: -10 },
-      { id: 'details', top: 120 },
-      { id: 'summary', top: 400 }
-    ]
+      { id: "intro", top: -10 },
+      { id: "details", top: 120 },
+      { id: "summary", top: 400 },
+    ];
 
-    expect(pickActiveHeading(headings, 160)).toBe('details')
-  })
-})
+    expect(pickActiveHeading(headings, 160)).toBe("details");
+  });
+});
 ```
 
 ```js
 // tests/unit/progress.test.js
-import { describe, expect, it } from 'vitest'
-import { getReadingProgress } from '../../assets/js/lib/progress.js'
+import { describe, expect, it } from "vitest";
+import { getReadingProgress } from "../../assets/js/lib/progress.js";
 
-describe('getReadingProgress', () => {
-  it('returns a bounded percentage', () => {
-    expect(getReadingProgress({ scrollTop: 250, contentTop: 100, contentHeight: 800, viewportHeight: 400 })).toBe(30)
-  })
-})
+describe("getReadingProgress", () => {
+  it("returns a bounded percentage", () => {
+    expect(
+      getReadingProgress({
+        scrollTop: 250,
+        contentTop: 100,
+        contentHeight: 800,
+        viewportHeight: 400,
+      }),
+    ).toBe(30);
+  });
+});
 ```
 
 - [ ] **Step 2: Run tests to verify they fail**
@@ -577,17 +605,22 @@ Expected: FAIL because helper modules do not exist
 ```js
 // assets/js/lib/toc.js
 export function pickActiveHeading(headings, threshold = 160) {
-  const visible = headings.filter((heading) => heading.top <= threshold)
-  return visible.length ? visible.at(-1).id : headings[0]?.id ?? null
+  const visible = headings.filter((heading) => heading.top <= threshold);
+  return visible.length ? visible.at(-1).id : (headings[0]?.id ?? null);
 }
 ```
 
 ```js
 // assets/js/lib/progress.js
-export function getReadingProgress({ scrollTop, contentTop, contentHeight, viewportHeight }) {
-  const total = Math.max(contentHeight - viewportHeight, 1)
-  const raw = ((scrollTop - contentTop) / total) * 100
-  return Math.max(0, Math.min(100, Math.round(raw)))
+export function getReadingProgress({
+  scrollTop,
+  contentTop,
+  contentHeight,
+  viewportHeight,
+}) {
+  const total = Math.max(contentHeight - viewportHeight, 1);
+  const raw = ((scrollTop - contentTop) / total) * 100;
+  return Math.max(0, Math.min(100, Math.round(raw)));
 }
 ```
 
@@ -636,6 +669,7 @@ git commit -m "feat: add post layout and reading helpers"
 ### Task 6: Add Search Index And Search Helper Logic
 
 **Files:**
+
 - Create: `layouts/index.json`
 - Create: `assets/js/lib/search.js`
 - Test: `tests/unit/search.test.js`
@@ -644,26 +678,42 @@ git commit -m "feat: add post layout and reading helpers"
 
 ```js
 // tests/unit/search.test.js
-import { describe, expect, it } from 'vitest'
-import { filterSearchRecords, collectMatches } from '../../assets/js/lib/search.js'
+import { describe, expect, it } from "vitest";
+import {
+  filterSearchRecords,
+  collectMatches,
+} from "../../assets/js/lib/search.js";
 
-describe('filterSearchRecords', () => {
-  it('returns matching posts by title, summary, and content', () => {
+describe("filterSearchRecords", () => {
+  it("returns matching posts by title, summary, and content", () => {
     const records = [
-      { title: 'First Post', summary: 'Alpha', content: 'Search should find this paragraph.', permalink: '/posts/first-post/' },
-      { title: 'Second Post', summary: 'Beta', content: 'Nothing relevant here.', permalink: '/posts/second-post/' }
-    ]
+      {
+        title: "First Post",
+        summary: "Alpha",
+        content: "Search should find this paragraph.",
+        permalink: "/posts/first-post/",
+      },
+      {
+        title: "Second Post",
+        summary: "Beta",
+        content: "Nothing relevant here.",
+        permalink: "/posts/second-post/",
+      },
+    ];
 
-    expect(filterSearchRecords(records, 'search')).toHaveLength(1)
-  })
-})
+    expect(filterSearchRecords(records, "search")).toHaveLength(1);
+  });
+});
 
-describe('collectMatches', () => {
-  it('returns ordered text matches for highlighting', () => {
-    const matches = collectMatches('Search should find this paragraph.', 'find')
-    expect(matches[0]).toEqual({ start: 14, end: 18 })
-  })
-})
+describe("collectMatches", () => {
+  it("returns ordered text matches for highlighting", () => {
+    const matches = collectMatches(
+      "Search should find this paragraph.",
+      "find",
+    );
+    expect(matches[0]).toEqual({ start: 14, end: 18 });
+  });
+});
 ```
 
 - [ ] **Step 2: Run tests to verify they fail**
@@ -676,27 +726,34 @@ Expected: FAIL because `assets/js/lib/search.js` does not exist
 ```js
 // assets/js/lib/search.js
 export function filterSearchRecords(records, query) {
-  const needle = query.trim().toLowerCase()
-  if (!needle) return []
+  const needle = query.trim().toLowerCase();
+  if (!needle) return [];
 
   return records.filter((record) => {
-    const haystack = [record.title, record.summary, record.content, ...(record.headings || [])].join(' ').toLowerCase()
-    return haystack.includes(needle)
-  })
+    const haystack = [
+      record.title,
+      record.summary,
+      record.content,
+      ...(record.headings || []),
+    ]
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(needle);
+  });
 }
 
 export function collectMatches(text, query) {
-  const source = text.toLowerCase()
-  const needle = query.trim().toLowerCase()
-  const matches = []
-  let index = source.indexOf(needle)
+  const source = text.toLowerCase();
+  const needle = query.trim().toLowerCase();
+  const matches = [];
+  let index = source.indexOf(needle);
 
   while (needle && index !== -1) {
-    matches.push({ start: index, end: index + needle.length })
-    index = source.indexOf(needle, index + needle.length)
+    matches.push({ start: index, end: index + needle.length });
+    index = source.indexOf(needle, index + needle.length);
   }
 
-  return matches
+  return matches;
 }
 ```
 
@@ -732,6 +789,7 @@ git commit -m "feat: add local search index and helpers"
 ### Task 7: Wire Alpine Behavior For Search, TOC Tracking, Progress, Theme, And Back-To-Top
 
 **Files:**
+
 - Create: `assets/js/lib/theme.js`
 - Create: `assets/js/app.js`
 - Modify: `layouts/baseof.html`
@@ -744,33 +802,35 @@ git commit -m "feat: add local search index and helpers"
 
 ```js
 // tests/unit/theme.test.js
-import { describe, expect, it } from 'vitest'
-import { resolveTheme } from '../../assets/js/lib/theme.js'
+import { describe, expect, it } from "vitest";
+import { resolveTheme } from "../../assets/js/lib/theme.js";
 
-describe('resolveTheme', () => {
-  it('falls back to the browser preference', () => {
-    expect(resolveTheme({ storedTheme: null, systemPrefersDark: true })).toBe('dark')
-  })
-})
+describe("resolveTheme", () => {
+  it("falls back to the browser preference", () => {
+    expect(resolveTheme({ storedTheme: null, systemPrefersDark: true })).toBe(
+      "dark",
+    );
+  });
+});
 ```
 
 ```js
-import { test, expect } from '@playwright/test'
+import { test, expect } from "@playwright/test";
 
-test('search opens and shows matching posts', async ({ page }) => {
-  await page.goto('/')
-  await page.getByRole('button', { name: 'Search' }).click()
-  await page.getByPlaceholder('Search posts').fill('paragraph')
+test("search opens and shows matching posts", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("paragraph");
 
-  await expect(page.getByRole('link', { name: 'First Post' })).toBeVisible()
-})
+  await expect(page.getByRole("link", { name: "First Post" })).toBeVisible();
+});
 
-test('back to top returns to the top of the page', async ({ page }) => {
-  await page.goto('/posts/first-post/')
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
-  await page.getByRole('button', { name: 'Back to top' }).click()
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(20)
-})
+test("back to top returns to the top of the page", async ({ page }) => {
+  await page.goto("/posts/first-post/");
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.getByRole("button", { name: "Back to top" }).click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(20);
+});
 ```
 
 - [ ] **Step 2: Run tests to verify they fail**
@@ -783,42 +843,45 @@ Expected: FAIL because the behavior layer is not wired yet
 ```js
 // assets/js/lib/theme.js
 export function resolveTheme({ storedTheme, systemPrefersDark }) {
-  if (storedTheme === 'dark' || storedTheme === 'light') return storedTheme
-  return systemPrefersDark ? 'dark' : 'light'
+  if (storedTheme === "dark" || storedTheme === "light") return storedTheme;
+  return systemPrefersDark ? "dark" : "light";
 }
 ```
 
 ```js
 // assets/js/app.js
-import Alpine from 'alpinejs'
-import { filterSearchRecords } from './lib/search.js'
-import { resolveTheme } from './lib/theme.js'
+import Alpine from "alpinejs";
+import { filterSearchRecords } from "./lib/search.js";
+import { resolveTheme } from "./lib/theme.js";
 
-window.Alpine = Alpine
+window.Alpine = Alpine;
 
-Alpine.data('siteUi', () => ({
-  query: '',
+Alpine.data("siteUi", () => ({
+  query: "",
   records: [],
   searchOpen: false,
   async openSearch() {
-    this.searchOpen = true
+    this.searchOpen = true;
     if (!this.records.length) {
-      this.records = await fetch('/index.json').then((response) => response.json())
+      this.records = await fetch("/index.json").then((response) =>
+        response.json(),
+      );
     }
   },
   get results() {
-    return filterSearchRecords(this.records, this.query)
+    return filterSearchRecords(this.records, this.query);
   },
   backToTop() {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    window.scrollTo({ top: 0, behavior: "smooth" });
   },
   theme: resolveTheme({
     storedTheme: null,
-    systemPrefersDark: window.matchMedia('(prefers-color-scheme: dark)').matches
-  })
-}))
+    systemPrefersDark: window.matchMedia("(prefers-color-scheme: dark)")
+      .matches,
+  }),
+}));
 
-Alpine.start()
+Alpine.start();
 ```
 
 ```go-html-template
@@ -882,6 +945,7 @@ git commit -m "feat: wire alpine theme interactions"
 ### Task 8: Add SEO Partial, Final Verification, And Coverage For Missing Metadata
 
 **Files:**
+
 - Create: `layouts/_partials/seo.html`
 - Modify: `layouts/_partials/head.html`
 - Modify: `tests/e2e/theme.spec.js`
@@ -889,21 +953,29 @@ git commit -m "feat: wire alpine theme interactions"
 - [ ] **Step 1: Write the failing integration test**
 
 ```js
-import { test, expect } from '@playwright/test'
+import { test, expect } from "@playwright/test";
 
-test('single post exposes canonical and social metadata', async ({ page }) => {
-  await page.goto('/posts/first-post/')
+test("single post exposes canonical and social metadata", async ({ page }) => {
+  await page.goto("/posts/first-post/");
 
-  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/posts\/first-post\/$/)
-  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', 'First Post')
-})
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    "href",
+    /\/posts\/first-post\/$/,
+  );
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+    "content",
+    "First Post",
+  );
+});
 
-test('post without optional metadata still renders', async ({ page }) => {
-  await page.goto('/posts/second-post/')
+test("post without optional metadata still renders", async ({ page }) => {
+  await page.goto("/posts/second-post/");
 
-  await expect(page.getByRole('heading', { name: 'Second Post' })).toBeVisible()
-  await expect(page.locator('article img')).toHaveCount(0)
-})
+  await expect(
+    page.getByRole("heading", { name: "Second Post" }),
+  ).toBeVisible();
+  await expect(page.locator("article img")).toHaveCount(0);
+});
 ```
 
 - [ ] **Step 2: Run test to verify it fails**

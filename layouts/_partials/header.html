@@ -5,7 +5,10 @@
       <span>{{ site.Title }}</span>
     </a>
     <div class="flex items-center gap-3">
-      <button type="button" aria-label="Search" @click="openSearch" class="rounded border border-purple-300 px-3 py-2">Search</button>
+      <button type="button" aria-label="Search" @click="openSearch" class="inline-flex items-center gap-2 rounded border border-purple-300 px-3 py-2">
+        {{ partial "icon.html" (dict "name" "search" "class" "h-4 w-4") }}
+        <span class="sr-only">Search</span>
+      </button>
       <div x-cloak x-show="searchOpen" @click.self="closeSearch" @keydown.escape.window="closeSearch" class="fixed inset-0 z-50 bg-black/40 p-6">
         <div class="mx-auto max-w-2xl rounded-2xl bg-white p-4">
           <div class="flex items-center gap-3">

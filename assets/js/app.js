@@ -10,6 +10,8 @@ Alpine.data('siteUi', (searchUrl) => ({
   query: '',
   records: [],
   searchOpen: false,
+  showBackToTop: false,
+  dockStyle: '',
   theme: resolveTheme({
     systemPrefersDark: window.matchMedia('(prefers-color-scheme: dark)').matches
   }),
@@ -66,14 +68,42 @@ Alpine.data('siteUi', (searchUrl) => ({
       progressBar.style.width = `${progress}%`
     }
 
+    const updateBackToTopVisibility = () => {
+      const isSinglePost = Boolean(document.getElementById('post-content'))
+      this.showBackToTop = isSinglePost && window.scrollY > 320
+    }
+
+    const updateDockOffset = () => {
+      const footer = document.querySelector('footer[role="contentinfo"]')
+      const baseOffset = 24
+      const rightInset = 'max(1rem,calc((100vw - 72rem) / 2 + 1.5rem))'
+
+      if (!footer) {
+        this.dockStyle = `right:${rightInset};bottom:${baseOffset}px;`
+        return
+      }
+
+      const footerRect = footer.getBoundingClientRect()
+      const overlap = Math.max(0, window.innerHeight - footerRect.top)
+      const bottomOffset = baseOffset + overlap
+
+      this.dockStyle = `right:${rightInset};bottom:${bottomOffset}px;`
+    }
+
     syncTheme(colorSchemeQuery)
     colorSchemeQuery.addEventListener('change', syncTheme)
     updateReadingProgress()
     updateActiveTocEntry()
+    updateBackToTopVisibility()
+    updateDockOffset()
     window.addEventListener('scroll', updateReadingProgress, { passive: true })
     window.addEventListener('resize', updateReadingProgress)
     window.addEventListener('scroll', updateActiveTocEntry, { passive: true })
     window.addEventListener('resize', updateActiveTocEntry)
+    window.addEventListener('scroll', updateBackToTopVisibility, { passive: true })
+    window.addEventListener('resize', updateBackToTopVisibility)
+    window.addEventListener('scroll', updateDockOffset, { passive: true })
+    window.addEventListener('resize', updateDockOffset)
   },
   async openSearch() {
     this.searchOpen = true

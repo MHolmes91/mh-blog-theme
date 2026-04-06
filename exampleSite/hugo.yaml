@@ -27,3 +27,15 @@ params:
     - name: GitHub
       url: https://github.com/example
       icon: github
+    - name: Email
+      url: mailto:hello@example.org
+      icon: email
+    - name: LinkedIn
+      url: https://www.linkedin.com/in/example
+      icon: linkedin
+    - name: Bluesky
+      url: https://bsky.app/profile/example.org
+      icon: bluesky
+    - name: StackOverflow
+      url: https://stackoverflow.com/users/123456/example
+      icon: stackoverflow

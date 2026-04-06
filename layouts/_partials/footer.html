@@ -1,12 +1,14 @@
-{{ $github := dict }}
-{{ with site.Params.socials }}
-  {{ with index (where . "name" "GitHub") 0 }}
-    {{ $github = . }}
-  {{ end }}
-{{ end }}
 <footer role="contentinfo" class="border-t border-purple-200 px-6 py-6 text-sm">
-  <div class="mx-auto flex max-w-6xl items-center justify-between">
-    {{ with $github }}<a href="{{ .url }}">{{ .name }}</a>{{ end }}
-    <span>Copyright {{ now.Year }}</span>
+  <div class="mx-auto flex max-w-6xl items-center justify-between gap-4">
+    <div class="flex flex-wrap items-center gap-3">
+      {{ range site.Params.socials }}
+        {{ $iconName := lower (replace .name " " "") }}
+        <a href="{{ .url }}" aria-label="{{ .name }}" class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-purple-200 text-purple-700 transition hover:bg-purple-50" {{ if hasPrefix .url "http" }}target="_blank" rel="noreferrer"{{ end }}>
+          {{ partial "icon.html" (dict "name" $iconName "class" "h-4 w-4") }}
+          <span class="sr-only">{{ .name }}</span>
+        </a>
+      {{ end }}
+    </div>
+    <span class="inline-flex items-center gap-1.5 text-slate-500">© {{ now.Year }}</span>
   </div>
 </footer>
