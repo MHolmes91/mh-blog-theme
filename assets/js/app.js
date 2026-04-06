@@ -76,7 +76,7 @@ Alpine.data('siteUi', (searchUrl) => ({
     const updateDockOffset = () => {
       const footer = document.querySelector('footer[role="contentinfo"]')
       const baseOffset = 24
-      const rightInset = 'max(1rem,calc((100vw - 72rem) / 2 + 1.5rem))'
+      const rightInset = 'max(1.5rem,calc((100vw - 72rem) / 2 + 1.5rem))'
 
       if (!footer) {
         this.dockStyle = `right:${rightInset};bottom:${baseOffset}px;`
