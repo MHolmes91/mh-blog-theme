@@ -34,4 +34,26 @@ describe('example site', () => {
     const html = fs.readFileSync(path.join(siteDir, 'public', 'index.html'), 'utf8')
     expect(html).not.toContain('>GitHub<')
   })
+
+  it('renders the home archives link under the configured base path', () => {
+    const siteDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mh-theme-site-'))
+    const themeDir = fileURLToPath(new URL('../../', import.meta.url))
+    const themesDir = path.join(siteDir, 'themes')
+
+    fs.writeFileSync(path.join(siteDir, 'hugo.yaml'), 'baseURL: https://example.org/blog/\nlanguageCode: en-us\ntitle: Minimal Site\ntheme: mh-blog-theme\nparams:\n  intro:\n    title: Home\n    body: Subpath fixture.\n')
+    fs.mkdirSync(path.join(siteDir, 'content', 'posts'), { recursive: true })
+    fs.mkdirSync(themesDir, { recursive: true })
+    fs.writeFileSync(path.join(siteDir, 'content', '_index.md'), '---\ntitle: Home\n---\n')
+    fs.writeFileSync(path.join(siteDir, 'content', 'posts', 'post.md'), '---\ntitle: Post\ndate: 2026-04-01\nsummary: Summary\n---\n')
+    fs.symlinkSync(path.join(themeDir, 'node_modules'), path.join(siteDir, 'node_modules'))
+    fs.symlinkSync(themeDir, path.join(themesDir, 'mh-blog-theme'))
+
+    execFileSync('hugo', ['--source', siteDir, '--themesDir', themesDir], {
+      cwd: themeDir,
+      stdio: 'pipe'
+    })
+
+    const html = fs.readFileSync(path.join(siteDir, 'public', 'index.html'), 'utf8')
+    expect(html).toContain('href="/blog/archives/"')
+  })
 })

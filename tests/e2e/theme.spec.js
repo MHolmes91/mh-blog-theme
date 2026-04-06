@@ -19,8 +19,8 @@ test("home page shows intro and recent posts", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByText("Mark's Notes")).toBeVisible();
-  await expect(page.getByRole("link", { name: "First Post" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Second Post" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Series Part 4" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "TOC Stress Post" })).toBeVisible();
 });
 
 test("home page shows only the five most recent posts and a view all posts link", async ({
@@ -30,14 +30,29 @@ test("home page shows only the five most recent posts and a view all posts link"
 
   await expect(page.locator("main article")).toHaveCount(5);
   await expect(
-    page.getByRole("link", { name: /View All posts/i }),
+    page.getByRole("link", { name: "Series Part 4" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: /View All posts/i }),
-  ).toHaveAttribute("href", "/archives/");
-  await expect(
-    page.getByRole("link", { name: /View All posts/i }).locator("svg"),
+    page.getByRole("link", { name: "TOC Stress Post" }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Built-In Shortcodes Post" }),
+  ).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "First Post" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Second Post" })).toHaveCount(0);
+
+  const viewAllLink = page.getByRole("link", { name: /View All posts/i });
+
+  await expect(
+    viewAllLink,
+  ).toBeVisible();
+  await expect(viewAllLink).toHaveAttribute("href", "/archives/");
+  await expect(viewAllLink.locator("svg")).toBeVisible();
+
+  await viewAllLink.click();
+
+  await expect(page).toHaveURL(/\/archives\/$/);
+  await expect(page.getByRole("heading", { name: "Archives" })).toBeVisible();
 });
 
 test("home page separates intro and recent posts with structural dividers", async ({
@@ -45,7 +60,7 @@ test("home page separates intro and recent posts with structural dividers", asyn
 }) => {
   await page.goto("/");
 
-  await expect(page.locator("main hr")).toHaveCount(7);
+  await expect(page.locator("main hr")).toHaveCount(4);
   await expect(page.getByText("Mark's Notes")).toBeVisible();
   await expect(
     page.getByRole("link", { name: "TOC Stress Post" }),

@@ -10,7 +10,7 @@
         {{ partial "post-row.html" $page }}
       {{ end }}
       <div class="mt-6">
-        <a href="/archives/" class="inline-flex items-center gap-2 text-sm font-semibold text-purple-700">
+        <a href="{{ "archives/" | relLangURL }}" class="inline-flex items-center gap-2 text-sm font-semibold text-purple-700">
           <span>View All posts</span>
           {{ partial "icon.html" (dict "name" "chevron-right" "class" "h-4 w-4") }}
         </a>
