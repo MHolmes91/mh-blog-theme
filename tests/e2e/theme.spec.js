@@ -155,22 +155,36 @@ test("archive page includes new fixture posts", async ({ page }) => {
   await expect(page.getByText("Series Part 4")).toBeVisible();
 });
 
-test("all posts page orders series links before tag chips", async ({ page }) => {
+test("all posts page shows series links first and tag chips second", async ({
+  page,
+}) => {
   await page.goto("/archives/");
 
-  const seriesHeading = page.getByRole("heading", {
+  const sidebar = page.locator("main > section > div").first();
+  const seriesHeading = sidebar.getByRole("heading", {
     name: "Series",
     exact: true,
   });
-  const tagsHeading = page.getByRole("heading", { name: "Tags", exact: true });
+  const tagsHeading = sidebar.getByRole("heading", { name: "Tags", exact: true });
+  const seriesLink = seriesHeading.locator(
+    'xpath=ancestor::section[1]/div[1]/a[normalize-space()="fixture-series"]',
+  );
+  const tagChip = tagsHeading.locator(
+    'xpath=ancestor::section[1]/div[1]/a[normalize-space()="fixture"]',
+  );
 
   await expect(seriesHeading).toBeVisible();
   await expect(tagsHeading).toBeVisible();
+  await expect(seriesLink).toBeVisible();
+  await expect(tagChip).toBeVisible();
+  await expect(tagChip).toHaveClass(/rounded-full/);
+  await expect(tagChip).toHaveClass(/border-purple-200/);
 
-  const sidebarText = await page.locator("main").textContent();
-  expect(sidebarText?.indexOf("Series")).toBeLessThan(
-    sidebarText?.indexOf("Tags") ?? Infinity,
+  const headingOrder = await sidebar.locator("h2").evaluateAll((headings) =>
+    headings.map((heading) => heading.textContent?.trim()),
   );
+
+  expect(headingOrder).toEqual(["Series", "Tags"]);
 });
 
 test("archive page uses divider-based row summaries", async ({ page }) => {
