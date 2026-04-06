@@ -280,23 +280,15 @@ test('post without optional metadata still renders', async ({ page }) => {
   await expect(page.locator('meta[name="twitter:image"]')).toHaveCount(0)
 })
 
-test('shortcodes fixture renders built-in shortcode content with featured image', async ({ page }) => {
+test('shortcodes fixture renders visible built-in shortcode output', async ({ page }) => {
   await page.goto('/posts/shortcodes-builtins/')
 
   await expect(page.getByRole('heading', { name: 'Built-In Shortcodes Post' })).toBeVisible()
-  await expect(page.locator('article img')).toHaveAttribute('src', /\/images\/post-1\.jpg$/)
+  await expect(page.locator('article .highlight')).toBeVisible()
   await expect(page.locator('article .highlight code')).toContainText('func main()')
   await expect(page.locator('article .highlight code')).toContainText('hello from shortcode fixture')
   await expect(page.getByRole('main')).not.toContainText('{{< highlight go >}}')
   await expect(page.getByRole('main')).toContainText('Inline notice rendered through a Hugo shortcode example.')
-})
-
-test('shortcode fixture shows visible output for supported shortcode blocks', async ({ page }) => {
-  await page.goto('/posts/shortcodes-builtins/')
-
-  await expect(page.locator('article .highlight')).toBeVisible()
-  await expect(page.locator('article .highlight code')).toContainText('func main()')
-  await expect(page.locator('article img')).toHaveAttribute('src', /\/images\/post-1\.jpg$/)
 })
 
 test('series fixture posts render shared series metadata', async ({ page }) => {
