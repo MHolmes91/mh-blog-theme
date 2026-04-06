@@ -2,7 +2,7 @@
 title: TOC Stress Post
 date: 2026-04-06
 summary: A long post for TOC rendering and scroll behavior.
-tags: [toc, longform, testing]
+tags: [toc, longform, testing, fixture]
 ---
 
 ## Large Section One

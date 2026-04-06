@@ -2,7 +2,7 @@
 title: Built-In Shortcodes Post
 date: 2026-04-05
 summary: A fixture covering supported built-in Hugo shortcodes.
-tags: [shortcodes, hugo, testing]
+tags: [shortcodes, hugo, testing, fixture]
 featuredImage: /images/post-1.jpg
 ---
 

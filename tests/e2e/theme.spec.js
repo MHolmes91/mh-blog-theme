@@ -48,6 +48,9 @@ test('posts list page shows post summaries', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Posts' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'First Post' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Second Post' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'TOC Stress Post' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Built-In Shortcodes Post' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Series Part 4' })).toBeVisible()
   await expect(page.getByText('A searchable post with headings.')).toBeVisible()
 })
 
@@ -63,6 +66,8 @@ test('taxonomy index pages do not show post read time metadata', async ({ page }
 test('tag term page includes multiple fixture types', async ({ page }) => {
   await page.goto('/tags/fixture/')
 
+  await expect(page.getByText('TOC Stress Post')).toBeVisible()
+  await expect(page.getByText('Built-In Shortcodes Post')).toBeVisible()
   await expect(page.getByText('Series Part 1')).toBeVisible()
   await expect(page.getByText('Series Part 2')).toBeVisible()
   await expect(page.getByText('Series Part 3')).toBeVisible()
