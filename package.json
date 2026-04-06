@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "dev": "hugo server --source exampleSite --themesDir ..",
-    "build": "hugo --source exampleSite --themesDir ..",
+    "dev": "node ./scripts/hugo.mjs server",
+    "build": "node ./scripts/hugo.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test"
   },
