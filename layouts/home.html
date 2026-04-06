@@ -5,9 +5,17 @@
       <p class="mt-3 text-base leading-7">{{ site.Params.intro.body }}</p>
     </div>
     <div>
-      {{ range $index, $page := first 10 (where site.RegularPages.ByDate.Reverse "Section" "posts") }}
+      {{ range $index, $page := first 5 (where site.RegularPages.ByDate.Reverse "Section" "posts") }}
         {{ if gt $index 0 }}<hr class="border-purple-200">{{ end }}
         {{ partial "post-row.html" $page }}
+      {{ end }}
+      {{ with site.GetPage "/archives" }}
+        <div class="mt-6">
+          <a href="{{ .RelPermalink }}" class="inline-flex items-center gap-2 text-sm font-semibold text-purple-700">
+            <span>View All posts</span>
+            {{ partial "icon.html" (dict "name" "chevron-right" "class" "h-4 w-4") }}
+          </a>
+        </div>
       {{ end }}
     </div>
   </section>

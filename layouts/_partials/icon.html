@@ -15,6 +15,10 @@
 <svg class="{{ $class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
   <path stroke-linecap="round" stroke-linejoin="round" d="m18 15-6-6-6 6" />
 </svg>
+{{- else if eq $name "chevron-right" -}}
+<svg class="{{ $class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6" />
+</svg>
 {{- else if eq $name "email" -}}
 <svg class="{{ $class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
   <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 7.5v9A2.25 2.25 0 0 1 19.5 18.75h-15A2.25 2.25 0 0 1 2.25 16.5v-9" />

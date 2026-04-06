@@ -1,11 +1,59 @@
 {{ define "main" }}
-  <section class="mx-auto max-w-4xl px-6 py-10">
-    <h1 class="text-3xl font-extrabold tracking-tight">{{ .Title }}</h1>
-    <div class="mt-6">
-      {{ range $index, $page := site.RegularPages.ByDate.Reverse }}
-        {{ if gt $index 0 }}<hr class="border-purple-200">{{ end }}
-        {{ partial "post-row.html" $page }}
+  {{ $archivePages := where site.RegularPages.ByDate.Reverse "Section" "posts" }}
+  {{ $seriesTerms := slice }}
+  {{ with site.Taxonomies.series }}
+    {{ range .ByCount }}
+      {{ $postPages := where .Pages "Section" "posts" }}
+      {{ if gt (len $postPages) 0 }}
+        {{ $seriesTerms = $seriesTerms | append (dict "Count" (len $postPages) "Page" .Page "Term" .Term) }}
       {{ end }}
+    {{ end }}
+  {{ end }}
+  {{ $seriesTerms = sort $seriesTerms "Count" "desc" }}
+  {{ $tagTerms := slice }}
+  {{ with site.Taxonomies.tags }}
+    {{ range .ByCount }}
+      {{ $postPages := where .Pages "Section" "posts" }}
+      {{ if gt (len $postPages) 0 }}
+        {{ $tagTerms = $tagTerms | append (dict "Count" (len $postPages) "Page" .Page "Term" .Term) }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+  {{ $tagTerms = sort $tagTerms "Count" "desc" }}
+  {{ $hasSidebar := or (gt (len $seriesTerms) 0) (gt (len $tagTerms) 0) }}
+  <section class="mx-auto grid max-w-6xl gap-8 px-6 py-10 {{ if $hasSidebar }}lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-10{{ end }}">
+    {{ if $hasSidebar }}
+      <div class="space-y-8 lg:border-r lg:border-purple-200 lg:pr-8">
+        {{ if gt (len $seriesTerms) 0 }}
+          <section>
+            <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Series</h2>
+            <div class="mt-4 space-y-3">
+              {{ range $seriesTerms }}
+                <a href="{{ .Page.RelPermalink }}" class="block text-sm text-purple-700">{{ .Term }}</a>
+              {{ end }}
+            </div>
+          </section>
+        {{ end }}
+        {{ if gt (len $tagTerms) 0 }}
+          <section>
+            <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Tags</h2>
+            <div class="mt-4 flex flex-wrap gap-2">
+              {{ range $tagTerms }}
+                <a href="{{ .Page.RelPermalink }}" class="rounded-full border border-purple-200 px-3 py-1 text-xs font-medium text-purple-700">{{ .Term }}</a>
+              {{ end }}
+            </div>
+          </section>
+        {{ end }}
+      </div>
+    {{ end }}
+    <div>
+      <h1 class="text-3xl font-extrabold tracking-tight">{{ .Title }}</h1>
+      <div class="mt-6">
+        {{ range $index, $page := $archivePages }}
+          {{ if gt $index 0 }}<hr class="border-purple-200">{{ end }}
+          {{ partial "post-row.html" $page }}
+        {{ end }}
+      </div>
     </div>
   </section>
 {{ end }}
