@@ -222,3 +222,19 @@ test('shortcodes fixture renders built-in shortcode content with featured image'
   await expect(page.getByRole('main')).not.toContainText('{{< highlight go >}}')
   await expect(page.getByRole('main')).toContainText('Inline notice rendered through a Hugo shortcode example.')
 })
+
+test('series fixture posts render shared series metadata', async ({ page }) => {
+  await page.goto('/posts/series-part-1/')
+
+  await expect(page.getByRole('heading', { name: 'Series Part 1' })).toBeVisible()
+  await expect(page.getByRole('main')).toContainText('fixture-series')
+})
+
+test('series term page lists all four parts', async ({ page }) => {
+  await page.goto('/series/fixture-series/')
+
+  await expect(page.getByText('Series Part 1')).toBeVisible()
+  await expect(page.getByText('Series Part 2')).toBeVisible()
+  await expect(page.getByText('Series Part 3')).toBeVisible()
+  await expect(page.getByText('Series Part 4')).toBeVisible()
+})
