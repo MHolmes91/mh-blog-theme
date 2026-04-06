@@ -701,16 +701,49 @@ test("shortcode fixture renders all supported embedded shortcode outputs visibly
 }) => {
   await page.goto("/posts/shortcodes-builtins/");
 
+  const details = page.locator("article details");
+
+  await expect(details).toHaveAttribute("open", "");
+  await expect(details.locator("summary")).toContainText(
+    "Open the embedded details block",
+  );
+  await expect(details).toContainText(
+    "This copy stays visible because the details shortcode starts expanded.",
+  );
+
+  const figure = page.locator("article figure").filter({
+    hasText: "Fixture image rendered by the figure shortcode.",
+  });
+
+  await expect(figure.locator('img[alt="Fixture cover image"]')).toBeVisible();
+  await expect(figure.locator("figcaption")).toContainText(
+    "Fixture image rendered by the figure shortcode.",
+  );
+
+  await expect(page.getByRole("main")).toContainText(
+    "Example site for MH Blog Theme",
+  );
   await expect(
-    page.locator('iframe[title*="YouTube"], iframe[src*="youtube.com"]'),
+    page.getByRole("link", { name: "First Post via ref shortcode" }),
+  ).toHaveAttribute("href", /\/posts\/first-post\/$/);
+  await expect(
+    page.getByRole("link", { name: "Second Post via relref shortcode" }),
+  ).toHaveAttribute("href", "/posts/second-post/");
+
+  await expect(
+    page.locator('img[alt="QR code for the shortcode fixture post"]'),
+  ).toBeVisible();
+  await expect(
+    page.locator('iframe[title="Fixture YouTube video"][src*="youtube.com"]'),
   ).toHaveCount(1);
   await expect(
-    page.locator(
-      'blockquote.twitter-tweet, iframe[src*="twitter"], iframe[src*="x.com"]',
-    ),
+    page.locator('blockquote.twitter-tweet a[href*="/jack/status/20"]'),
+  ).toHaveCount(1);
+  await expect(page.locator('svg[id^="mermaid-"]')).toBeVisible();
+  await expect(
+    page.locator('iframe[title="Fixture Vimeo video"][src*="player.vimeo.com"]'),
   ).toHaveCount(1);
   await expect(page.locator('iframe[src*="instagram.com"]')).toHaveCount(1);
-  await expect(page.locator('svg[id^="mermaid-"]')).toBeVisible();
 });
 
 test("series fixture posts render shared series metadata", async ({ page }) => {
