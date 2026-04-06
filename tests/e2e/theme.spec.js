@@ -47,6 +47,19 @@ test('browser dark preference controls theme even with a conflicting stored valu
   await context.close()
 })
 
+test('theme preference updates the page palette while the page is open', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' })
+  await page.goto('/')
+
+  await expect(page.locator('body')).toHaveAttribute('data-theme', 'light')
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(250, 247, 255)')
+
+  await page.emulateMedia({ colorScheme: 'dark' })
+
+  await expect(page.locator('body')).toHaveAttribute('data-theme', 'dark')
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(17, 24, 39)')
+})
+
 test('archive page lists all posts', async ({ page }) => {
   await page.goto('/archives/')
 
@@ -89,6 +102,13 @@ test('posts list page uses divider-based row summaries', async ({ page }) => {
   await expect(page.locator('main article')).toHaveCount(8)
   await expect(page.locator('main hr')).toHaveCount(7)
   await expect(page.locator('main article').first()).not.toHaveClass(/rounded-2xl/)
+})
+
+test('posts list page reuses the shared browsing surface styling', async ({ page }) => {
+  await page.goto('/posts/')
+
+  await expect(page.getByRole('heading', { name: 'Posts' })).toHaveClass(/font-extrabold/)
+  await expect(page.locator('main hr').first()).toHaveClass(/border-purple-200/)
 })
 
 test('taxonomy index pages do not show post read time metadata', async ({ page }) => {

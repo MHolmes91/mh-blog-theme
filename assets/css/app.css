@@ -1,11 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
   --color-bg: #faf7ff;
   --color-surface: #ffffff;
   --color-text: #20172b;
+  --color-muted: #5b5565;
+  --color-border: #e9d5ff;
   --color-accent: #7c3aed;
+}
+
+body[data-theme='dark'] {
+  --color-bg: #111827;
+  --color-surface: #1f2937;
+  --color-text: #f5f3ff;
+  --color-muted: #cbd5e1;
+  --color-border: #4c1d95;
+  --color-accent: #a78bfa;
+  color-scheme: dark;
 }
 
 body {
@@ -19,6 +31,31 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.02em;
+}
+
+body[data-theme] .bg-white,
+body[data-theme] .bg-white\/90 {
+  background-color: var(--color-surface);
+}
+
+body[data-theme] hr,
+body[data-theme] .border-purple-200,
+body[data-theme] .border-purple-300,
+body[data-theme] .border-slate-200 {
+  border-color: var(--color-border);
+}
+
+body[data-theme] .bg-purple-600 {
+  background-color: var(--color-accent);
+}
+
+body[data-theme] .text-slate-500,
+body[data-theme] .text-slate-600 {
+  color: var(--color-muted);
+}
+
+body[data-theme] .text-purple-700 {
+  color: var(--color-accent);
 }
 
 [x-cloak] {
