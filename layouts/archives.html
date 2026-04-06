@@ -2,12 +2,24 @@
   {{ $archivePages := where site.RegularPages.ByDate.Reverse "Section" "posts" }}
   {{ $seriesTerms := slice }}
   {{ with site.Taxonomies.series }}
-    {{ $seriesTerms = .ByCount }}
+    {{ range .ByCount }}
+      {{ $postPages := where .Pages "Section" "posts" }}
+      {{ if gt (len $postPages) 0 }}
+        {{ $seriesTerms = $seriesTerms | append (dict "Count" (len $postPages) "Page" .Page "Term" .Term) }}
+      {{ end }}
+    {{ end }}
   {{ end }}
+  {{ $seriesTerms = sort $seriesTerms "Count" "desc" }}
   {{ $tagTerms := slice }}
   {{ with site.Taxonomies.tags }}
-    {{ $tagTerms = .ByCount }}
+    {{ range .ByCount }}
+      {{ $postPages := where .Pages "Section" "posts" }}
+      {{ if gt (len $postPages) 0 }}
+        {{ $tagTerms = $tagTerms | append (dict "Count" (len $postPages) "Page" .Page "Term" .Term) }}
+      {{ end }}
+    {{ end }}
   {{ end }}
+  {{ $tagTerms = sort $tagTerms "Count" "desc" }}
   {{ $hasSidebar := or (gt (len $seriesTerms) 0) (gt (len $tagTerms) 0) }}
   <section class="mx-auto grid max-w-6xl gap-8 px-6 py-10 {{ if $hasSidebar }}lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-10{{ end }}">
     {{ if $hasSidebar }}
