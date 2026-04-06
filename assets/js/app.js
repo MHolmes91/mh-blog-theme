@@ -1,6 +1,7 @@
 import Alpine from 'alpinejs'
 import { getReadingProgress } from './lib/progress.js'
 import { filterSearchRecords, loadSearchRecords } from './lib/search.js'
+import { pickActiveHeading } from './lib/toc.js'
 import { resolveTheme } from './lib/theme.js'
 
 window.Alpine = Alpine
@@ -10,6 +11,35 @@ Alpine.data('siteUi', (searchUrl) => ({
   records: [],
   searchOpen: false,
   init() {
+    const updateActiveTocEntry = () => {
+      const toc = document.getElementById('TableOfContents')
+      if (!toc) return
+
+      const tocEntries = [...toc.querySelectorAll('a[href^="#"]')]
+        .map((link) => {
+          const id = decodeURIComponent(link.getAttribute('href')?.slice(1) ?? '')
+          const heading = id ? document.getElementById(id) : null
+          if (!heading) return null
+
+          return { id, link, heading }
+        })
+        .filter(Boolean)
+
+      if (!tocEntries.length) return
+
+      const activeId = pickActiveHeading(
+        tocEntries.map(({ id, heading }) => ({ id, top: heading.getBoundingClientRect().top }))
+      )
+
+      for (const { id, link } of tocEntries) {
+        if (id === activeId) {
+          link.setAttribute('aria-current', 'location')
+        } else {
+          link.removeAttribute('aria-current')
+        }
+      }
+    }
+
     const updateReadingProgress = () => {
       const progressBar = document.getElementById('reading-progress')
       const postContent = document.getElementById('post-content')
@@ -29,8 +59,11 @@ Alpine.data('siteUi', (searchUrl) => ({
     }
 
     updateReadingProgress()
+    updateActiveTocEntry()
     window.addEventListener('scroll', updateReadingProgress, { passive: true })
     window.addEventListener('resize', updateReadingProgress)
+    window.addEventListener('scroll', updateActiveTocEntry, { passive: true })
+    window.addEventListener('resize', updateActiveTocEntry)
   },
   async openSearch() {
     this.searchOpen = true

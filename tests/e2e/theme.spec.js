@@ -154,10 +154,35 @@ test('toc stress post renders deep TOC entries', async ({ page }) => {
 })
 
 test('toc stress post allows meaningful jump navigation', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 })
   await page.goto('/posts/toc-stress-post/')
 
+  const startingScrollY = await page.evaluate(() => window.scrollY)
+  const viewportHeight = page.viewportSize()?.height ?? 720
+
   await page.getByRole('link', { name: 'Final Long Section', exact: true }).click()
+
   await expect.poll(() => page.evaluate(() => window.location.hash)).toBe('#final-long-section')
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(startingScrollY + 400)
+  await expect
+    .poll(() => page.locator('#final-long-section').evaluate((node) => Math.round(node.getBoundingClientRect().top)))
+    .toBeLessThan(Math.floor(viewportHeight / 2))
+})
+
+test('toc stress post highlights the active TOC entry while scrolling', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 400 })
+  await page.goto('/posts/toc-stress-post/')
+
+  await expect(page.locator('#TableOfContents a[aria-current="location"]')).toContainText('Large Section One')
+
+  await page.evaluate(() => {
+    const target = document.getElementById('final-long-section')
+    if (!target) throw new Error('Expected #final-long-section')
+
+    window.scrollTo(0, window.scrollY + target.getBoundingClientRect().top - 120)
+  })
+
+  await expect(page.locator('#TableOfContents a[aria-current="location"]')).toContainText('Final Long Section')
 })
 
 test('single post exposes canonical and social metadata', async ({ page }) => {

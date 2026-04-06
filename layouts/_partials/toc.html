@@ -1,6 +1,6 @@
 {{ if ne .TableOfContents `<nav id="TableOfContents"></nav>` }}
   <aside class="sticky top-24 hidden lg:block">
-    <div class="rounded-2xl border border-purple-200 bg-white p-4">
+    <div class="rounded-2xl border border-purple-200 bg-white p-4 [&_[aria-current='location']]:font-semibold [&_[aria-current='location']]:text-purple-700">
       <h2 class="mb-3 text-sm font-bold uppercase tracking-wide">Contents</h2>
       {{ .TableOfContents }}
     </div>
