@@ -23,6 +23,23 @@ test("home page shows intro and recent posts", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Second Post" })).toBeVisible();
 });
 
+test("home page shows only the five most recent posts and a view all posts link", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  await expect(page.locator("main article")).toHaveCount(5);
+  await expect(
+    page.getByRole("link", { name: /View All posts/i }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /View All posts/i }),
+  ).toHaveAttribute("href", "/archives/");
+  await expect(
+    page.getByRole("link", { name: /View All posts/i }).locator("svg"),
+  ).toBeVisible();
+});
+
 test("home page separates intro and recent posts with structural dividers", async ({
   page,
 }) => {
