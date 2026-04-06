@@ -47,6 +47,16 @@ test('browser dark preference controls theme even with a conflicting stored valu
   await context.close()
 })
 
+test('browser dark preference sets the palette even when JavaScript is unavailable', async ({ browser }) => {
+  const context = await browser.newContext({ colorScheme: 'dark', javaScriptEnabled: false })
+  const page = await context.newPage()
+
+  await page.goto('/')
+
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(17, 24, 39)')
+  await context.close()
+})
+
 test('theme preference updates the page palette while the page is open', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' })
   await page.goto('/')
