@@ -249,6 +249,33 @@ test("post headings link to their own anchors", async ({ page }) => {
   await expect(headingLink).toContainText("Large Section One");
 });
 
+test("content headings use distinct hierarchy styles", async ({ page }) => {
+  await page.goto("/posts/toc-stress-post/");
+
+  const h2Size = await page
+    .locator("#large-section-one")
+    .evaluate((node) => getComputedStyle(node).fontSize);
+  const h3Size = await page
+    .locator("#nested-layer-a")
+    .evaluate((node) => getComputedStyle(node).fontSize);
+  const h4Size = await page
+    .locator("#deep-detail-i")
+    .evaluate((node) => getComputedStyle(node).fontSize);
+
+  expect(h2Size).not.toBe(h3Size);
+  expect(h3Size).not.toBe(h4Size);
+});
+
+test("code blocks use Roboto Mono", async ({ page }) => {
+  await page.goto("/posts/shortcodes-builtins/");
+
+  const codeFont = await page
+    .locator("article .highlight code")
+    .evaluate((node) => getComputedStyle(node).fontFamily);
+
+  expect(codeFont.toLowerCase()).toContain("roboto mono");
+});
+
 test("post metadata tags and series are clickable taxonomy links", async ({
   page,
 }) => {
