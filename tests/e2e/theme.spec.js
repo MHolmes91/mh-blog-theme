@@ -291,6 +291,14 @@ test('shortcodes fixture renders built-in shortcode content with featured image'
   await expect(page.getByRole('main')).toContainText('Inline notice rendered through a Hugo shortcode example.')
 })
 
+test('shortcode fixture shows visible output for supported shortcode blocks', async ({ page }) => {
+  await page.goto('/posts/shortcodes-builtins/')
+
+  await expect(page.locator('article .highlight')).toBeVisible()
+  await expect(page.locator('article .highlight code')).toContainText('func main()')
+  await expect(page.locator('article img')).toHaveAttribute('src', /\/images\/post-1\.jpg$/)
+})
+
 test('series fixture posts render shared series metadata', async ({ page }) => {
   await page.goto('/posts/series-part-1/')
 
