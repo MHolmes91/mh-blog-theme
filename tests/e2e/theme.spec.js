@@ -211,3 +211,11 @@ test('post without optional metadata still renders', async ({ page }) => {
   await expect(page.locator('meta[property="og:image"]')).toHaveCount(0)
   await expect(page.locator('meta[name="twitter:image"]')).toHaveCount(0)
 })
+
+test('shortcodes fixture renders built-in shortcode content with featured image', async ({ page }) => {
+  await page.goto('/posts/shortcodes-builtins/')
+
+  await expect(page.getByRole('heading', { name: 'Built-In Shortcodes Post' })).toBeVisible()
+  await expect(page.locator('article img')).toHaveCount(1)
+  await expect(page.getByRole('main')).toContainText('Inline notice rendered through a Hugo shortcode example.')
+})
