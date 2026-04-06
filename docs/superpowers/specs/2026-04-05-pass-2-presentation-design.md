@@ -16,6 +16,7 @@ This pass covers:
 - Ensuring light/dark follows browser preference only
 - Adding visited/unvisited link styling using normal browser semantics
 - Verifying Tailwind styling/build output remains correct without introducing new unit tests
+- Adding integration-test coverage for supported shortcode rendering so each supported shortcode displays visible output
 
 This pass does not cover:
 
@@ -134,8 +135,21 @@ Expected verification focus:
 - existing E2E coverage continues to pass after the layout shift
 - home, archive/list, and taxonomy pages still render expected entries with the new row layout
 - single posts still render correctly after typography changes
+- supported shortcode fixtures continue to render visible output through integration tests
 - visited/unvisited link styling is visually correct in actual rendering
 - Tailwind build remains healthy
+
+### Shortcode Integration Coverage
+
+This pass should strengthen integration coverage for supported shortcode rendering.
+
+Requirements:
+
+- Add or extend E2E assertions for the supported shortcode fixture content
+- Each supported shortcode covered by the fixture should be verified to display some visible rendered output
+- The assertions should prove rendered output exists, not merely that the page loaded
+
+The goal is to keep shortcode support from regressing while the presentation layer is being simplified.
 
 If one or two E2E assertions need to be adjusted because the browsing-surface markup changes materially, that is acceptable. The point is to keep behavior coverage intact while adapting the presentation layer.
 
@@ -166,6 +180,7 @@ After this pass:
 - headings still feel like headings after the font unification
 - dark/light behavior remains browser-driven only
 - visited links visibly differentiate read from unread links
+- supported shortcode rendering remains covered by integration tests
 - Tailwind build/render behavior remains intact
 
 ## Design Decisions Summary
@@ -175,4 +190,5 @@ After this pass:
 - Use Lato only, with heading styles retuned for hierarchy
 - Keep color mode browser-preference-only with no manual persistence model
 - Use normal browser `:visited` semantics for read/unread distinction
+- Strengthen shortcode integration coverage so supported shortcode output stays visible through the presentation cleanup
 - Verify styling correctness through build and rendered behavior, not new unit tests
