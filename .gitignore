@@ -1,1 +1,5 @@
 .worktrees/
+.playwright-mcp/
+test-results/
+*/.hugo_build.lock
+*/public/
