@@ -3,6 +3,10 @@ languageCode: en-us
 title: MH Blog Theme
 theme: mh-blog-theme
 
+markup:
+  tableOfContents:
+    endLevel: 4
+
 outputs:
   home:
     - html

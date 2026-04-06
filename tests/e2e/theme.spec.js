@@ -144,6 +144,22 @@ test('single posts update the reading progress bar while scrolling', async ({ pa
     .toBe(100)
 })
 
+test('toc stress post renders deep TOC entries', async ({ page }) => {
+  await page.goto('/posts/toc-stress-post/')
+
+  await expect(page.getByRole('heading', { name: 'TOC Stress Post' })).toBeVisible()
+  await expect(page.locator('#TableOfContents')).toContainText('Large Section One')
+  await expect(page.locator('#TableOfContents')).toContainText('Nested Layer A')
+  await expect(page.locator('#TableOfContents')).toContainText('Deep Detail I')
+})
+
+test('toc stress post allows meaningful jump navigation', async ({ page }) => {
+  await page.goto('/posts/toc-stress-post/')
+
+  await page.getByRole('link', { name: 'Final Long Section', exact: true }).click()
+  await expect.poll(() => page.evaluate(() => window.location.hash)).toBe('#final-long-section')
+})
+
 test('single post exposes canonical and social metadata', async ({ page }) => {
   await page.goto('/posts/first-post/')
 
