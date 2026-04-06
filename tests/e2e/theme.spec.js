@@ -160,18 +160,29 @@ test("all posts page shows series links first and tag chips second", async ({
 }) => {
   await page.goto("/archives/");
 
-  await expect(
-    page.getByRole("heading", { name: "Series", exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "Tags", exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: "fixture-series", exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: "fixture", exact: true }),
-  ).toBeVisible();
+  const seriesHeading = page.getByRole("heading", {
+    name: "Series",
+    exact: true,
+  });
+  const tagsHeading = page.getByRole("heading", { name: "Tags", exact: true });
+  const seriesLink = page.getByRole("link", {
+    name: "fixture-series",
+    exact: true,
+  });
+  const tagChip = page.getByRole("link", { name: "fixture", exact: true });
+
+  await expect(seriesHeading).toBeVisible();
+  await expect(tagsHeading).toBeVisible();
+  await expect(seriesLink).toBeVisible();
+  await expect(tagChip).toBeVisible();
+  await expect(tagChip).toHaveClass(/rounded-full/);
+  await expect(tagChip).toHaveClass(/border-purple-200/);
+
+  const headingOrder = await page.locator("main h2").evaluateAll((headings) =>
+    headings.map((heading) => heading.textContent?.trim()),
+  );
+
+  expect(headingOrder.indexOf("Series")).toBeLessThan(headingOrder.indexOf("Tags"));
 });
 
 test("archive page uses divider-based row summaries", async ({ page }) => {
