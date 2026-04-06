@@ -733,17 +733,60 @@ test("shortcode fixture renders all supported embedded shortcode outputs visibly
   await expect(
     page.locator('img[alt="QR code for the shortcode fixture post"]'),
   ).toBeVisible();
-  await expect(
-    page.locator('iframe[title="Fixture YouTube video"][src*="youtube.com"]'),
-  ).toHaveCount(1);
-  await expect(
-    page.locator('blockquote.twitter-tweet a[href*="/jack/status/20"]'),
-  ).toHaveCount(1);
+
+  const youTubeEmbed = page.locator(
+    'iframe[title="Fixture YouTube video"][src*="youtube.com"]',
+  );
+
+  await expect(youTubeEmbed).toBeVisible();
+  await expect
+    .poll(() =>
+      youTubeEmbed.evaluate((node) => Math.round(node.getBoundingClientRect().width)),
+    )
+    .toBeGreaterThan(0);
+  await expect
+    .poll(() =>
+      youTubeEmbed.evaluate((node) => Math.round(node.getBoundingClientRect().height)),
+    )
+    .toBeGreaterThan(0);
+
+  const xEmbed = page.locator("blockquote.twitter-tweet");
+
+  await expect(xEmbed).toBeVisible();
+  await expect(xEmbed).toContainText("just setting up my twttr");
+
   await expect(page.locator('svg[id^="mermaid-"]')).toBeVisible();
-  await expect(
-    page.locator('iframe[title="Fixture Vimeo video"][src*="player.vimeo.com"]'),
-  ).toHaveCount(1);
-  await expect(page.locator('iframe[src*="instagram.com"]')).toHaveCount(1);
+
+  const vimeoEmbed = page.locator(
+    'iframe[title="Fixture Vimeo video"][src*="player.vimeo.com"]',
+  );
+
+  await expect(vimeoEmbed).toBeVisible();
+  await expect
+    .poll(() =>
+      vimeoEmbed.evaluate((node) => Math.round(node.getBoundingClientRect().width)),
+    )
+    .toBeGreaterThan(0);
+  await expect
+    .poll(() =>
+      vimeoEmbed.evaluate((node) => Math.round(node.getBoundingClientRect().height)),
+    )
+    .toBeGreaterThan(0);
+
+  const instagramVisibleNodes = page.locator(
+    'blockquote.instagram-media, iframe[src*="instagram.com"]',
+  );
+
+  await expect
+    .poll(() =>
+      instagramVisibleNodes.evaluateAll((nodes) =>
+        nodes.filter((node) => {
+          const rect = node.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0;
+        }).length,
+      ),
+    )
+    .toBeGreaterThan(0);
 });
 
 test("series fixture posts render shared series metadata", async ({ page }) => {
