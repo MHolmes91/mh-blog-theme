@@ -233,8 +233,13 @@ test('series fixture posts render shared series metadata', async ({ page }) => {
 test('series term page lists all four parts', async ({ page }) => {
   await page.goto('/series/fixture-series/')
 
-  await expect(page.getByText('Series Part 1')).toBeVisible()
-  await expect(page.getByText('Series Part 2')).toBeVisible()
-  await expect(page.getByText('Series Part 3')).toBeVisible()
-  await expect(page.getByText('Series Part 4')).toBeVisible()
+  const seriesTitles = page.locator('main article h2')
+
+  await expect(seriesTitles).toHaveCount(4)
+  await expect(seriesTitles).toHaveText([
+    'Series Part 4',
+    'Series Part 3',
+    'Series Part 2',
+    'Series Part 1'
+  ])
 })

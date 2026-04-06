@@ -1,12 +1,12 @@
 ---
 title: Series Part 1
 date: 2026-04-08
-publishDate: 2026-04-05
-summary: First post in the shared fixture series.
+publishDate: 2024-01-01
+summary: Opening entry in the shared fixture series.
 series: [fixture-series]
 tags: [series, fixture, part-1]
 ---
 
 ## Opening
 
-This is the first part of the shared series fixture.
+This is the opening entry in the shared series fixture.
