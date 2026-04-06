@@ -34,6 +34,14 @@ test('archive page lists all posts', async ({ page }) => {
   await expect(page.getByText('Second Post')).toBeVisible()
 })
 
+test('archive page includes new fixture posts', async ({ page }) => {
+  await page.goto('/archives/')
+
+  await expect(page.getByText('TOC Stress Post')).toBeVisible()
+  await expect(page.getByText('Built-In Shortcodes Post')).toBeVisible()
+  await expect(page.getByText('Series Part 4')).toBeVisible()
+})
+
 test('posts list page shows post summaries', async ({ page }) => {
   await page.goto('/posts/')
 
@@ -50,6 +58,15 @@ test('taxonomy index pages do not show post read time metadata', async ({ page }
   await expect(page.getByRole('main').getByRole('link', { name: 'Hugo', exact: true })).toBeVisible()
   await expect(page.getByRole('main').getByRole('link', { name: 'Theme', exact: true })).toBeVisible()
   await expect(page.getByText(/min read/)).toHaveCount(0)
+})
+
+test('tag term page includes multiple fixture types', async ({ page }) => {
+  await page.goto('/tags/fixture/')
+
+  await expect(page.getByText('Series Part 1')).toBeVisible()
+  await expect(page.getByText('Series Part 2')).toBeVisible()
+  await expect(page.getByText('Series Part 3')).toBeVisible()
+  await expect(page.getByText('Series Part 4')).toBeVisible()
 })
 
 test('search opens and shows matching posts', async ({ page }) => {
