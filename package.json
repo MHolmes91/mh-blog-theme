@@ -9,7 +9,6 @@
     "@playwright/test": "^1.54.0",
     "@tailwindcss/cli": "^4.1.0",
     "alpinejs": "^3.14.0",
-    "mermaid": "11.14.0",
     "tailwindcss": "^4.1.0",
     "vitest": "^3.2.0"
   }

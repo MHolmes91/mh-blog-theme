@@ -324,15 +324,8 @@ test("code blocks use Roboto Mono", async ({ page }) => {
 test("mermaid code blocks render visible diagram output", async ({ page }) => {
   await page.goto("/posts/shortcodes-builtins/");
 
-  const scripts = await page.evaluate(() =>
-    Array.from(document.scripts).map((script) => script.src || script.textContent || ""),
-  );
-
   await expect(page.locator(".mermaid")).toHaveCount(0);
   await expect(page.locator('svg[id^="mermaid-"]')).toBeVisible();
-  expect(scripts).not.toContain(
-    expect.stringContaining("cdn.jsdelivr.net/npm/mermaid"),
-  );
 });
 
 test("post metadata tags and series are clickable taxonomy links", async ({

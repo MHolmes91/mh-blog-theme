@@ -19,6 +19,9 @@ Alpine.data('siteUi', (searchUrl) => ({
     const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
     const syncTheme = ({ matches }) => {
       this.theme = resolveTheme({ systemPrefersDark: matches })
+      window.dispatchEvent(new CustomEvent('themeChanged', {
+        detail: { theme: this.theme }
+      }))
     }
 
     const updateActiveTocEntry = () => {

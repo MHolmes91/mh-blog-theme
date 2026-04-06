@@ -1,4 +1,56 @@
 {{ if .Store.Get "hasMermaid" }}
-  {{ $mermaid := resources.Get "js/lib/mermaid.js" | js.Build | fingerprint }}
-  <script type="module" src="{{ $mermaid.RelPermalink }}"></script>
+  <style>
+    svg[id^="mermaid-"] {
+      display: block;
+      margin: 0 auto;
+    }
+  </style>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+
+    function getCurrentTheme() {
+      return document.body.getAttribute("data-theme") === "dark" ? "dark" : "default";
+    }
+
+    function storeOriginalCode(selector) {
+      document.querySelectorAll(selector).forEach((element) => {
+        if (!element.getAttribute("data-original-code")) {
+          element.setAttribute("data-original-code", element.textContent.trim());
+        }
+      });
+    }
+
+    async function renderMermaid(selector) {
+      storeOriginalCode(selector);
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: getCurrentTheme(),
+        securityLevel: "loose",
+      });
+      await mermaid.run({ querySelector: selector });
+      document.querySelectorAll(selector).forEach((element) => {
+        element.classList.remove("mermaid");
+        element.setAttribute("data-mermaid-diagram", "true");
+      });
+    }
+
+    await renderMermaid(".mermaid");
+
+    window.addEventListener("themeChanged", async () => {
+      const diagrams = document.querySelectorAll('[data-mermaid-diagram="true"]');
+
+      for (const element of diagrams) {
+        const originalCode = element.getAttribute("data-original-code");
+
+        if (!originalCode) continue;
+
+        element.removeAttribute("data-processed");
+        element.innerHTML = "";
+        element.textContent = originalCode;
+        element.classList.add("mermaid");
+      }
+
+      await renderMermaid(".mermaid");
+    });
+  </script>
 {{ end }}
