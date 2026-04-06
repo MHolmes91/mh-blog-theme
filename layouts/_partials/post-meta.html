@@ -5,8 +5,13 @@
     <span>{{ .ReadingTime }} min</span>
   </span>
   {{ with .Params.tags }}
-  <span>{{ delimit . ", " }}</span>
-  {{ end }} {{ with .Params.series }}
-  <span>{{ delimit . ", " }}</span>
+    {{ range . }}
+      <a href="{{ (printf "tags/%s/" .) | relLangURL }}">{{ . }}</a>
+    {{ end }}
+  {{ end }}
+  {{ with .Params.series }}
+    {{ range . }}
+      <a href="{{ (printf "series/%s/" .) | relLangURL }}">{{ . }}</a>
+    {{ end }}
   {{ end }}
 </div>

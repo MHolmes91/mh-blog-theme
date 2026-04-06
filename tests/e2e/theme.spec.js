@@ -238,6 +238,30 @@ test("posts list page reuses the shared browsing surface styling", async ({
   );
 });
 
+test("post headings link to their own anchors", async ({ page }) => {
+  await page.goto("/posts/toc-stress-post/");
+
+  const headingLink = page
+    .locator("#large-section-one")
+    .locator('a[href="#large-section-one"]');
+
+  await expect(headingLink).toBeVisible();
+  await expect(headingLink).toContainText("Large Section One");
+});
+
+test("post metadata tags and series are clickable taxonomy links", async ({
+  page,
+}) => {
+  await page.goto("/posts/series-part-1/");
+
+  await expect(
+    page.getByRole("link", { name: "fixture-series", exact: true }),
+  ).toHaveAttribute("href", "/series/fixture-series/");
+  await expect(
+    page.getByRole("link", { name: "series", exact: true }),
+  ).toHaveAttribute("href", "/tags/series/");
+});
+
 test("taxonomy index pages do not show post read time metadata", async ({
   page,
 }) => {
