@@ -1,10 +1,4 @@
 {{ if .Store.Get "hasMermaid" }}
-  <script type="module">
-    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
-    mermaid.initialize({ startOnLoad: false, securityLevel: "loose" });
-    await mermaid.run({ querySelector: ".mermaid" });
-    document.querySelectorAll(".mermaid").forEach((element) => {
-      element.classList.remove("mermaid");
-    });
-  </script>
+  {{ $mermaid := resources.Get "js/lib/mermaid.js" | js.Build | fingerprint }}
+  <script type="module" src="{{ $mermaid.RelPermalink }}"></script>
 {{ end }}
