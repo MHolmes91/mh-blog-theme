@@ -155,6 +155,25 @@ test("archive page includes new fixture posts", async ({ page }) => {
   await expect(page.getByText("Series Part 4")).toBeVisible();
 });
 
+test("all posts page shows series links first and tag chips second", async ({
+  page,
+}) => {
+  await page.goto("/archives/");
+
+  await expect(
+    page.getByRole("heading", { name: "Series", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Tags", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "fixture-series", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "fixture", exact: true }),
+  ).toBeVisible();
+});
+
 test("archive page uses divider-based row summaries", async ({ page }) => {
   await page.goto("/archives/");
 
