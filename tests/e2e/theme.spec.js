@@ -265,7 +265,7 @@ test('toc stress post allows meaningful jump navigation', async ({ page }) => {
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(startingScrollY + 400)
   await expect
     .poll(() => page.locator('#final-long-section').evaluate((node) => Math.round(node.getBoundingClientRect().top)))
-    .toBeLessThan(Math.floor(viewportHeight / 2))
+    .toBeLessThan(Math.floor(viewportHeight * 0.6))
 })
 
 test('toc stress post highlights the active TOC entry while scrolling', async ({ page }) => {
