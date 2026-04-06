@@ -1,12 +1,33 @@
+{{ $page := .page }}
+{{ $linked := .linked }}
 <div class="flex flex-wrap gap-3 text-sm text-slate-500">
-  <span>{{ .Date | time.Format ":date_medium" }}</span>
+  <span>{{ $page.Date | time.Format ":date_medium" }}</span>
   <span class="inline-flex items-center gap-1.5">
     {{ partial "icon.html" (dict "name" "timer" "class" "h-4 w-4") }}
-    <span>{{ .ReadingTime }} min</span>
+    <span>{{ $page.ReadingTime }} min</span>
   </span>
-  {{ with .Params.tags }}
-  <span>{{ delimit . ", " }}</span>
-  {{ end }} {{ with .Params.series }}
-  <span>{{ delimit . ", " }}</span>
+  {{ with $page.Params.tags }}
+    {{ range . }}
+      {{ $term := . }}
+      {{ with site.GetPage (printf "/tags/%s" ($term | urlize)) }}
+        {{ if $linked }}
+          <a href="{{ .RelPermalink }}">{{ $term }}</a>
+        {{ else }}
+          <span>{{ $term }}</span>
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+  {{ with $page.Params.series }}
+    {{ range . }}
+      {{ $term := . }}
+      {{ with site.GetPage (printf "/series/%s" ($term | urlize)) }}
+        {{ if $linked }}
+          <a href="{{ .RelPermalink }}">{{ $term }}</a>
+        {{ else }}
+          <span>{{ $term }}</span>
+        {{ end }}
+      {{ end }}
+    {{ end }}
   {{ end }}
 </div>

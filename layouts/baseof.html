@@ -10,6 +10,7 @@
     </main>
     {{ partial "dock.html" . }}
     {{ partial "footer.html" . }}
+    {{ partial "features/mermaid.html" . }}
     {{ $js := resources.Get "js/app.js" | js.Build | fingerprint }}
     <script defer src="{{ $js.RelPermalink }}"></script>
   </body>

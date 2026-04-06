@@ -7,6 +7,10 @@ markup:
   tableOfContents:
     endLevel: 4
 
+privacy:
+  x:
+    simple: true
+
 outputs:
   home:
     - html

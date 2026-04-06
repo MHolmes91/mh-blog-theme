@@ -5,9 +5,9 @@
       {{ with .Params.featuredImage }}<img src="{{ . }}" alt="" class="w-full rounded-2xl object-cover">{{ end }}
       <header class="space-y-3">
         <h1 class="text-4xl font-bold">{{ .Title }}</h1>
-        {{ partial "post-meta.html" . }}
+        {{ partial "post-meta.html" (dict "page" . "linked" true) }}
       </header>
-      <div class="prose prose-slate max-w-none">{{ .Content }}</div>
+      <div class="prose prose-slate max-w-none" data-content-body>{{ .Content }}</div>
     </article>
     {{ partial "toc.html" . }}
   </section>

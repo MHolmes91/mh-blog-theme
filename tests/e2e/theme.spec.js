@@ -238,6 +238,142 @@ test("posts list page reuses the shared browsing surface styling", async ({
   );
 });
 
+test("post headings link to their own anchors", async ({ page }) => {
+  await page.goto("/posts/toc-stress-post/");
+
+  const headingLink = page
+    .locator("#large-section-one")
+    .locator('a[href="#large-section-one"]');
+
+  await expect(headingLink).toBeVisible();
+  await expect(headingLink).toContainText("Large Section One");
+});
+
+test("content headings use distinct hierarchy styles", async ({ page }) => {
+  await page.goto("/posts/toc-stress-post/");
+
+  const contentBody = page.locator("#post-content [data-content-body]");
+
+  await expect(contentBody).toHaveCount(1);
+
+  const h2Styles = await contentBody.locator("#large-section-one").evaluate((node) => {
+    const styles = getComputedStyle(node);
+
+    return {
+      fontSize: Number.parseFloat(styles.fontSize),
+      marginTop: Number.parseFloat(styles.marginTop),
+      marginBottom: Number.parseFloat(styles.marginBottom),
+    };
+  });
+  const h3Styles = await contentBody.locator("#nested-layer-a").evaluate((node) => {
+    const styles = getComputedStyle(node);
+
+    return {
+      fontSize: Number.parseFloat(styles.fontSize),
+      marginTop: Number.parseFloat(styles.marginTop),
+      marginBottom: Number.parseFloat(styles.marginBottom),
+    };
+  });
+  const h4Styles = await contentBody.locator("#deep-detail-i").evaluate((node) => {
+    const styles = getComputedStyle(node);
+
+    return {
+      fontSize: Number.parseFloat(styles.fontSize),
+      marginTop: Number.parseFloat(styles.marginTop),
+      marginBottom: Number.parseFloat(styles.marginBottom),
+    };
+  });
+
+  expect(h2Styles.fontSize).toBeGreaterThan(h3Styles.fontSize);
+  expect(h3Styles.fontSize).toBeGreaterThan(h4Styles.fontSize);
+  expect(h2Styles.marginTop).toBeGreaterThan(h3Styles.marginTop);
+  expect(h3Styles.marginTop).toBeGreaterThan(h4Styles.marginTop);
+  expect(h2Styles.marginBottom).toBeGreaterThan(h4Styles.marginBottom);
+});
+
+test("code blocks use Roboto Mono", async ({ page }) => {
+  await page.goto("/posts/shortcodes-builtins/");
+
+  const contentBody = page.locator("#post-content [data-content-body]");
+
+  await expect(contentBody).toHaveCount(1);
+
+  const codeFont = await page
+    .locator("#post-content [data-content-body] .highlight code")
+    .evaluate((node) => getComputedStyle(node).fontFamily);
+
+  await contentBody.evaluate((node) => {
+    const inlineCode = document.createElement("code");
+    inlineCode.textContent = "inline-example";
+
+    const paragraph = document.createElement("p");
+    paragraph.append("Inline ", inlineCode, " sample");
+
+    node.appendChild(paragraph);
+  });
+
+  const inlineCodeFont = await contentBody
+    .locator("p code")
+    .last()
+    .evaluate((node) => getComputedStyle(node).fontFamily);
+
+  expect(codeFont.toLowerCase()).toContain("roboto mono");
+  expect(inlineCodeFont.toLowerCase()).not.toContain("roboto mono");
+});
+
+test("mermaid code blocks render visible diagram output", async ({ page }) => {
+  await page.goto("/posts/shortcodes-builtins/");
+
+  await expect(page.locator(".mermaid")).toHaveCount(0);
+  await expect(page.locator('svg[id^="mermaid-"]')).toBeVisible();
+});
+
+test("mermaid uses the dark theme on initial render when the browser prefers dark", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ colorScheme: "dark" });
+  const page = await context.newPage();
+
+  await page.goto("/posts/shortcodes-builtins/");
+
+  await expect(page.locator("body")).toHaveAttribute("data-theme", "dark");
+  await expect(page.locator('svg[id^="mermaid-"]')).toBeVisible();
+  await expect(page.locator('svg[id^="mermaid-"] style')).toContainText("fill:#ccc");
+  await context.close();
+});
+
+test("post metadata tags and series are clickable taxonomy links", async ({
+  page,
+}) => {
+  await page.goto("/posts/series-part-1/");
+
+  await expect(
+    page.getByRole("link", { name: "fixture-series", exact: true }),
+  ).toHaveAttribute("href", "/series/fixture-series/");
+  await expect(
+    page.getByRole("link", { name: "series", exact: true }),
+  ).toHaveAttribute("href", "/tags/series/");
+});
+
+test("post summary metadata stays non-interactive on list surfaces", async ({
+  page,
+}) => {
+  await page.goto("/posts/");
+
+  const article = page
+    .locator("main article")
+    .filter({ has: page.getByRole("link", { name: "Series Part 1" }) });
+
+  await expect(article.getByText("fixture-series", { exact: true })).toBeVisible();
+  await expect(article.getByText("series", { exact: true })).toBeVisible();
+  await expect(
+    article.getByRole("link", { name: "fixture-series", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    article.getByRole("link", { name: "series", exact: true }),
+  ).toHaveCount(0);
+});
+
 test("taxonomy index pages do not show post read time metadata", async ({
   page,
 }) => {
@@ -439,6 +575,7 @@ test("toc stress post allows meaningful jump navigation", async ({ page }) => {
   const viewportHeight = page.viewportSize()?.height ?? 720;
 
   await page
+    .locator("#TableOfContents")
     .getByRole("link", { name: "Final Long Section", exact: true })
     .click();
 
@@ -557,6 +694,99 @@ test("shortcodes fixture renders visible built-in shortcode output", async ({
   await expect(page.getByRole("main")).toContainText(
     "Inline notice rendered through a Hugo shortcode example.",
   );
+});
+
+test("shortcode fixture renders all supported embedded shortcode outputs visibly", async ({
+  page,
+}) => {
+  await page.goto("/posts/shortcodes-builtins/");
+
+  const details = page.locator("article details");
+
+  await expect(details).toHaveAttribute("open", "");
+  await expect(details.locator("summary")).toContainText(
+    "Open the embedded details block",
+  );
+  await expect(details).toContainText(
+    "This copy stays visible because the details shortcode starts expanded.",
+  );
+
+  const figure = page.locator("article figure").filter({
+    hasText: "Fixture image rendered by the figure shortcode.",
+  });
+
+  await expect(figure.locator('img[alt="Fixture cover image"]')).toBeVisible();
+  await expect(figure.locator("figcaption")).toContainText(
+    "Fixture image rendered by the figure shortcode.",
+  );
+
+  await expect(page.getByRole("main")).toContainText(
+    "Example site for MH Blog Theme",
+  );
+  await expect(
+    page.getByRole("link", { name: "First Post via ref shortcode" }),
+  ).toHaveAttribute("href", /\/posts\/first-post\/$/);
+  await expect(
+    page.getByRole("link", { name: "Second Post via relref shortcode" }),
+  ).toHaveAttribute("href", "/posts/second-post/");
+
+  await expect(
+    page.locator('img[alt="QR code for the shortcode fixture post"]'),
+  ).toBeVisible();
+
+  const youTubeEmbed = page.locator(
+    'iframe[title="Fixture YouTube video"][src*="youtube.com"]',
+  );
+
+  await expect(youTubeEmbed).toBeVisible();
+  await expect
+    .poll(() =>
+      youTubeEmbed.evaluate((node) => Math.round(node.getBoundingClientRect().width)),
+    )
+    .toBeGreaterThan(0);
+  await expect
+    .poll(() =>
+      youTubeEmbed.evaluate((node) => Math.round(node.getBoundingClientRect().height)),
+    )
+    .toBeGreaterThan(0);
+
+  const xEmbed = page.locator("blockquote.twitter-tweet");
+
+  await expect(xEmbed).toBeVisible();
+  await expect(xEmbed).toContainText("just setting up my twttr");
+
+  await expect(page.locator('svg[id^="mermaid-"]')).toBeVisible();
+
+  const vimeoEmbed = page.locator(
+    'iframe[title="Fixture Vimeo video"][src*="player.vimeo.com"]',
+  );
+
+  await expect(vimeoEmbed).toBeVisible();
+  await expect
+    .poll(() =>
+      vimeoEmbed.evaluate((node) => Math.round(node.getBoundingClientRect().width)),
+    )
+    .toBeGreaterThan(0);
+  await expect
+    .poll(() =>
+      vimeoEmbed.evaluate((node) => Math.round(node.getBoundingClientRect().height)),
+    )
+    .toBeGreaterThan(0);
+
+  const instagramVisibleNodes = page.locator(
+    'blockquote.instagram-media, iframe[src*="instagram.com"]',
+  );
+
+  await expect
+    .poll(() =>
+      instagramVisibleNodes.evaluateAll((nodes) =>
+        nodes.filter((node) => {
+          const rect = node.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0;
+        }).length,
+      ),
+    )
+    .toBeGreaterThan(0);
 });
 
 test("series fixture posts render shared series metadata", async ({ page }) => {
