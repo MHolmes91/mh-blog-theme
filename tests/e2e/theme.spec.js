@@ -321,6 +321,13 @@ test("code blocks use Roboto Mono", async ({ page }) => {
   expect(inlineCodeFont.toLowerCase()).not.toContain("roboto mono");
 });
 
+test("mermaid code blocks render visible diagram output", async ({ page }) => {
+  await page.goto("/posts/shortcodes-builtins/");
+
+  await expect(page.locator(".mermaid")).toHaveCount(0);
+  await expect(page.locator('svg[id^="mermaid-"]')).toBeVisible();
+});
+
 test("post metadata tags and series are clickable taxonomy links", async ({
   page,
 }) => {

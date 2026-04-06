@@ -16,6 +16,11 @@ func main() {
 }
 {{< /highlight >}}
 
+```mermaid
+graph TD
+  A[Start] --> B[End]
+```
+
 ## Message
 
 Inline notice rendered through a Hugo shortcode example.
