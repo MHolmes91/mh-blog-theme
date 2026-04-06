@@ -12,6 +12,25 @@
       return document.body.getAttribute("data-theme") === "dark" ? "dark" : "default";
     }
 
+    function waitForTheme() {
+      if (document.body.getAttribute("data-theme")) {
+        return Promise.resolve();
+      }
+
+      return new Promise((resolve) => {
+        const observer = new MutationObserver(() => {
+          if (!document.body.getAttribute("data-theme")) return;
+          observer.disconnect();
+          resolve();
+        });
+
+        observer.observe(document.body, {
+          attributes: true,
+          attributeFilter: ["data-theme"],
+        });
+      });
+    }
+
     function storeOriginalCode(selector) {
       document.querySelectorAll(selector).forEach((element) => {
         if (!element.getAttribute("data-original-code")) {
@@ -34,6 +53,7 @@
       });
     }
 
+    await waitForTheme();
     await renderMermaid(".mermaid");
 
     window.addEventListener("themeChanged", async () => {

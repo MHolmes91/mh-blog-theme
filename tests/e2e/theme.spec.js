@@ -328,6 +328,20 @@ test("mermaid code blocks render visible diagram output", async ({ page }) => {
   await expect(page.locator('svg[id^="mermaid-"]')).toBeVisible();
 });
 
+test("mermaid uses the dark theme on initial render when the browser prefers dark", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ colorScheme: "dark" });
+  const page = await context.newPage();
+
+  await page.goto("/posts/shortcodes-builtins/");
+
+  await expect(page.locator("body")).toHaveAttribute("data-theme", "dark");
+  await expect(page.locator('svg[id^="mermaid-"]')).toBeVisible();
+  await expect(page.locator('svg[id^="mermaid-"] style')).toContainText("fill:#ccc");
+  await context.close();
+});
+
 test("post metadata tags and series are clickable taxonomy links", async ({
   page,
 }) => {
