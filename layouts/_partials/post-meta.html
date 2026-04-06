@@ -1,6 +1,10 @@
 <div class="flex flex-wrap gap-3 text-sm text-slate-500">
   <span>{{ .Date | time.Format ":date_medium" }}</span>
   <span>{{ .ReadingTime }} min read</span>
-  {{ with .Params.tags }}<span>{{ delimit . ", " }}</span>{{ end }}
-  {{ with .Params.series }}<span>{{ delimit . ", " }}</span>{{ end }}
+  {{ with .Params.tags }}
+    <span>{{ delimit . ", " }}</span>
+  {{ end }}
+  {{ with .Params.series }}
+    <span>{{ delimit . ", " }}</span>
+  {{ end }}
 </div>

@@ -1,0 +1,9 @@
+{{ define "main" }}
+  <section class="mx-auto max-w-4xl space-y-4 px-6 py-10">
+    <h1 class="text-3xl font-bold">{{ .Title }}</h1>
+    {{ range $index, $page := .Pages }}
+      {{ if gt $index 0 }}<hr class="border-slate-200">{{ end }}
+      {{ partial "post-row.html" . }}
+    {{ end }}
+  </section>
+{{ end }}

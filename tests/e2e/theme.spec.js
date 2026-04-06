@@ -93,6 +93,7 @@ test('tag term page includes multiple fixture types', async ({ page }) => {
   await expect(page.getByText('Series Part 2')).toBeVisible()
   await expect(page.getByText('Series Part 3')).toBeVisible()
   await expect(page.getByText('Series Part 4')).toBeVisible()
+  await expect(page.locator('main hr')).toHaveCount(0)
 })
 
 test('search opens and shows matching posts', async ({ page }) => {
