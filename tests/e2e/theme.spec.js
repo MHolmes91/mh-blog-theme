@@ -262,6 +262,25 @@ test("post metadata tags and series are clickable taxonomy links", async ({
   ).toHaveAttribute("href", "/tags/series/");
 });
 
+test("post summary metadata stays non-interactive on list surfaces", async ({
+  page,
+}) => {
+  await page.goto("/posts/");
+
+  const article = page
+    .locator("main article")
+    .filter({ has: page.getByRole("link", { name: "Series Part 1" }) });
+
+  await expect(article.getByText("fixture-series", { exact: true })).toBeVisible();
+  await expect(article.getByText("series", { exact: true })).toBeVisible();
+  await expect(
+    article.getByRole("link", { name: "fixture-series", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    article.getByRole("link", { name: "series", exact: true }),
+  ).toHaveCount(0);
+});
+
 test("taxonomy index pages do not show post read time metadata", async ({
   page,
 }) => {
