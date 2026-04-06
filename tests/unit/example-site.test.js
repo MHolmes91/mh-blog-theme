@@ -56,4 +56,28 @@ describe('example site', () => {
     const html = fs.readFileSync(path.join(siteDir, 'public', 'index.html'), 'utf8')
     expect(html).toContain('href="/blog/archives/"')
   })
+
+  it('renders the archives page without a hub column when no taxonomies exist', () => {
+    const siteDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mh-theme-archives-empty-'))
+    const themeDir = fileURLToPath(new URL('../../', import.meta.url))
+    const themesDir = path.join(siteDir, 'themes')
+
+    fs.mkdirSync(path.join(siteDir, 'content', 'archives'), { recursive: true })
+    fs.mkdirSync(themesDir, { recursive: true })
+    fs.writeFileSync(path.join(siteDir, 'hugo.yaml'), 'baseURL: https://example.org/\nlanguageCode: en-us\ntitle: Minimal Site\ntheme: mh-blog-theme\n')
+    fs.writeFileSync(path.join(siteDir, 'content', 'archives', '_index.md'), '---\ntitle: Archives\nlayout: archives\n---\n')
+    fs.symlinkSync(path.join(themeDir, 'node_modules'), path.join(siteDir, 'node_modules'))
+    fs.symlinkSync(themeDir, path.join(themesDir, 'mh-blog-theme'))
+
+    execFileSync('hugo', ['--source', siteDir, '--themesDir', themesDir], {
+      cwd: themeDir,
+      stdio: 'pipe'
+    })
+
+    const html = fs.readFileSync(path.join(siteDir, 'public', 'archives', 'index.html'), 'utf8')
+
+    expect(html).not.toContain('>Series<')
+    expect(html).not.toContain('>Tags<')
+    expect(html).not.toContain('lg:border-r')
+  })
 })

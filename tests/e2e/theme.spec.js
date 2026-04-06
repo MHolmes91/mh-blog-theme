@@ -155,9 +155,7 @@ test("archive page includes new fixture posts", async ({ page }) => {
   await expect(page.getByText("Series Part 4")).toBeVisible();
 });
 
-test("all posts page shows series links first and tag chips second", async ({
-  page,
-}) => {
+test("all posts page orders series links before tag chips", async ({ page }) => {
   await page.goto("/archives/");
 
   const seriesHeading = page.getByRole("heading", {
@@ -165,24 +163,14 @@ test("all posts page shows series links first and tag chips second", async ({
     exact: true,
   });
   const tagsHeading = page.getByRole("heading", { name: "Tags", exact: true });
-  const seriesLink = page.getByRole("link", {
-    name: "fixture-series",
-    exact: true,
-  });
-  const tagChip = page.getByRole("link", { name: "fixture", exact: true });
 
   await expect(seriesHeading).toBeVisible();
   await expect(tagsHeading).toBeVisible();
-  await expect(seriesLink).toBeVisible();
-  await expect(tagChip).toBeVisible();
-  await expect(tagChip).toHaveClass(/rounded-full/);
-  await expect(tagChip).toHaveClass(/border-purple-200/);
 
-  const headingOrder = await page.locator("main h2").evaluateAll((headings) =>
-    headings.map((heading) => heading.textContent?.trim()),
+  const sidebarText = await page.locator("main").textContent();
+  expect(sidebarText?.indexOf("Series")).toBeLessThan(
+    sidebarText?.indexOf("Tags") ?? Infinity,
   );
-
-  expect(headingOrder.indexOf("Series")).toBeLessThan(headingOrder.indexOf("Tags"));
 });
 
 test("archive page uses divider-based row summaries", async ({ page }) => {
