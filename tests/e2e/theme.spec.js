@@ -18,6 +18,14 @@ test('home page shows intro and recent posts', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Second Post' })).toBeVisible()
 })
 
+test('home page separates intro and recent posts with structural dividers', async ({ page }) => {
+  await page.goto('/')
+
+  await expect(page.locator('main hr')).toHaveCount(7)
+  await expect(page.getByText("Mark's Notes")).toBeVisible()
+  await expect(page.getByRole('link', { name: 'TOC Stress Post' })).toBeVisible()
+})
+
 test('home page metadata uses the site title', async ({ page }) => {
   await page.goto('/')
 
@@ -93,7 +101,13 @@ test('tag term page includes multiple fixture types', async ({ page }) => {
   await expect(page.getByText('Series Part 2')).toBeVisible()
   await expect(page.getByText('Series Part 3')).toBeVisible()
   await expect(page.getByText('Series Part 4')).toBeVisible()
-  await expect(page.locator('main hr')).toHaveCount(0)
+})
+
+test('tag term pages render row summaries instead of cards', async ({ page }) => {
+  await page.goto('/tags/fixture/')
+
+  await expect(page.locator('main article').first()).not.toHaveClass(/rounded-2xl/)
+  await expect(page.locator('main hr')).toHaveCount(5)
 })
 
 test('search opens and shows matching posts', async ({ page }) => {
