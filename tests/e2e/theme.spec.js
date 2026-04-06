@@ -67,6 +67,14 @@ test('posts list page shows post summaries', async ({ page }) => {
   await expect(page.getByText('A searchable post with headings.')).toBeVisible()
 })
 
+test('posts list page uses divider-based row summaries', async ({ page }) => {
+  await page.goto('/posts/')
+
+  await expect(page.locator('main article')).toHaveCount(8)
+  await expect(page.locator('main hr')).toHaveCount(7)
+  await expect(page.locator('main article').first()).not.toHaveClass(/rounded-2xl/)
+})
+
 test('taxonomy index pages do not show post read time metadata', async ({ page }) => {
   await page.goto('/tags/')
 

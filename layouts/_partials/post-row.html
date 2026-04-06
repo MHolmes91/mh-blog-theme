@@ -1,0 +1,7 @@
+<article class="py-5">
+  <a href="{{ .RelPermalink }}" class="block space-y-2">
+    <h2 class="text-2xl font-extrabold tracking-tight">{{ .Title }}</h2>
+    <p class="text-sm text-slate-600">{{ .Summary | plainify }}</p>
+    {{ partial "post-meta.html" . }}
+  </a>
+</article>
