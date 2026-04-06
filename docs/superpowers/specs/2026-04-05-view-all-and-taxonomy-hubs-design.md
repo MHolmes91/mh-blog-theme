@@ -54,11 +54,15 @@ The replacement hub area should contain:
 1. Series hub first
    - render all series as regular text links
    - present them as simple stacked lines, not chips
+   - omit this section entirely when there are no series
 
 2. Tags hub second
    - render all tags as chip-style links
+   - omit this section entirely when there are no tags
 
 This preserves the current two-column/intro-plus-list layout language while giving the all-posts page a stronger browsing purpose.
+
+If neither series nor tags exist, the left/intro hub area should disappear entirely and the all-posts page should collapse to the full-width list layout instead of rendering an empty sidebar.
 
 ## Ordering And Presentation
 
@@ -73,6 +77,13 @@ This preserves the current two-column/intro-plus-list layout language while givi
 - Appears below the series hub
 - Uses chip-style links
 - Should remain compact and scannable
+
+### Empty-State Rules
+
+- Hide the series hub when there are no series terms
+- Hide the tags hub when there are no tag terms
+- Hide the full left/intro hub area when both are absent
+- In the fully absent case, let the post list take the full available width
 
 The visual distinction between the two hubs should reinforce their different roles.
 
@@ -108,6 +119,8 @@ Expected verification focus:
 - all-posts page left/intro area contains:
   - series links first
   - tag chips second
+- empty hub sections disappear cleanly when their taxonomy has no terms
+- if both hubs are absent, the all-posts page falls back to list-only layout
 - existing browsing-surface behavior remains intact
 - build and existing E2E suite stay healthy after the template updates
 
@@ -134,6 +147,7 @@ After this change:
 - the homepage shows a tighter five-post recent list
 - users can jump clearly to the full post listing via `View All posts`
 - the all-posts page becomes a stronger browse hub by surfacing series and tags in its left area
+- the all-posts page collapses cleanly to a list-only layout if both hubs are empty
 - the main all-posts list remains the canonical full archive of posts
 
 ## Design Decisions Summary
@@ -143,3 +157,4 @@ After this change:
 - Replace the all-posts page intro area with taxonomy hubs instead of note content
 - Order those hubs as series first, tags second
 - Render series as regular links and tags as chips
+- Collapse empty hub sections, and remove the hub column entirely when both are absent
