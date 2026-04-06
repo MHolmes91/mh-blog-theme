@@ -17,13 +17,16 @@ describe('example site', () => {
   it('renders without socials configured', () => {
     const siteDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mh-theme-site-'))
     const themeDir = fileURLToPath(new URL('../../', import.meta.url))
+    const themesDir = path.join(siteDir, 'themes')
 
     fs.writeFileSync(path.join(siteDir, 'hugo.yaml'), 'baseURL: https://example.org/\nlanguageCode: en-us\ntitle: Minimal Site\ntheme: mh-blog-theme\n')
     fs.mkdirSync(path.join(siteDir, 'content'), { recursive: true })
+    fs.mkdirSync(themesDir, { recursive: true })
     fs.writeFileSync(path.join(siteDir, 'content', '_index.md'), '---\ntitle: Home\n---\n')
     fs.symlinkSync(path.join(themeDir, 'node_modules'), path.join(siteDir, 'node_modules'))
+    fs.symlinkSync(themeDir, path.join(themesDir, 'mh-blog-theme'))
 
-    execFileSync('hugo', ['--source', siteDir, '--themesDir', themeDir], {
+    execFileSync('hugo', ['--source', siteDir, '--themesDir', themesDir], {
       cwd: themeDir,
       stdio: 'pipe'
     })
