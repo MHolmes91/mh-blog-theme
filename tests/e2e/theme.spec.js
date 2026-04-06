@@ -54,6 +54,7 @@ test('browser dark preference sets the palette even when JavaScript is unavailab
   await page.goto('/')
 
   await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(17, 24, 39)')
+   await expect(page.getByRole('banner')).toHaveCSS('background-color', 'rgb(31, 41, 55)')
   await context.close()
 })
 

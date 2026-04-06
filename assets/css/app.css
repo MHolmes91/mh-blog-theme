@@ -65,28 +65,28 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.02em;
 }
 
-body[data-theme] .bg-white,
-body[data-theme] .bg-white\/90 {
+:is(:root, body[data-theme]) .bg-white,
+:is(:root, body[data-theme]) .bg-white\/90 {
   background-color: var(--color-surface);
 }
 
-body[data-theme] hr,
-body[data-theme] .border-purple-200,
-body[data-theme] .border-purple-300,
-body[data-theme] .border-slate-200 {
+:is(:root, body[data-theme]) hr,
+:is(:root, body[data-theme]) .border-purple-200,
+:is(:root, body[data-theme]) .border-purple-300,
+:is(:root, body[data-theme]) .border-slate-200 {
   border-color: var(--color-border);
 }
 
-body[data-theme] .bg-purple-600 {
+:is(:root, body[data-theme]) .bg-purple-600 {
   background-color: var(--color-accent);
 }
 
-body[data-theme] .text-slate-500,
-body[data-theme] .text-slate-600 {
+:is(:root, body[data-theme]) .text-slate-500,
+:is(:root, body[data-theme]) .text-slate-600 {
   color: var(--color-muted);
 }
 
-body[data-theme] .text-purple-700 {
+:is(:root, body[data-theme]) .text-purple-700 {
   color: var(--color-accent);
 }
 
