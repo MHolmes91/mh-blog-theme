@@ -575,6 +575,7 @@ test("toc stress post allows meaningful jump navigation", async ({ page }) => {
   const viewportHeight = page.viewportSize()?.height ?? 720;
 
   await page
+    .locator("#TableOfContents")
     .getByRole("link", { name: "Final Long Section", exact: true })
     .click();
 
@@ -693,6 +694,23 @@ test("shortcodes fixture renders visible built-in shortcode output", async ({
   await expect(page.getByRole("main")).toContainText(
     "Inline notice rendered through a Hugo shortcode example.",
   );
+});
+
+test("shortcode fixture renders all supported embedded shortcode outputs visibly", async ({
+  page,
+}) => {
+  await page.goto("/posts/shortcodes-builtins/");
+
+  await expect(
+    page.locator('iframe[title*="YouTube"], iframe[src*="youtube.com"]'),
+  ).toHaveCount(1);
+  await expect(
+    page.locator(
+      'blockquote.twitter-tweet, iframe[src*="twitter"], iframe[src*="x.com"]',
+    ),
+  ).toHaveCount(1);
+  await expect(page.locator('iframe[src*="instagram.com"]')).toHaveCount(1);
+  await expect(page.locator('svg[id^="mermaid-"]')).toBeVisible();
 });
 
 test("series fixture posts render shared series metadata", async ({ page }) => {

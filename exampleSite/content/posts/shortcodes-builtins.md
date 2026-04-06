@@ -16,9 +16,24 @@ func main() {
 }
 {{< /highlight >}}
 
+## YouTube
+
+{{< youtube 0RKpf3rK57I >}}
+
+## X Or Twitter
+
+{{< x user="jack" id="20" >}}
+
+## Instagram
+
+{{< instagram CxOWiQNP2MO >}}
+
+## Mermaid
+
 ```mermaid
 graph TD
-  A[Start] --> B[End]
+  A[Write] --> B[Render]
+  B --> C[Verify]
 ```
 
 ## Message
