@@ -26,6 +26,16 @@ test('home page metadata uses the site title', async ({ page }) => {
   await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute('content', 'MH Blog Theme')
 })
 
+test('browser dark preference controls theme without stored override state', async ({ browser }) => {
+  const context = await browser.newContext({ colorScheme: 'dark' })
+  const page = await context.newPage()
+
+  await page.goto('/')
+
+  await expect(page.locator('body')).toHaveAttribute('data-theme', 'dark')
+  await context.close()
+})
+
 test('archive page lists all posts', async ({ page }) => {
   await page.goto('/archives/')
 

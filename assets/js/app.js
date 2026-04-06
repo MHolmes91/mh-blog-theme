@@ -82,7 +82,6 @@ Alpine.data('siteUi', (searchUrl) => ({
     window.scrollTo({ top: 0, behavior: 'smooth' })
   },
   theme: resolveTheme({
-    storedTheme: null,
     systemPrefersDark: window.matchMedia('(prefers-color-scheme: dark)').matches
   })
 }))
