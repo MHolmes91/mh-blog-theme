@@ -1,23 +1,59 @@
-<header role="banner" class="sticky top-0 z-40 border-b border-purple-200 bg-white/80 px-6 py-4 backdrop-blur-md transition-opacity duration-300" :class="{ 'opacity-0 pointer-events-none': !toolbarVisible }">
-  <div class="mx-auto flex max-w-6xl items-center justify-between gap-4">
-    <a href="{{ site.Home.RelPermalink }}" class="flex items-center gap-3 text-xl font-bold">
-      <span class="inline-flex h-8 w-8 items-center justify-center rounded bg-purple-600 text-white">M</span>
+<header
+  role="banner"
+  class="sticky top-0 z-40 border-b border-purple-200 bg-white/80 px-6 py-4 backdrop-blur-md transition-opacity duration-300"
+  :class="{ 'opacity-0 pointer-events-none': !toolbarVisible }"
+>
+  <div class="mx-auto flex max-w-6xl px-6 items-center justify-between gap-4">
+    <a
+      href="{{ site.Home.RelPermalink }}"
+      class="flex items-center gap-3 text-xl font-bold"
+    >
+      <span
+        class="inline-flex h-8 w-8 items-center justify-center rounded bg-purple-600 text-white"
+        >M</span
+      >
       <span>{{ site.Title }}</span>
     </a>
     <div class="flex items-center gap-3">
-      <button type="button" aria-label="Search" @click="openSearch" class="inline-flex items-center gap-2 rounded border border-purple-300 px-3 py-2">
+      <button
+        type="button"
+        aria-label="Search"
+        @click="openSearch"
+        class="inline-flex items-center gap-2 rounded border border-purple-300 px-3 py-2"
+      >
         {{ partial "icon.html" (dict "name" "search" "class" "h-4 w-4") }}
         <span class="sr-only">Search</span>
       </button>
-      <div x-cloak x-show="searchOpen" @click.self="closeSearch" @keydown.escape.window="closeSearch" class="fixed inset-0 z-50 bg-black/40 p-6">
+      <div
+        x-cloak
+        x-show="searchOpen"
+        @click.self="closeSearch"
+        @keydown.escape.window="closeSearch"
+        class="fixed inset-0 z-50 bg-black/40 p-6"
+      >
         <div class="mx-auto max-w-2xl rounded-2xl bg-white p-4">
           <div class="flex items-center gap-3">
-            <input x-model="query" placeholder="Search posts" class="w-full rounded border border-purple-300 px-3 py-2">
-            <button type="button" aria-label="Close search" @click="closeSearch" class="rounded border border-purple-300 px-3 py-2">Close</button>
+            <input
+              x-model="query"
+              placeholder="Search posts"
+              class="w-full rounded border border-purple-300 px-3 py-2"
+            />
+            <button
+              type="button"
+              aria-label="Close search"
+              @click="closeSearch"
+              class="rounded border border-purple-300 px-3 py-2"
+            >
+              Close
+            </button>
           </div>
           <div class="mt-4 space-y-2">
             <template x-for="result in results" :key="result.permalink">
-              <a :href="result.permalink" x-text="result.title" class="block rounded border border-purple-200 px-3 py-2"></a>
+              <a
+                :href="result.permalink"
+                x-text="result.title"
+                class="block rounded border border-purple-200 px-3 py-2"
+              ></a>
             </template>
           </div>
         </div>
