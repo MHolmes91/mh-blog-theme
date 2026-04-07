@@ -1055,3 +1055,103 @@ test("series term page lists all four parts", async ({ page }) => {
     "Series Part 1",
   ]);
 });
+
+test("header is sticky with backdrop blur on all pages", async ({ page }) => {
+  await page.goto("/");
+
+  const banner = page.getByRole("banner");
+  await expect(banner).toHaveCSS("position", "sticky");
+  await expect(banner).toHaveClass(/backdrop-blur-md/);
+  await expect(banner).toHaveClass(/z-40/);
+});
+
+test("header stays visible when scrolled above the threshold", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 400 });
+  await page.goto("/posts/first-post/");
+
+  const banner = page.getByRole("banner");
+
+  await expect(banner).not.toHaveClass(/opacity-0/);
+
+  await page.evaluate(() => window.scrollTo(0, 50));
+
+  await expect(banner).not.toHaveClass(/opacity-0/);
+});
+
+test("header fades out after 3 seconds of scroll inactivity below threshold", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 400 });
+  await page.goto("/posts/first-post/");
+
+  await page.evaluate(() => {
+    const postContent = document.getElementById("post-content");
+    if (!postContent) throw new Error("Expected #post-content");
+
+    const filler = document.createElement("div");
+    filler.style.height = "1200px";
+    postContent.appendChild(filler);
+    window.dispatchEvent(new Event("resize"));
+  });
+
+  const banner = page.getByRole("banner");
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+
+  await expect(banner).not.toHaveClass(/opacity-0/);
+
+  await page.waitForTimeout(3500);
+
+  await expect(banner).toHaveClass(/opacity-0/);
+});
+
+test("scrolling re-shows the header after it has faded out", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 400 });
+  await page.goto("/posts/first-post/");
+
+  await page.evaluate(() => {
+    const postContent = document.getElementById("post-content");
+    if (!postContent) throw new Error("Expected #post-content");
+
+    const filler = document.createElement("div");
+    filler.style.height = "1200px";
+    postContent.appendChild(filler);
+    window.dispatchEvent(new Event("resize"));
+  });
+
+  const banner = page.getByRole("banner");
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(3500);
+  await expect(banner).toHaveClass(/opacity-0/);
+
+  await page.evaluate(() => window.scrollBy(0, 50));
+
+  await expect(banner).not.toHaveClass(/opacity-0/);
+});
+
+test("header stays visible when an element has focus", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 400 });
+  await page.goto("/posts/first-post/");
+
+  await page.evaluate(() => {
+    const postContent = document.getElementById("post-content");
+    if (!postContent) throw new Error("Expected #post-content");
+
+    const filler = document.createElement("div");
+    filler.style.height = "1200px";
+    postContent.appendChild(filler);
+    window.dispatchEvent(new Event("resize"));
+  });
+
+  const banner = page.getByRole("banner");
+  const searchButton = page.getByRole("button", { name: "Search" });
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(3500);
+  await expect(banner).toHaveClass(/opacity-0/);
+
+  await searchButton.focus();
+
+  await expect(banner).not.toHaveClass(/opacity-0/);
+});
