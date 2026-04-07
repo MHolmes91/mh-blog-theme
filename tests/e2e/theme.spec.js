@@ -1,5 +1,60 @@
 import { test, expect } from "@playwright/test";
 
+const TITLE_ALIGNMENT_TOLERANCE = 32;
+
+async function getBox(locator) {
+  const box = await locator.boundingBox();
+
+  expect(box).not.toBeNull();
+
+  return {
+    ...box,
+    left: box.x,
+    right: box.x + box.width,
+    top: box.y,
+    bottom: box.y + box.height,
+  };
+}
+
+function expectTrailingTaxonomyBlock(containerBox, titleBox, seriesBox, tagBox) {
+  expect(seriesBox.left).toBeGreaterThan(containerBox.left + containerBox.width / 2);
+  expect(tagBox.left).toBeGreaterThan(containerBox.left + containerBox.width / 2);
+  expect(Math.abs(seriesBox.top - titleBox.top)).toBeLessThanOrEqual(
+    TITLE_ALIGNMENT_TOLERANCE,
+  );
+  expect(tagBox.top).toBeGreaterThan(seriesBox.bottom + 4);
+}
+
+function expectWrappedStackedTaxonomy(leftContentBox, seriesBox, tagBox) {
+  expect(seriesBox.top).toBeGreaterThan(leftContentBox.bottom);
+  expect(tagBox.top).toBeGreaterThan(seriesBox.bottom);
+}
+
+async function expectInlineSeriesRow(seriesGroup) {
+  const seriesLabel = seriesGroup.getByText("Series", { exact: true });
+  const seriesLinks = seriesGroup.getByRole("link");
+  const [labelBox, firstLinkBox] = await Promise.all([
+    getBox(seriesLabel),
+    getBox(seriesLinks.first()),
+  ]);
+
+  await expect(seriesLabel).toBeVisible();
+  await expect(seriesLinks.first()).toBeVisible();
+  await expect(seriesLinks).toHaveCount(1);
+  expect(labelBox.bottom).toBeGreaterThan(firstLinkBox.top);
+  expect(firstLinkBox.bottom).toBeGreaterThan(labelBox.top);
+  expect(firstLinkBox.left).toBeGreaterThan(labelBox.right);
+}
+
+async function expectUnlabeledTagRow(tagsGroup) {
+  const tagLinks = tagsGroup.getByRole("link");
+
+  await expect(tagsGroup.getByText("Tags", { exact: true })).toHaveCount(0);
+  await expect(tagLinks.first()).toBeVisible();
+
+  return getBox(tagLinks.first());
+}
+
 test("home page renders shared chrome", async ({ page }) => {
   await page.goto("/");
 
@@ -355,7 +410,165 @@ test("post metadata tags and series are clickable taxonomy links", async ({
   ).toHaveAttribute("href", "/tags/series/");
 });
 
-test("post summary metadata stays non-interactive on list surfaces", async ({
+test("single posts render series links and tag chips consistently", async ({
+  page,
+}) => {
+  await page.goto("/posts/series-part-1/");
+
+  const metadata = page.locator("main article").first();
+  const seriesLink = metadata.getByRole("link", {
+    name: "fixture-series",
+    exact: true,
+  });
+  const tagLink = metadata.getByRole("link", { name: "series", exact: true });
+
+  await expect(seriesLink).toBeVisible();
+  await expect(seriesLink).not.toHaveClass(/rounded-full/);
+  await expect(tagLink).toBeVisible();
+  await expect(tagLink).toHaveClass(/rounded-full/);
+});
+
+test("post rows right-align taxonomy with the title on wide layouts", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/posts/");
+
+  const article = page
+    .locator("main article")
+    .filter({ has: page.getByRole("link", { name: "Series Part 1" }) });
+  const title = article.getByRole("heading", { name: "Series Part 1" });
+  const seriesGroup = article.locator('[data-taxonomy-group="series"]');
+  const tagsGroup = article.locator('[data-taxonomy-group="tags"]');
+
+  await expectInlineSeriesRow(seriesGroup);
+  await expect(
+    seriesGroup.getByRole("link", { name: "fixture-series", exact: true }),
+  ).toBeVisible();
+
+  const [articleBox, titleBox, seriesBox, tagBox] = await Promise.all([
+    getBox(article),
+    getBox(title),
+    getBox(seriesGroup),
+    expectUnlabeledTagRow(tagsGroup),
+  ]);
+
+  await expect(tagsGroup.getByRole("link", { name: "series", exact: true })).toBeVisible();
+
+  expectTrailingTaxonomyBlock(articleBox, titleBox, seriesBox, tagBox);
+});
+
+test("single posts right-align taxonomy with the title on wide layouts", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/posts/series-part-1/");
+
+  const header = page.locator("main article header");
+  const title = header.getByRole("heading", { name: "Series Part 1" });
+  const seriesGroup = header.locator('[data-taxonomy-group="series"]');
+  const tagsGroup = header.locator('[data-taxonomy-group="tags"]');
+
+  await expectInlineSeriesRow(seriesGroup);
+  await expect(
+    seriesGroup.getByRole("link", { name: "fixture-series", exact: true }),
+  ).toBeVisible();
+
+  const [headerBox, titleBox, seriesBox, tagBox] = await Promise.all([
+    getBox(header),
+    getBox(title),
+    getBox(seriesGroup),
+    expectUnlabeledTagRow(tagsGroup),
+  ]);
+
+  await expect(tagsGroup.getByRole("link", { name: "series", exact: true })).toBeVisible();
+
+  expectTrailingTaxonomyBlock(headerBox, titleBox, seriesBox, tagBox);
+});
+
+test("post rows metadata wraps taxonomy below the left content on narrow layouts", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 480, height: 900 });
+  await page.goto("/posts/");
+
+  const rowArticle = page
+    .locator("main article")
+    .filter({ has: page.getByRole("link", { name: "Series Part 1" }) });
+  const rowLeftContent = rowArticle.locator("a").first();
+  const rowSeriesGroup = rowArticle.locator('[data-taxonomy-group="series"]');
+  const rowTagsGroup = rowArticle.locator('[data-taxonomy-group="tags"]');
+
+  await expectInlineSeriesRow(rowSeriesGroup);
+  await expect(
+    rowSeriesGroup.getByRole("link", { name: "fixture-series", exact: true }),
+  ).toBeVisible();
+
+  const [rowLeftContentBox, rowSeriesBox, rowTagBox] = await Promise.all([
+    getBox(rowLeftContent),
+    getBox(rowSeriesGroup),
+    expectUnlabeledTagRow(rowTagsGroup),
+  ]);
+
+  await expect(
+    rowTagsGroup.getByRole("link", { name: "series", exact: true }),
+  ).toBeVisible();
+
+  expectWrappedStackedTaxonomy(rowLeftContentBox, rowSeriesBox, rowTagBox);
+});
+
+test("single post metadata wraps taxonomy below the left content on narrow layouts", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 480, height: 900 });
+  await page.goto("/posts/series-part-1/");
+
+  const singleHeader = page.locator("main article header");
+  const singleLeftContent = singleHeader.locator(':scope > div').first();
+  const singleSeriesGroup = singleHeader.locator('[data-taxonomy-group="series"]');
+  const singleTagsGroup = singleHeader.locator('[data-taxonomy-group="tags"]');
+
+  await expectInlineSeriesRow(singleSeriesGroup);
+  await expect(
+    singleSeriesGroup.getByRole("link", { name: "fixture-series", exact: true }),
+  ).toBeVisible();
+
+  const [singleMetadataBox, singleSeriesBox, singleTagBox] = await Promise.all([
+    getBox(singleLeftContent),
+    getBox(singleSeriesGroup),
+    expectUnlabeledTagRow(singleTagsGroup),
+  ]);
+
+  await expect(
+    singleTagsGroup.getByRole("link", { name: "series", exact: true }),
+  ).toBeVisible();
+
+  expectWrappedStackedTaxonomy(singleMetadataBox, singleSeriesBox, singleTagBox);
+});
+
+test("post summary metadata groups series and tags separately on list surfaces", async ({
+  page,
+}) => {
+  await page.goto("/posts/");
+
+  const article = page
+    .locator("main article")
+    .filter({ has: page.getByRole("link", { name: "Series Part 1" }) });
+  const seriesGroup = article.locator('[data-taxonomy-group="series"]');
+  const tagsGroup = article.locator('[data-taxonomy-group="tags"]');
+  const seriesLink = seriesGroup.getByRole("link", {
+    name: "fixture-series",
+    exact: true,
+  });
+  const tagChip = tagsGroup.getByRole("link", { name: "series", exact: true });
+
+  await expectInlineSeriesRow(seriesGroup);
+  await expect(seriesLink).toBeVisible();
+  await expect(tagsGroup.getByText("Tags", { exact: true })).toHaveCount(0);
+  await expect(tagChip).toBeVisible();
+});
+
+test("post rows keep taxonomy links separate from the main post link", async ({
   page,
 }) => {
   await page.goto("/posts/");
@@ -364,14 +577,37 @@ test("post summary metadata stays non-interactive on list surfaces", async ({
     .locator("main article")
     .filter({ has: page.getByRole("link", { name: "Series Part 1" }) });
 
-  await expect(article.getByText("fixture-series", { exact: true })).toBeVisible();
-  await expect(article.getByText("series", { exact: true })).toBeVisible();
-  await expect(
-    article.getByRole("link", { name: "fixture-series", exact: true }),
-  ).toHaveCount(0);
-  await expect(
-    article.getByRole("link", { name: "series", exact: true }),
-  ).toHaveCount(0);
+  const postLink = article.getByRole("link", { name: "Series Part 1" });
+  const seriesLink = article.getByRole("link", {
+    name: "fixture-series",
+    exact: true,
+  });
+  const tagLink = article.getByRole("link", { name: "series", exact: true });
+
+  await expect(postLink).toBeVisible();
+  await expect(seriesLink).toBeVisible();
+  await expect(tagLink).toBeVisible();
+});
+
+test("clicking row taxonomy links does not navigate to the post", async ({
+  page,
+}) => {
+  await page.goto("/posts/");
+
+  const article = page
+    .locator("main article")
+    .filter({ has: page.getByRole("link", { name: "Series Part 1" }) });
+
+  await article.getByRole("link", { name: "fixture-series", exact: true }).click();
+  await expect(page).toHaveURL(/\/series\/fixture-series\/$/);
+
+  await page.goto("/posts/");
+  const refreshedArticle = page
+    .locator("main article")
+    .filter({ has: page.getByRole("link", { name: "Series Part 1" }) });
+
+  await refreshedArticle.getByRole("link", { name: "series", exact: true }).click();
+  await expect(page).toHaveURL(/\/tags\/series\/$/);
 });
 
 test("taxonomy index pages do not show post read time metadata", async ({
@@ -671,6 +907,14 @@ test("post without optional metadata still renders", async ({ page }) => {
   );
   await expect(page.locator('meta[property="og:image"]')).toHaveCount(0);
   await expect(page.locator('meta[name="twitter:image"]')).toHaveCount(0);
+});
+
+test("post without optional metadata does not render an empty taxonomy wrapper", async ({
+  page,
+}) => {
+  await page.goto("/posts/second-post/");
+
+  await expect(page.locator("article header > div")).toHaveCount(1);
 });
 
 test("shortcodes fixture renders visible built-in shortcode output", async ({

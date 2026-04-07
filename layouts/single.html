@@ -3,10 +3,7 @@
   <section class="mx-auto grid max-w-6xl gap-10 px-6 py-10 lg:grid-cols-[minmax(0,1fr)_280px]">
     <article id="post-content" class="min-w-0 space-y-6">
       {{ with .Params.featuredImage }}<img src="{{ . }}" alt="" class="w-full rounded-2xl object-cover">{{ end }}
-      <header class="space-y-3">
-        <h1 class="text-4xl font-bold">{{ .Title }}</h1>
-        {{ partial "post-meta.html" (dict "page" . "linked" true) }}
-      </header>
+      {{ partial "post-header.html" (dict "page" . "surface" "aligned") }}
       <div class="prose prose-slate max-w-none" data-content-body>{{ .Content }}</div>
     </article>
     {{ partial "toc.html" . }}

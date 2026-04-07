@@ -1,0 +1,48 @@
+{{ $page := .page }}
+{{ $surface := .surface | default "single" }}
+{{ $titleTag := .titleTag | default "h1" }}
+{{ $showSummary := .showSummary | default false }}
+{{ $summary := .summary | default ($page.Summary | plainify) }}
+{{ $titleClass := .titleClass | default "text-4xl font-bold" }}
+{{ $contentHref := .contentHref }}
+{{ $headerClass := .class | default "space-y-3" }}
+{{ $leftColumnClass := .leftColumnClass | default "space-y-3" }}
+
+{{ if eq $surface "aligned" }}
+  {{ $headerClass = .class | default "space-y-4 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:gap-x-10" }}
+  {{ $leftColumnClass = .leftColumnClass | default "space-y-3" }}
+{{ end }}
+
+<header class="{{ $headerClass }}">
+  <div class="{{ $leftColumnClass }}">
+    {{ if $contentHref }}
+      <a href="{{ $contentHref }}" class="block space-y-2">
+        {{ if eq $titleTag "h2" }}
+          <h2 class="{{ $titleClass }}">{{ $page.Title }}</h2>
+        {{ else }}
+          <h1 class="{{ $titleClass }}">{{ $page.Title }}</h1>
+        {{ end }}
+
+        {{ if and $showSummary $summary }}
+          <p class="text-sm text-slate-600">{{ $summary }}</p>
+        {{ end }}
+
+        {{ partial "post-meta.html" (dict "page" $page) }}
+      </a>
+    {{ else }}
+      {{ if eq $titleTag "h2" }}
+        <h2 class="{{ $titleClass }}">{{ $page.Title }}</h2>
+      {{ else }}
+        <h1 class="{{ $titleClass }}">{{ $page.Title }}</h1>
+      {{ end }}
+
+      {{ if and $showSummary $summary }}
+        <p class="text-sm text-slate-600">{{ $summary }}</p>
+      {{ end }}
+
+      {{ partial "post-meta.html" (dict "page" $page) }}
+    {{ end }}
+  </div>
+
+  {{ partial "post-taxonomy.html" (dict "page" $page "surface" $surface) }}
+</header>

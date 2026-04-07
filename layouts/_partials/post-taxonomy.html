@@ -1,0 +1,98 @@
+{{ $page := .page }}
+{{ $surface := .surface | default "single" }}
+{{ $showRows := ne $surface "single" }}
+{{ $isAligned := eq $surface "aligned" }}
+
+{{ $seriesTerms := slice }}
+{{ with $page.GetTerms "series" }}
+  {{ range $index, $termPage := . }}
+    {{ $name := $termPage.LinkTitle }}
+    {{ with index $page.Params.series $index }}
+      {{ $name = . }}
+    {{ end }}
+    {{ $seriesTerms = $seriesTerms | append (dict "href" $termPage.RelPermalink "name" $name) }}
+  {{ end }}
+{{ end }}
+
+{{ $tagTerms := slice }}
+{{ with $page.GetTerms "tags" }}
+  {{ range $index, $termPage := . }}
+    {{ $name := $termPage.LinkTitle }}
+    {{ with index $page.Params.tags $index }}
+      {{ $name = . }}
+    {{ end }}
+    {{ $tagTerms = $tagTerms | append (dict "href" $termPage.RelPermalink "name" $name) }}
+  {{ end }}
+{{ end }}
+
+{{ if or (gt (len $seriesTerms) 0) (gt (len $tagTerms) 0) }}
+  {{ if $showRows }}
+    <div class="{{ if $isAligned }}flex flex-col items-start gap-3 text-sm text-slate-500 lg:items-end{{ else }}mt-3 flex flex-col items-start gap-3 text-sm text-slate-500{{ end }}">
+      {{ with $seriesTerms }}
+        <div data-taxonomy-group="series" class="flex items-center gap-2 {{ if $isAligned }}lg:w-full lg:justify-end{{ end }}">
+          <span class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">Series</span>
+          <span aria-hidden="true" class="text-slate-300">-</span>
+          <ul class="flex flex-wrap items-center gap-2 {{ if $isAligned }}lg:justify-end{{ end }}" aria-label="Series terms">
+            {{ range . }}
+              <li>
+                <a
+                  href="{{ .href }}"
+                  class="font-medium text-slate-700 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-950 hover:decoration-slate-500"
+                >
+                  {{ .name }}
+                </a>
+              </li>
+            {{ end }}
+          </ul>
+        </div>
+      {{ end }}
+      {{ with $tagTerms }}
+        <div data-taxonomy-group="tags" class="{{ if $isAligned }}lg:w-full{{ end }}">
+          <ul class="flex flex-wrap gap-2 {{ if $isAligned }}lg:justify-end{{ end }}" aria-label="Tags">
+            {{ range . }}
+              <li>
+                <a
+                  href="{{ .href }}"
+                  class="inline-flex items-center rounded-full border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-600 transition hover:border-slate-400 hover:text-slate-950"
+                >
+                  {{ .name }}
+                </a>
+              </li>
+            {{ end }}
+          </ul>
+        </div>
+      {{ end }}
+    </div>
+  {{ else }}
+    <div class="flex flex-wrap items-center gap-2 text-sm text-slate-500">
+      {{ with $seriesTerms }}
+        <ul data-taxonomy-group="series" class="flex flex-wrap items-center gap-2" aria-label="Series terms">
+          {{ range . }}
+            <li>
+              <a
+                href="{{ .href }}"
+                class="font-medium text-slate-700 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-950 hover:decoration-slate-500"
+              >
+                {{ .name }}
+              </a>
+            </li>
+          {{ end }}
+        </ul>
+      {{ end }}
+      {{ with $tagTerms }}
+        <ul data-taxonomy-group="tags" class="flex flex-wrap items-center gap-2" aria-label="Tags">
+          {{ range . }}
+            <li>
+              <a
+                href="{{ .href }}"
+                class="inline-flex items-center rounded-full border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-600 transition hover:border-slate-400 hover:text-slate-950"
+              >
+                {{ .name }}
+              </a>
+            </li>
+          {{ end }}
+        </ul>
+      {{ end }}
+    </div>
+  {{ end }}
+{{ end }}
