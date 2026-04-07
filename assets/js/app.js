@@ -97,12 +97,13 @@ Alpine.data('siteUi', (searchUrl) => ({
     const updateToolbarVisibility = () => {
       const main = document.querySelector('main')
       const isAboveThreshold = !main || main.getBoundingClientRect().top > 0
+      const scrollY = window.scrollY
+      const isScrollingUp = scrollY < (this._lastScrollY ?? scrollY)
+      this._lastScrollY = scrollY
 
       clearTimeout(this._toolbarTimer)
 
-      if (isAboveThreshold) {
-        this.toolbarVisible = true
-      } else {
+      if (isAboveThreshold || isScrollingUp || this.toolbarVisible) {
         this.toolbarVisible = true
         this._toolbarTimer = setTimeout(() => {
           this.toolbarVisible = false

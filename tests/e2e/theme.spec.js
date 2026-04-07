@@ -1105,7 +1105,32 @@ test("header fades out after 3 seconds of scroll inactivity below threshold", as
   await expect(banner).toHaveClass(/opacity-0/);
 });
 
-test("scrolling re-shows the header after it has faded out", async ({ page }) => {
+test("scrolling down does not re-show the header after it has faded out", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 400 });
+  await page.goto("/posts/first-post/");
+
+  await page.evaluate(() => {
+    const postContent = document.getElementById("post-content");
+    if (!postContent) throw new Error("Expected #post-content");
+
+    const filler = document.createElement("div");
+    filler.style.height = "1200px";
+    postContent.appendChild(filler);
+    window.dispatchEvent(new Event("resize"));
+  });
+
+  const banner = page.getByRole("banner");
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(3500);
+  await expect(banner).toHaveClass(/opacity-0/);
+
+  await page.evaluate(() => window.scrollBy(0, 50));
+
+  await expect(banner).toHaveClass(/opacity-0/);
+});
+
+test("scrolling up re-shows the header after it has faded out", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 400 });
   await page.goto("/posts/first-post/");
 
