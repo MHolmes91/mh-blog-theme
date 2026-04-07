@@ -5,9 +5,9 @@
 Refine the shared metadata layout so taxonomy links have a stronger visual structure across both list rows and single-post headers.
 
 - On wide layouts, taxonomy content should sit on the right side of the container.
-- Series should appear above tags in that right-side block.
+- Taxonomy should render as two horizontal rows inside that right-side block.
 - The top of the right-side taxonomy block should align with the top of the title area.
-- If there is not enough horizontal room, taxonomy should wrap below the left-side content and show series and tags side-by-side on that lower row.
+- If there is not enough horizontal room, taxonomy should wrap below the left-side content while preserving the same two-row structure.
 
 ## Scope
 
@@ -46,15 +46,18 @@ On layouts with enough horizontal space:
 - the metadata block stays on the left below the title/summary content it belongs to
 - the taxonomy block sits on the right side of the same overall container
 - the taxonomy block is top-aligned so its top edge lines up with the top of the title area
-- inside the taxonomy block, series render above tags
-- both series and tags align to the right edge of the container
+- inside the taxonomy block, the first row is horizontal and reads `Series - <series links>`
+- the second row contains only tag chips with no `Tags` label
+- both taxonomy rows align to the right edge of the container
 
 ### Wrapped Layout
 
 When the container does not have enough width to preserve that two-column arrangement:
 
 - the taxonomy block moves below the left-side content
-- the lower taxonomy row shows series and tags side-by-side
+- the taxonomy block keeps the same two-row content structure
+- the series row remains horizontal
+- the tags row remains horizontal and chip-only
 - the post link and taxonomy links remain separate interactive regions
 
 ### Alignment Rule
@@ -83,11 +86,13 @@ Follow TDD for the layout refinement.
 
 Add or update E2E coverage to prove:
 
-- a post row shows taxonomy in a right-side stacked block when there is enough room
-- a single-post header shows taxonomy in the same right-side stacked block when there is enough room
+- a post row shows taxonomy in a right-side two-row block when there is enough room
+- a single-post header shows taxonomy in the same right-side two-row block when there is enough room
 - the top of the right-side taxonomy block aligns with the top of the title area
+- the series row includes a visible `Series` label
+- the tags row does not include a `Tags` label
 - at a narrower viewport, taxonomy moves below the left-side content
-- in the wrapped state, series and tags appear side-by-side rather than stacked
+- in the wrapped state, the same two-row structure is preserved
 - independent taxonomy-link interaction continues to work on list surfaces
 
 Use computed layout relationships or element bounding boxes where possible instead of brittle class-only assertions.
@@ -103,8 +108,8 @@ Use computed layout relationships or element bounding boxes where possible inste
 
 The change is complete when:
 
-- wide layouts show taxonomy in a right-aligned block with series above tags
+- wide layouts show taxonomy in a right-aligned block with a horizontal `Series - ...` row above a chip-only tags row
 - the top of that block aligns with the top of the title region
-- narrower layouts move taxonomy below the left-side content and arrange series/tags side-by-side
+- narrower layouts move taxonomy below the left-side content while preserving the same two-row structure
 - the same layout rules apply to both list rows and single-post headers
 - existing link behavior remains accessible and correct
