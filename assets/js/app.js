@@ -12,6 +12,7 @@ Alpine.data('siteUi', (searchUrl) => ({
   searchOpen: false,
   showBackToTop: false,
   dockStyle: '',
+  toolbarVisible: true,
   theme: resolveTheme({
     systemPrefersDark: window.matchMedia('(prefers-color-scheme: dark)').matches
   }),
@@ -93,6 +94,22 @@ Alpine.data('siteUi', (searchUrl) => ({
       this.dockStyle = `right:${rightInset};bottom:${bottomOffset}px;`
     }
 
+    const updateToolbarVisibility = () => {
+      const main = document.querySelector('main')
+      const isAboveThreshold = !main || main.getBoundingClientRect().top > 0
+
+      clearTimeout(this._toolbarTimer)
+
+      if (isAboveThreshold) {
+        this.toolbarVisible = true
+      } else {
+        this.toolbarVisible = true
+        this._toolbarTimer = setTimeout(() => {
+          this.toolbarVisible = false
+        }, 3000)
+      }
+    }
+
     syncTheme(colorSchemeQuery)
     colorSchemeQuery.addEventListener('change', syncTheme)
     updateReadingProgress()
@@ -107,6 +124,12 @@ Alpine.data('siteUi', (searchUrl) => ({
     window.addEventListener('resize', updateBackToTopVisibility)
     window.addEventListener('scroll', updateDockOffset, { passive: true })
     window.addEventListener('resize', updateDockOffset)
+    window.addEventListener('scroll', updateToolbarVisibility, { passive: true })
+    window.addEventListener('resize', updateToolbarVisibility)
+    document.addEventListener('focusin', () => {
+      clearTimeout(this._toolbarTimer)
+      this.toolbarVisible = true
+    })
   },
   async openSearch() {
     this.searchOpen = true
