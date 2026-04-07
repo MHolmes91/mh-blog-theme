@@ -1125,7 +1125,7 @@ test("scrolling re-shows the header after it has faded out", async ({ page }) =>
   await page.waitForTimeout(3500);
   await expect(banner).toHaveClass(/opacity-0/);
 
-  await page.evaluate(() => window.scrollBy(0, 50));
+  await page.evaluate(() => window.scrollBy(0, -50));
 
   await expect(banner).not.toHaveClass(/opacity-0/);
 });
