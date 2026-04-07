@@ -19,6 +19,7 @@ Sticky positioning (`position: sticky`). The header stays in document flow and s
 | Condition | `toolbarVisible` |
 |-----------|-------------------|
 | Above threshold (main top > 0) | `true` (always) |
+| Any element has focus | `true` (always) |
 | Below threshold, user scrolling | `true` |
 | Below threshold, 3s since last scroll | `false` |
 
@@ -56,8 +57,10 @@ New state in `siteUi`:
 
 New handler `updateToolbarVisibility()`:
 - Checks `document.querySelector('main').getBoundingClientRect().top <= 0`
+- Checks `document.activeElement !== document.body` — if any element has focus, header stays visible
 - Manages a `setTimeout` reference stored as instance property (`this._toolbarTimer`)
 - Wired into existing `scroll` event listener (passive)
+- Also wired into `focusin` event listener (non-passive not needed) to re-show header immediately on focus
 
 ## Layering
 
