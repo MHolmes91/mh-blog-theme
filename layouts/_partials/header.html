@@ -37,23 +37,43 @@
               x-model="query"
               placeholder="Search posts"
               class="w-full rounded border border-purple-300 px-3 py-2"
+              @keydown.enter.prevent="navigateToActiveResult()"
+              @keydown.arrow-down.prevent="selectNextResult()"
+              @keydown.arrow-up.prevent="selectPrevResult()"
             />
             <button
               type="button"
               aria-label="Close search"
               @click="closeSearch"
-              class="rounded border border-purple-300 px-3 py-2"
+              class="inline-flex items-center justify-center rounded border border-purple-300 p-2"
             >
-              Close
+              {{ partial "icon.html" (dict "name" "x" "class" "h-4 w-4") }}
             </button>
           </div>
-          <div class="mt-4 space-y-2">
-            <template x-for="result in results" :key="result.permalink">
+          <div data-results-container class="mt-4 space-y-2 max-h-80 overflow-y-auto">
+            <template x-for="(result, index) in results" :key="result.permalink">
               <a
                 :href="result.permalink"
-                x-text="result.title"
-                class="block rounded border border-purple-200 px-3 py-2"
-              ></a>
+                :data-result-index="index"
+                class="block rounded border px-3 py-2 transition-colors"
+                :class="index === activeResultIndex
+                  ? 'border-purple-400 bg-purple-50'
+                  : 'border-purple-200 hover:border-purple-300'"
+              >
+                <div x-html="highlightText(result.title, query)" class="font-medium"></div>
+                <template x-if="result._matchedTags?.length">
+                  <div class="flex flex-wrap gap-1 mt-1">
+                    <template x-for="tag in result._matchedTags" :key="tag">
+                      <span x-html="highlightText(tag, query)" class="inline-block rounded-full bg-purple-100 px-2 py-0.5 text-xs"></span>
+                    </template>
+                  </div>
+                </template>
+                <div
+                  x-show="result._context"
+                  x-html="highlightText(result._context, query)"
+                  class="mt-1 text-sm text-slate-500 line-clamp-2"
+                ></div>
+              </a>
             </template>
           </div>
         </div>
