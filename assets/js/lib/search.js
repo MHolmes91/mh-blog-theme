@@ -32,6 +32,53 @@ export function getMatchedTags(record, needle) {
   ]
 }
 
+const CONTEXT_LENGTH = 120
+
+export function extractContext(record, query) {
+  const needle = query.trim().toLowerCase()
+  if (!needle) return ''
+
+  const rank = rankRecord(record, query)
+
+  if (rank <= 1) {
+    return record.content.slice(0, CONTEXT_LENGTH)
+  }
+
+  const lowerContent = record.content.toLowerCase()
+
+  for (const heading of (record.headings || [])) {
+    const headingText = heading.replace(/^##+\s+/, '')
+    if (headingText.toLowerCase().includes(needle)) {
+      const headingPos = lowerContent.indexOf(headingText.toLowerCase())
+      if (headingPos !== -1) {
+        const afterHeading = record.content.slice(headingPos + headingText.length).trimStart()
+        return headingText + ' ' + afterHeading.slice(0, CONTEXT_LENGTH)
+      }
+    }
+  }
+
+  const matchIndex = lowerContent.indexOf(needle)
+  if (matchIndex === -1) return record.content.slice(0, CONTEXT_LENGTH)
+
+  let start = Math.max(0, matchIndex - 60)
+  let end = Math.min(record.content.length, matchIndex + needle.length + 60)
+
+  if (start > 0 && record.content[start] !== ' ' && record.content[start - 1] !== ' ') {
+    const nextSpace = record.content.indexOf(' ', start)
+    if (nextSpace !== -1) start = nextSpace + 1
+  }
+  if (end < record.content.length && record.content[end - 1] !== ' ' && record.content[end] !== ' ') {
+    const prevSpace = record.content.lastIndexOf(' ', end)
+    if (prevSpace > start) end = prevSpace
+  }
+
+  let context = record.content.slice(start, end).trim()
+  if (start > 0) context = '\u2026' + context
+  if (end < record.content.length) context = context + '\u2026'
+
+  return context
+}
+
 export function filterSearchRecords(records, query) {
   const needle = query.trim().toLowerCase()
   if (!needle) return []

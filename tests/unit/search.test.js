@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { filterSearchRecords, collectMatches, loadSearchRecords, highlightText, rankRecord, getMatchedTags } from '../../assets/js/lib/search.js'
+import { filterSearchRecords, collectMatches, loadSearchRecords, highlightText, rankRecord, getMatchedTags, extractContext } from '../../assets/js/lib/search.js'
 
 describe('highlightText', () => {
   it('returns escaped text when query is empty', () => {
@@ -86,6 +86,68 @@ describe('getMatchedTags', () => {
 
   it('returns all matching tags and series', () => {
     expect(getMatchedTags(record, 'hugo')).toEqual(['hugo'])
+  })
+})
+
+describe('extractContext', () => {
+  const record = {
+    title: 'Test Post',
+    tags: ['webdev'],
+    series: [],
+    content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.',
+    headings: ['## Introduction', '## Getting Started']
+  }
+
+  it('returns first 120 chars for tag match', () => {
+    const result = extractContext(record, 'webdev')
+    expect(result).toBe(record.content.slice(0, 120))
+  })
+
+  it('returns first 120 chars for title match', () => {
+    const result = extractContext(record, 'test post')
+    expect(result).toBe(record.content.slice(0, 120))
+  })
+
+  it('returns heading + content after heading for heading match', () => {
+    const recordWithHeadings = {
+      ...record,
+      content: 'Lorem ipsum dolor sit amet. Introduction This is the intro section with some content following the heading.'
+    }
+    const result = extractContext(recordWithHeadings, 'introduction')
+    expect(result).toContain('Introduction')
+    expect(result.length).toBeGreaterThan(10)
+  })
+
+  it('returns surrounding context for content match', () => {
+    const result = extractContext(record, 'tempor')
+    expect(result).toContain('tempor')
+    expect(result.length).toBeLessThanOrEqual(140)
+  })
+
+  it('trims to word boundaries', () => {
+    const record2 = {
+      ...record,
+      content: 'abcdefghijklmnopqrstuvwxyz now there is tempor incididunt ut'
+    }
+    const result = extractContext(record2, 'tempor')
+    expect(result).toMatch(/^\S/)
+    expect(result).toMatch(/\S$/)
+  })
+
+  it('returns empty string when query is empty', () => {
+    expect(extractContext(record, '')).toBe('')
+  })
+
+  it('handles match at start of content', () => {
+    const record2 = { ...record, content: 'tempor is at the start of content.' }
+    const result = extractContext(record2, 'tempor')
+    expect(result).toContain('tempor')
+  })
+
+  it('handles match near end of content', () => {
+    const short = { ...record, content: 'some text before the tempor word' }
+    const result = extractContext(short, 'tempor')
+    expect(result).toContain('tempor')
   })
 })
 
