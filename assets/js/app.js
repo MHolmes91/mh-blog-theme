@@ -13,6 +13,7 @@ Alpine.data('siteUi', (searchUrl) => ({
   showBackToTop: false,
   dockStyle: '',
   toolbarVisible: true,
+  tocOpen: false,
   theme: resolveTheme({
     systemPrefersDark: window.matchMedia('(prefers-color-scheme: dark)').matches
   }),
@@ -26,26 +27,33 @@ Alpine.data('siteUi', (searchUrl) => ({
     }
 
     const updateActiveTocEntry = () => {
-      const toc = document.getElementById('TableOfContents')
-      if (!toc) return
+      const navIds = ['TableOfContents', 'TableOfContentsMobile']
+      const allEntries = []
 
-      const tocEntries = [...toc.querySelectorAll('a[href^="#"]')]
-        .map((link) => {
-          const id = decodeURIComponent(link.getAttribute('href')?.slice(1) ?? '')
-          const heading = id ? document.getElementById(id) : null
-          if (!heading) return null
+      for (const navId of navIds) {
+        const toc = document.getElementById(navId)
+        if (!toc) continue
 
-          return { id, link, heading }
-        })
-        .filter(Boolean)
+        const entries = [...toc.querySelectorAll('a[href^="#"]')]
+          .map((link) => {
+            const id = decodeURIComponent(link.getAttribute('href')?.slice(1) ?? '')
+            const heading = id ? document.getElementById(id) : null
+            if (!heading) return null
 
-      if (!tocEntries.length) return
+            return { id, link, heading }
+          })
+          .filter(Boolean)
+
+        allEntries.push(...entries)
+      }
+
+      if (!allEntries.length) return
 
       const activeId = pickActiveHeading(
-        tocEntries.map(({ id, heading }) => ({ id, top: heading.getBoundingClientRect().top }))
+        allEntries.map(({ id, heading }) => ({ id, top: heading.getBoundingClientRect().top }))
       )
 
-      for (const { id, link } of tocEntries) {
+      for (const { id, link } of allEntries) {
         if (id === activeId) {
           link.setAttribute('aria-current', 'location')
         } else {
@@ -141,6 +149,12 @@ Alpine.data('siteUi', (searchUrl) => ({
   closeSearch() {
     this.searchOpen = false
     this.query = ''
+  },
+  toggleToc() {
+    this.tocOpen = !this.tocOpen
+  },
+  closeToc() {
+    this.tocOpen = false
   },
   get results() {
     return filterSearchRecords(this.records, this.query)

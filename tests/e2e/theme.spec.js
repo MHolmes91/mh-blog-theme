@@ -1180,3 +1180,161 @@ test("header stays visible when an element has focus", async ({ page }) => {
 
   await expect(banner).not.toHaveClass(/opacity-0/);
 });
+
+test("toc entries indent and style by heading level", async ({ page }) => {
+  await page.goto("/posts/toc-stress-post/");
+
+  const toc = page.locator("#TableOfContents");
+  await expect(toc).toBeVisible();
+
+  const h2Link = toc.locator("> ul > li > a").first();
+  const h3Link = toc.locator("> ul > li > ul > li > a").first();
+  const h4Link = toc.locator("> ul > li > ul > li > ul > li > a").first();
+
+  await expect(h2Link).toBeVisible();
+  await expect(h3Link).toBeVisible();
+  await expect(h4Link).toBeVisible();
+
+  const [h2Pad, h3Pad, h4Pad] = await Promise.all([
+    h2Link.evaluate((el) => window.getComputedStyle(el).paddingLeft),
+    h3Link.evaluate((el) => window.getComputedStyle(el).paddingLeft),
+    h4Link.evaluate((el) => window.getComputedStyle(el).paddingLeft),
+  ]);
+
+  const h2PadPx = Number.parseFloat(h2Pad);
+  const h3PadPx = Number.parseFloat(h3Pad);
+  const h4PadPx = Number.parseFloat(h4Pad);
+
+  expect(h3PadPx).toBeGreaterThan(h2PadPx);
+  expect(h4PadPx).toBeGreaterThan(h3PadPx);
+
+  const [h2Size, h3Size, h4Size] = await Promise.all([
+    h2Link.evaluate((el) => Number.parseFloat(window.getComputedStyle(el).fontSize)),
+    h3Link.evaluate((el) => Number.parseFloat(window.getComputedStyle(el).fontSize)),
+    h4Link.evaluate((el) => Number.parseFloat(window.getComputedStyle(el).fontSize)),
+  ]);
+
+  expect(h2Size).toBeGreaterThan(h3Size);
+  expect(h3Size).toBeGreaterThanOrEqual(h4Size);
+});
+
+test("desktop toc slides up when header hides", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 400 });
+  await page.goto("/posts/toc-stress-post/");
+
+  const tocAside = page.locator("aside").filter({ hasText: "Contents" });
+
+  await expect(tocAside).toBeVisible();
+
+  const initialTop = await tocAside.evaluate((el) => el.style.top);
+  expect(initialTop).toContain("6rem");
+
+  await page.evaluate(() => {
+    const postContent = document.getElementById("post-content");
+    if (!postContent) throw new Error("Expected #post-content");
+    const filler = document.createElement("div");
+    filler.style.height = "1200px";
+    postContent.appendChild(filler);
+    window.dispatchEvent(new Event("resize"));
+  });
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(3500);
+
+  const hiddenTop = await tocAside.evaluate((el) => el.style.top);
+  expect(hiddenTop).toContain("1.5rem");
+});
+
+test("mobile toc hamburger is visible on small screens and hidden on large", async ({
+  page,
+}) => {
+  await page.goto("/posts/toc-stress-post/");
+
+  await page.setViewportSize({ width: 480, height: 800 });
+  await expect(page.getByRole("button", { name: "Table of contents" })).toBeVisible();
+
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(
+    page.getByRole("button", { name: "Table of contents" }),
+  ).toHaveCount(0);
+});
+
+test("mobile toc panel opens and closes", async ({ page }) => {
+  await page.setViewportSize({ width: 480, height: 800 });
+  await page.goto("/posts/toc-stress-post/");
+
+  const hamburger = page.getByRole("button", { name: "Table of contents" });
+  const closeBtn = page.getByRole("button", {
+    name: "Close table of contents",
+  });
+
+  await expect(closeBtn).toHaveCount(0);
+
+  await hamburger.click();
+
+  await expect(closeBtn).toBeVisible();
+  await expect(page.locator("#TableOfContentsMobile")).toBeVisible();
+  await expect(page.locator("#TableOfContentsMobile")).toContainText(
+    "Large Section One",
+  );
+
+  await closeBtn.click();
+
+  await expect(closeBtn).toHaveCount(0);
+});
+
+test("mobile toc panel closes on escape", async ({ page }) => {
+  await page.setViewportSize({ width: 480, height: 800 });
+  await page.goto("/posts/toc-stress-post/");
+
+  const hamburger = page.getByRole("button", { name: "Table of contents" });
+  await hamburger.click();
+
+  await expect(page.locator("#TableOfContentsMobile")).toBeVisible();
+
+  await page.keyboard.press("Escape");
+
+  await expect(page.locator("#TableOfContentsMobile")).toBeHidden();
+});
+
+test("mobile toc panel closes when clicking a link", async ({ page }) => {
+  await page.setViewportSize({ width: 480, height: 800 });
+  await page.goto("/posts/toc-stress-post/");
+
+  const hamburger = page.getByRole("button", { name: "Table of contents" });
+  await hamburger.click();
+
+  await expect(page.locator("#TableOfContentsMobile")).toBeVisible();
+
+  await page
+    .locator("#TableOfContentsMobile")
+    .getByRole("link", { name: "Large Section One" })
+    .click();
+
+  await expect(page.locator("#TableOfContentsMobile")).toBeHidden();
+});
+
+test("mobile toc active heading tracks while scrolling", async ({ page }) => {
+  await page.setViewportSize({ width: 480, height: 400 });
+  await page.goto("/posts/toc-stress-post/");
+
+  const hamburger = page.getByRole("button", { name: "Table of contents" });
+  await hamburger.click();
+
+  await expect(
+    page.locator('#TableOfContentsMobile a[aria-current="location"]'),
+  ).toContainText("Large Section One");
+
+  await page.evaluate(() => {
+    const target = document.getElementById("final-long-section");
+    if (!target) throw new Error("Expected #final-long-section");
+    window.scrollTo(
+      0,
+      window.scrollY + target.getBoundingClientRect().top - 120,
+    );
+  });
+
+  await expect(
+    page.locator('#TableOfContentsMobile a[aria-current="location"]'),
+  ).toContainText("Final Long Section");
+});
