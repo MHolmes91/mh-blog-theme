@@ -654,7 +654,10 @@ test("search opens and shows matching posts", async ({ page }) => {
   await page.getByRole("button", { name: "Search" }).click();
   await page.getByPlaceholder("Search posts").fill("paragraph");
 
-  await expect(page.getByRole("link", { name: "First Post" })).toBeVisible();
+  const resultLink = page.getByRole("link", { name: /First Post/ });
+  await expect(resultLink).toBeVisible();
+  await expect(resultLink.locator("mark")).toHaveText("paragraph");
+
   await page.getByRole("button", { name: "Close search" }).click();
   await expect(page.getByPlaceholder("Search posts")).toBeHidden();
 
@@ -698,6 +701,56 @@ test("search stays open and empty when the search index is unavailable", async (
 
   await expect(page.getByPlaceholder("Search posts")).toBeVisible();
   await expect(page.getByRole("link", { name: "First Post" })).toHaveCount(0);
+});
+
+test("search Enter navigates to first result", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("paragraph");
+
+  await Promise.all([
+    page.waitForURL(/first-post/),
+    page.keyboard.press("Enter")
+  ]);
+
+  await expect(page).toHaveURL(/first-post/);
+});
+
+test("search arrow keys navigate results", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("post");
+
+  const results = page.locator("[data-result-index]");
+  const count = await results.count();
+  if (count < 2) return;
+
+  await page.keyboard.press("ArrowDown");
+  await expect(results.nth(0)).toHaveClass(/border-purple-400/);
+
+  await page.keyboard.press("ArrowDown");
+  await expect(results.nth(1)).toHaveClass(/border-purple-400/);
+  await expect(results.nth(0)).not.toHaveClass(/border-purple-400/);
+
+  await page.keyboard.press("ArrowUp");
+  await expect(results.nth(0)).toHaveClass(/border-purple-400/);
+  await expect(results.nth(1)).not.toHaveClass(/border-purple-400/);
+});
+
+test("search wraps around with arrow keys", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("post");
+
+  const results = page.locator("[data-result-index]");
+  const last = (await results.count()) - 1;
+  if (last < 1) return;
+
+  await page.keyboard.press("ArrowUp");
+  await expect(results.nth(last)).toHaveClass(/border-purple-400/);
+
+  await page.keyboard.press("ArrowDown");
+  await expect(results.nth(0)).toHaveClass(/border-purple-400/);
 });
 
 test("back to top returns to the top of the page", async ({ page }) => {
