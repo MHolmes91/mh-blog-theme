@@ -1,3 +1,20 @@
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+export function highlightText(text, query) {
+  const needle = query.trim()
+  if (!needle) return escapeHtml(text)
+  const safeText = escapeHtml(text)
+  const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const regex = new RegExp(`(${escaped})`, 'gi')
+  return safeText.replace(regex, '<mark>$1</mark>')
+}
+
 export function filterSearchRecords(records, query) {
   const needle = query.trim().toLowerCase()
   if (!needle) return []
