@@ -1,6 +1,6 @@
 import Alpine from 'alpinejs'
 import { getReadingProgress } from './lib/progress.js'
-import { filterSearchRecords, loadSearchRecords } from './lib/search.js'
+import { filterSearchRecords, loadSearchRecords, highlightText } from './lib/search.js'
 import { pickActiveHeading } from './lib/toc.js'
 import { resolveTheme } from './lib/theme.js'
 
@@ -14,6 +14,8 @@ Alpine.data('siteUi', (searchUrl) => ({
   dockStyle: '',
   toolbarVisible: true,
   tocOpen: false,
+  activeResultIndex: -1,
+  highlightText,
   theme: resolveTheme({
     systemPrefersDark: window.matchMedia('(prefers-color-scheme: dark)').matches
   }),
@@ -139,6 +141,7 @@ Alpine.data('siteUi', (searchUrl) => ({
       clearTimeout(this._toolbarTimer)
       this.toolbarVisible = true
     })
+    this.$watch('query', () => { this.activeResultIndex = -1 })
   },
   async openSearch() {
     this.searchOpen = true
@@ -149,12 +152,37 @@ Alpine.data('siteUi', (searchUrl) => ({
   closeSearch() {
     this.searchOpen = false
     this.query = ''
+    this.activeResultIndex = -1
   },
   toggleToc() {
     this.tocOpen = !this.tocOpen
   },
   closeToc() {
     this.tocOpen = false
+  },
+  selectNextResult() {
+    if (!this.results.length) return
+    this.activeResultIndex = this.activeResultIndex < this.results.length - 1
+      ? this.activeResultIndex + 1
+      : 0
+    this.scrollActiveResultIntoView()
+  },
+  selectPrevResult() {
+    if (!this.results.length) return
+    this.activeResultIndex = this.activeResultIndex > 0
+      ? this.activeResultIndex - 1
+      : this.results.length - 1
+    this.scrollActiveResultIntoView()
+  },
+  navigateToActiveResult() {
+    const target = this.results[this.activeResultIndex] || this.results[0]
+    if (target) window.location.href = target.permalink
+  },
+  scrollActiveResultIntoView() {
+    this.$nextTick(() => {
+      const active = document.querySelector(`[data-result-index="${this.activeResultIndex}"]`)
+      active?.scrollIntoView({ block: 'nearest' })
+    })
   },
   get results() {
     return filterSearchRecords(this.records, this.query)
