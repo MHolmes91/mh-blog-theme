@@ -753,6 +753,15 @@ test("search wraps around with arrow keys", async ({ page }) => {
   await expect(results.nth(0)).toHaveClass(/border-purple-400/);
 });
 
+test("search shows type more message for short queries", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("ab");
+
+  await expect(page.getByText("Type at least 3 characters to search")).toBeVisible();
+  await expect(page.locator("[data-result-index]")).toHaveCount(0);
+});
+
 test("back to top returns to the top of the page", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 400 });
   await page.goto("/posts/first-post/");

@@ -26,10 +26,11 @@ export function rankRecord(record, query) {
 }
 
 export function getMatchedTags(record, needle) {
-  return [
-    ...(record.tags || []).filter(t => t.toLowerCase().includes(needle)),
-    ...(record.series || []).filter(s => s.toLowerCase().includes(needle))
-  ]
+  return (record.tags || []).filter(t => t.toLowerCase().includes(needle))
+}
+
+export function getMatchedSeries(record, needle) {
+  return (record.series || []).filter(s => s.toLowerCase().includes(needle))
 }
 
 const CONTEXT_LENGTH = 120
@@ -79,9 +80,11 @@ export function extractContext(record, query) {
   return context
 }
 
+const MIN_QUERY_LENGTH = 3
+
 export function filterSearchRecords(records, query) {
   const needle = query.trim().toLowerCase()
-  if (!needle) return []
+  if (!needle || needle.length < MIN_QUERY_LENGTH) return []
 
   return records
     .filter((record) => {
@@ -92,7 +95,8 @@ export function filterSearchRecords(records, query) {
       ...record,
       _rank: rankRecord(record, needle),
       _context: extractContext(record, needle),
-      _matchedTags: getMatchedTags(record, needle)
+      _matchedTags: getMatchedTags(record, needle),
+      _matchedSeries: getMatchedSeries(record, needle)
     }))
     .sort((a, b) => {
       if (a._rank !== b._rank) return a._rank - b._rank

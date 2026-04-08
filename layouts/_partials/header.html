@@ -50,7 +50,10 @@
               {{ partial "icon.html" (dict "name" "x" "class" "h-4 w-4") }}
             </button>
           </div>
-          <div data-results-container class="mt-4 space-y-2 max-h-80 overflow-y-auto">
+          <template x-if="query.trim().length > 0 && query.trim().length < 3">
+            <p class="mt-4 text-sm text-slate-500 text-center">Type at least 3 characters to search</p>
+          </template>
+          <div data-results-container class="mt-4 space-y-2 max-h-[17rem] overflow-y-auto">
             <template x-for="(result, index) in results" :key="result.permalink">
               <a
                 :href="result.permalink"
@@ -61,13 +64,14 @@
                   : 'border-purple-200 hover:border-purple-300'"
               >
                 <div x-html="highlightText(result.title, query)" class="font-medium"></div>
-                <template x-if="result._matchedTags?.length">
-                  <div class="flex flex-wrap gap-1 mt-1">
-                    <template x-for="tag in result._matchedTags" :key="tag">
-                      <span x-html="highlightText(tag, query)" class="inline-block rounded-full bg-purple-100 px-2 py-0.5 text-xs"></span>
-                    </template>
-                  </div>
-                </template>
+                <div class="flex flex-wrap items-center gap-1.5 mt-1 min-h-[1.25rem]">
+                  <template x-for="s in (result._matchedSeries || [])" :key="s">
+                    <span x-text="s" class="text-xs underline"></span>
+                  </template>
+                  <template x-for="tag in (result._matchedTags || [])" :key="tag">
+                    <span x-text="tag" class="inline-block rounded-full bg-purple-100 px-2 py-0.5 text-xs"></span>
+                  </template>
+                </div>
                 <div
                   x-show="result._context"
                   x-html="highlightText(result._context, query)"

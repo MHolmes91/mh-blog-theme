@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { filterSearchRecords, collectMatches, loadSearchRecords, highlightText, rankRecord, getMatchedTags, extractContext } from '../../assets/js/lib/search.js'
+import { filterSearchRecords, collectMatches, loadSearchRecords, highlightText, rankRecord, getMatchedTags, getMatchedSeries, extractContext } from '../../assets/js/lib/search.js'
 
 describe('highlightText', () => {
   it('returns escaped text when query is empty', () => {
@@ -72,20 +72,39 @@ describe('getMatchedTags', () => {
     series: ['Getting Started']
   }
 
-  it('returns matching tags', () => {
+  it('returns matching tags only', () => {
     expect(getMatchedTags(record, 'webdev')).toEqual(['webdev'])
   })
 
-  it('returns matching series', () => {
-    expect(getMatchedTags(record, 'started')).toEqual(['Getting Started'])
+  it('does not include matching series', () => {
+    expect(getMatchedTags(record, 'started')).toEqual([])
   })
 
   it('returns empty array when no match', () => {
     expect(getMatchedTags(record, 'python')).toEqual([])
   })
 
-  it('returns all matching tags and series', () => {
+  it('returns matching tags', () => {
     expect(getMatchedTags(record, 'hugo')).toEqual(['hugo'])
+  })
+})
+
+describe('getMatchedSeries', () => {
+  const record = {
+    tags: ['webdev', 'hugo'],
+    series: ['Getting Started']
+  }
+
+  it('returns matching series only', () => {
+    expect(getMatchedSeries(record, 'started')).toEqual(['Getting Started'])
+  })
+
+  it('does not include matching tags', () => {
+    expect(getMatchedSeries(record, 'webdev')).toEqual([])
+  })
+
+  it('returns empty array when no match', () => {
+    expect(getMatchedSeries(record, 'python')).toEqual([])
   })
 })
 
@@ -182,6 +201,12 @@ describe('filterSearchRecords', () => {
     expect(filterSearchRecords([{ title: 'Test', content: 'x' }], '  ')).toEqual([])
   })
 
+  it('returns empty array when query is shorter than 3 characters', () => {
+    const records = [{ title: 'Test Post', content: 'test content', tags: [], series: [], headings: [] }]
+    expect(filterSearchRecords(records, 'te')).toEqual([])
+    expect(filterSearchRecords(records, 't')).toEqual([])
+  })
+
   it('includes matched tags in _matchedTags', () => {
     const records = [
       { title: 'Post', summary: '', content: 'text', permalink: '/p/', tags: ['hugo', 'web'], series: ['tutorial'], headings: [] }
@@ -191,13 +216,14 @@ describe('filterSearchRecords', () => {
     expect(results[0]._matchedTags).toEqual(['web'])
   })
 
-  it('includes matched series in _matchedTags', () => {
+  it('includes matched series in _matchedSeries', () => {
     const records = [
       { title: 'Post', summary: '', content: 'text', permalink: '/p/', tags: [], series: ['tutorial'], headings: [] }
     ]
 
     const results = filterSearchRecords(records, 'tutorial')
-    expect(results[0]._matchedTags).toEqual(['tutorial'])
+    expect(results[0]._matchedSeries).toEqual(['tutorial'])
+    expect(results[0]._matchedTags).toEqual([])
   })
 })
 
