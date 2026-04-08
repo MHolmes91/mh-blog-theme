@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { filterSearchRecords, collectMatches, loadSearchRecords, highlightText } from '../../assets/js/lib/search.js'
+import { filterSearchRecords, collectMatches, loadSearchRecords, highlightText, rankRecord, getMatchedTags } from '../../assets/js/lib/search.js'
 
 describe('highlightText', () => {
   it('returns escaped text when query is empty', () => {
@@ -25,6 +25,67 @@ describe('highlightText', () => {
 
   it('escapes special regex characters in query', () => {
     expect(highlightText('a+b', 'a+b')).toBe('<mark>a+b</mark>')
+  })
+})
+
+describe('rankRecord', () => {
+  const record = {
+    title: 'Hugo Tutorial',
+    tags: ['webdev', 'hugo'],
+    series: ['Getting Started'],
+    content: 'This is some content about Hugo.',
+    headings: ['## Setup', '## Usage']
+  }
+
+  it('returns 0 for title match', () => {
+    expect(rankRecord(record, 'tutorial')).toBe(0)
+  })
+
+  it('returns 1 for tag match', () => {
+    expect(rankRecord(record, 'webdev')).toBe(1)
+  })
+
+  it('returns 1 for series match', () => {
+    expect(rankRecord(record, 'started')).toBe(1)
+  })
+
+  it('returns 2 for content match', () => {
+    expect(rankRecord(record, 'content')).toBe(2)
+  })
+
+  it('returns 2 for heading match', () => {
+    expect(rankRecord(record, 'setup')).toBe(2)
+  })
+
+  it('returns -1 when query is empty', () => {
+    expect(rankRecord(record, '')).toBe(-1)
+  })
+
+  it('returns 0 for title match even when other fields also match', () => {
+    expect(rankRecord({ ...record, title: 'Setup Guide' }, 'setup')).toBe(0)
+  })
+})
+
+describe('getMatchedTags', () => {
+  const record = {
+    tags: ['webdev', 'hugo'],
+    series: ['Getting Started']
+  }
+
+  it('returns matching tags', () => {
+    expect(getMatchedTags(record, 'webdev')).toEqual(['webdev'])
+  })
+
+  it('returns matching series', () => {
+    expect(getMatchedTags(record, 'started')).toEqual(['Getting Started'])
+  })
+
+  it('returns empty array when no match', () => {
+    expect(getMatchedTags(record, 'python')).toEqual([])
+  })
+
+  it('returns all matching tags and series', () => {
+    expect(getMatchedTags(record, 'hugo')).toEqual(['hugo'])
   })
 })
 

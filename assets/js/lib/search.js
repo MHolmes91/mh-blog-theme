@@ -15,6 +15,23 @@ export function highlightText(text, query) {
   return safeText.replace(regex, '<mark>$1</mark>')
 }
 
+export function rankRecord(record, query) {
+  const needle = query.trim().toLowerCase()
+  if (!needle) return -1
+
+  if (record.title.toLowerCase().includes(needle)) return 0
+  if ((record.tags || []).some(t => t.toLowerCase().includes(needle))) return 1
+  if ((record.series || []).some(s => s.toLowerCase().includes(needle))) return 1
+  return 2
+}
+
+export function getMatchedTags(record, needle) {
+  return [
+    ...(record.tags || []).filter(t => t.toLowerCase().includes(needle)),
+    ...(record.series || []).filter(s => s.toLowerCase().includes(needle))
+  ]
+}
+
 export function filterSearchRecords(records, query) {
   const needle = query.trim().toLowerCase()
   if (!needle) return []
