@@ -83,10 +83,21 @@ export function filterSearchRecords(records, query) {
   const needle = query.trim().toLowerCase()
   if (!needle) return []
 
-  return records.filter((record) => {
-    const haystack = [record.title, record.summary, record.content, ...(record.headings || [])].join(' ').toLowerCase()
-    return haystack.includes(needle)
-  })
+  return records
+    .filter((record) => {
+      const haystack = [record.title, ...(record.tags || []), ...(record.series || []), record.content, ...(record.headings || [])].join(' ').toLowerCase()
+      return haystack.includes(needle)
+    })
+    .map(record => ({
+      ...record,
+      _rank: rankRecord(record, needle),
+      _context: extractContext(record, needle),
+      _matchedTags: getMatchedTags(record, needle)
+    }))
+    .sort((a, b) => {
+      if (a._rank !== b._rank) return a._rank - b._rank
+      return a.title.localeCompare(b.title)
+    })
 }
 
 export async function loadSearchRecords(fetchImpl, searchUrl) {

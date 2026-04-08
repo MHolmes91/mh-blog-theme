@@ -152,13 +152,52 @@ describe('extractContext', () => {
 })
 
 describe('filterSearchRecords', () => {
-  it('returns matching posts by title, summary, and content', () => {
+  it('returns enriched results with rank, context, and matchedTags', () => {
     const records = [
-      { title: 'First Post', summary: 'Alpha', content: 'Search should find this paragraph.', permalink: '/posts/first-post/' },
-      { title: 'Second Post', summary: 'Beta', content: 'Nothing relevant here.', permalink: '/posts/second-post/' }
+      { title: 'First Post', summary: 'Alpha', content: 'Search should find this paragraph.', permalink: '/posts/first-post/', tags: [], series: [], headings: [] },
+      { title: 'Second Post', summary: 'Beta', content: 'Nothing relevant here.', permalink: '/posts/second-post/', tags: [], series: [], headings: [] }
     ]
 
-    expect(filterSearchRecords(records, 'search')).toHaveLength(1)
+    const results = filterSearchRecords(records, 'search')
+    expect(results).toHaveLength(1)
+    expect(results[0]._rank).toBe(2)
+    expect(results[0]._context).toMatch(/search/i)
+    expect(results[0]._matchedTags).toEqual([])
+  })
+
+  it('sorts by rank then alphabetically by title', () => {
+    const records = [
+      { title: 'Content Match', summary: '', content: 'The search word is here.', permalink: '/a/', tags: [], series: [], headings: [] },
+      { title: 'Alpha search', summary: '', content: 'No match here.', permalink: '/b/', tags: [], series: [], headings: [] },
+      { title: 'Beta search', summary: '', content: 'No match here.', permalink: '/c/', tags: [], series: [], headings: [] },
+      { title: 'Zeta Tag Match', summary: '', content: 'No match here.', permalink: '/d/', tags: ['search'], series: [], headings: [] }
+    ]
+
+    const results = filterSearchRecords(records, 'search')
+    expect(results.map(r => r.title)).toEqual(['Alpha search', 'Beta search', 'Zeta Tag Match', 'Content Match'])
+  })
+
+  it('returns empty array when query is empty', () => {
+    expect(filterSearchRecords([], '')).toEqual([])
+    expect(filterSearchRecords([{ title: 'Test', content: 'x' }], '  ')).toEqual([])
+  })
+
+  it('includes matched tags in _matchedTags', () => {
+    const records = [
+      { title: 'Post', summary: '', content: 'text', permalink: '/p/', tags: ['hugo', 'web'], series: ['tutorial'], headings: [] }
+    ]
+
+    const results = filterSearchRecords(records, 'web')
+    expect(results[0]._matchedTags).toEqual(['web'])
+  })
+
+  it('includes matched series in _matchedTags', () => {
+    const records = [
+      { title: 'Post', summary: '', content: 'text', permalink: '/p/', tags: [], series: ['tutorial'], headings: [] }
+    ]
+
+    const results = filterSearchRecords(records, 'tutorial')
+    expect(results[0]._matchedTags).toEqual(['tutorial'])
   })
 })
 
