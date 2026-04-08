@@ -172,3 +172,10 @@ h1, h2, h3, h4, h5, h6 {
 #TableOfContentsMobile li {
   padding: 0.125rem 0;
 }
+
+mark {
+  background-color: var(--color-accent);
+  color: var(--color-surface);
+  border-radius: 0.125rem;
+  padding: 0.0625rem 0.1875rem;
+}
