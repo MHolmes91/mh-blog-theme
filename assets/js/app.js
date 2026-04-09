@@ -159,6 +159,7 @@ Alpine.data('siteUi', (searchUrl) => ({
     this.$watch('query', () => { this.activeResultIndex = -1 })
   },
   async openSearch() {
+    this._scrollYBeforeSearch = window.scrollY
     this._toolbarVisibleBeforeSearch = this.toolbarVisible
     this._toolbarTimerWasActiveBeforeSearch = Boolean(this._toolbarTimer)
     this.clearToolbarHideTimer()
@@ -171,13 +172,28 @@ Alpine.data('siteUi', (searchUrl) => ({
   closeSearch() {
     this.clearToolbarHideTimer()
     this.searchOpen = false
-    this.toolbarVisible = this._toolbarVisibleBeforeSearch ?? true
-    if (this.toolbarVisible && this._toolbarTimerWasActiveBeforeSearch) {
-      this.scheduleToolbarHide()
+
+    const scrollYBeforeSearch = this._scrollYBeforeSearch ?? window.scrollY
+    const currentScrollY = window.scrollY
+
+    if (currentScrollY < scrollYBeforeSearch) {
+      this.toolbarVisible = true
+      if (currentScrollY > 0) {
+        this.scheduleToolbarHide()
+      }
+    } else if (currentScrollY > scrollYBeforeSearch) {
+      this.toolbarVisible = false
+    } else {
+      this.toolbarVisible = this._toolbarVisibleBeforeSearch ?? true
+      if (this.toolbarVisible && this._toolbarTimerWasActiveBeforeSearch) {
+        this.scheduleToolbarHide()
+      }
     }
+
+    this._scrollYBeforeSearch = undefined
     this._toolbarVisibleBeforeSearch = undefined
     this._toolbarTimerWasActiveBeforeSearch = false
-    this._lastScrollY = window.scrollY
+    this._lastScrollY = currentScrollY
     this.query = ''
     this.activeResultIndex = -1
   },
