@@ -7,6 +7,10 @@ describe('highlightText', () => {
     expect(highlightText('hello <world>', '')).toBe('hello &lt;world&gt;')
   })
 
+  it('renders decoded punctuation before highlighting', () => {
+    expect(highlightText('&quot;quoted&quot; text', 'quoted')).toBe('<mark>"quoted"</mark> text')
+  })
+
   it('wraps case-insensitive matches in <mark> tags', () => {
     expect(highlightText('Hello World', 'hello')).toBe('<mark>Hello</mark> World')
   })
@@ -137,6 +141,38 @@ describe('extractContext', () => {
     expect(result.length).toBeGreaterThan(10)
   })
 
+  it('returns structured heading snippets without markdown or trailing hash', () => {
+    const recordWithHeadings = {
+      title: 'Heading Post',
+      tags: [],
+      series: [],
+      content: 'Intro text. Linked Heading This excerpt follows the heading in plain text.',
+      headings: ['## Linked Heading #']
+    }
+
+    expect(extractContext(recordWithHeadings, 'linked')).toEqual({
+      kind: 'heading',
+      heading: 'Linked Heading',
+      text: 'This excerpt follows the heading in plain text.'
+    })
+  })
+
+  it('returns structured text snippets for content matches', () => {
+    const recordWithQuotedContent = {
+      title: 'Content Post',
+      tags: [],
+      series: [],
+      content: 'A paragraph with &quot;quoted&quot; content in the middle of the snippet.',
+      headings: []
+    }
+
+    expect(extractContext(recordWithQuotedContent, 'quoted')).toEqual({
+      kind: 'text',
+      heading: '',
+      text: expect.stringContaining('"quoted"')
+    })
+  })
+
   it('returns surrounding context for content match', () => {
     const result = extractContext(record, 'tempor')
     expect(result).toContain('tempor')
@@ -224,6 +260,24 @@ describe('filterSearchRecords', () => {
     const results = filterSearchRecords(records, 'tutorial')
     expect(results[0]._matchedSeries).toEqual(['tutorial'])
     expect(results[0]._matchedTags).toEqual([])
+  })
+
+  it('returns structured snippet metadata for heading matches', () => {
+    const records = [{
+      title: 'Heading Post',
+      summary: '',
+      content: 'Intro text. Linked Heading Body copy after the heading.',
+      permalink: '/heading/',
+      tags: [],
+      series: [],
+      headings: ['## Linked Heading #']
+    }]
+
+    const [result] = filterSearchRecords(records, 'linked')
+
+    expect(result._snippetKind).toBe('heading')
+    expect(result._heading).toBe('Linked Heading')
+    expect(result._context).toContain('Body copy after the heading.')
   })
 })
 

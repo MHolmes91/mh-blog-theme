@@ -1,4 +1,7 @@
 {
+  "dependencies": {
+    "entities": "^8.0.0"
+  },
   "scripts": {
     "dev": "node ./scripts/hugo.mjs server",
     "build": "node ./scripts/hugo.mjs",
