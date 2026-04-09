@@ -668,15 +668,18 @@ test("search opens and shows matching posts", async ({ page }) => {
 });
 
 test("search focuses the input when opened", async ({ page }) => {
-  let releaseIndexRequest;
+  let releaseIndexRequest = () => {};
+  let resolveIndexRequestStarted;
   const indexRequestStarted = new Promise((resolve) => {
-    page.route("**/index.json", async (route) => {
-      resolve();
-      await new Promise((release) => {
-        releaseIndexRequest = release;
-      });
-      await route.continue();
+    resolveIndexRequestStarted = resolve;
+  });
+
+  await page.route("**/index.json", async (route) => {
+    resolveIndexRequestStarted();
+    await new Promise((resolve) => {
+      releaseIndexRequest = resolve;
     });
+    await route.continue();
   });
 
   await page.goto("/");
