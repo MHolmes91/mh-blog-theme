@@ -668,10 +668,26 @@ test("search opens and shows matching posts", async ({ page }) => {
 });
 
 test("search focuses the input when opened", async ({ page }) => {
+  let releaseIndexRequest;
+  const indexRequestStarted = new Promise((resolve) => {
+    page.route("**/index.json", async (route) => {
+      resolve();
+      await new Promise((release) => {
+        releaseIndexRequest = release;
+      });
+      await route.continue();
+    });
+  });
+
   await page.goto("/");
-  await page.getByRole("button", { name: "Search" }).click();
+  const openSearch = page.getByRole("button", { name: "Search" }).click();
+
+  await indexRequestStarted;
 
   await expect(page.getByPlaceholder("Search posts")).toBeFocused();
+
+  releaseIndexRequest();
+  await openSearch;
 });
 
 test("search closes when clicking the overlay", async ({ page }) => {
