@@ -784,6 +784,51 @@ test("search shows no results for longer queries without matches", async ({ page
   await expect(page.locator("[data-result-index]")).toHaveCount(0);
 });
 
+test("search renders heading matches with an inline heading prefix", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("large section");
+
+  const result = page
+    .locator("[data-result-index]")
+    .filter({ has: page.getByText("TOC Stress Post", { exact: true }) })
+    .first();
+  const headingPrefix = result.locator("strong").first();
+
+  await expect(result).toBeVisible();
+  await expect(headingPrefix).toHaveText("Large Section One:");
+  await expect(headingPrefix).not.toContainText("#");
+});
+
+test("search caps the visible results area to three cards", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("post");
+
+  const results = page.locator("[data-result-index]");
+  expect(await results.count()).toBeGreaterThan(3);
+
+  const layout = await page.locator("[data-results-container]").evaluate((node) => {
+    const containerRect = node.getBoundingClientRect();
+    const cards = Array.from(node.querySelectorAll("[data-result-index]"));
+
+    return {
+      clientHeight: node.clientHeight,
+      scrollHeight: node.scrollHeight,
+      visibleCards: cards.filter((card) => {
+        const rect = card.getBoundingClientRect();
+        return rect.top >= containerRect.top && rect.bottom <= containerRect.bottom;
+      }).length,
+      fourthCardBottom: cards[3]?.getBoundingClientRect().bottom ?? 0,
+      containerBottom: containerRect.bottom,
+    };
+  });
+
+  expect(layout.scrollHeight).toBeGreaterThan(layout.clientHeight);
+  expect(layout.visibleCards).toBe(3);
+  expect(layout.fourthCardBottom).toBeGreaterThan(layout.containerBottom);
+});
+
 test("search close restores a previously auto-hidden toolbar", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 400 });
   await page.goto("/posts/first-post/");

@@ -46,7 +46,7 @@
               type="button"
               aria-label="Close search"
               @click="closeSearch"
-              class="inline-flex items-center justify-center rounded border border-purple-300 px-2.5 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-600"
+              class="search-keycap inline-flex items-center justify-center rounded border border-purple-300 px-2.5 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-600"
             >
               ESC
             </button>
@@ -57,30 +57,41 @@
           <template x-if="query.trim().length >= 3 && !results.length">
             <p class="mt-4 text-sm text-slate-500 text-center">No results</p>
           </template>
-          <div data-results-container class="mt-4 space-y-2 max-h-[17rem] overflow-y-auto">
+          <div data-results-container class="search-results-list mt-4">
             <template x-for="(result, index) in results" :key="result.permalink">
               <a
                 :href="result.permalink"
                 :data-result-index="index"
-                class="block rounded border px-3 py-2 transition-colors"
+                class="search-result-card block rounded border px-3 py-2 transition-colors"
                 :class="index === activeResultIndex
-                  ? 'border-purple-400 bg-purple-50'
+                  ? 'search-result-card-active border-purple-400'
                   : 'border-purple-200 hover:border-purple-300'"
               >
-                <div x-html="highlightText(result.title, query)" class="font-medium"></div>
-                <div class="flex flex-wrap items-center gap-1.5 mt-1 min-h-[1.25rem]">
+                <div
+                  x-html="highlightText(result.title, query)"
+                  class="search-result-title font-medium"
+                ></div>
+                <div class="search-result-meta mt-1 flex items-center gap-1.5 min-h-[1.25rem]">
                   <template x-for="s in (result._matchedSeries || [])" :key="s">
-                    <span x-text="s" class="text-xs underline"></span>
+                    <span x-text="s" class="shrink-0 text-xs underline"></span>
                   </template>
                   <template x-for="tag in (result._matchedTags || [])" :key="tag">
-                    <span x-text="tag" class="inline-block rounded-full bg-purple-100 px-2 py-0.5 text-xs"></span>
+                    <span
+                      x-text="tag"
+                      class="inline-block shrink-0 rounded-full bg-purple-100 px-2 py-0.5 text-xs"
+                    ></span>
                   </template>
                 </div>
-                <div
-                  x-show="result._context"
-                  x-html="highlightText(result._context, query)"
-                  class="mt-1 text-sm text-slate-500 line-clamp-2"
-                ></div>
+                <div x-show="result._context" class="search-result-excerpt mt-1 text-sm text-slate-500">
+                  <template x-if="result._snippetKind === 'heading' && result._heading">
+                    <span
+                      x-html="`<strong>${highlightText(result._heading, query)}:</strong> ${highlightText(result._context, query)}`"
+                    ></span>
+                  </template>
+                  <template x-if="result._snippetKind !== 'heading' || !result._heading">
+                    <span x-html="highlightText(result._context, query)"></span>
+                  </template>
+                </div>
               </a>
             </template>
           </div>

@@ -179,3 +179,45 @@ mark {
   border-radius: 0.125rem;
   padding: 0.0625rem 0.1875rem;
 }
+
+.search-keycap {
+  background-color: color-mix(in srgb, var(--color-surface) 88%, var(--color-text));
+}
+
+.search-results-list {
+  --search-result-card-height: 8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: calc(var(--search-result-card-height) * 3 + 1rem);
+  overflow-y: auto;
+}
+
+.search-result-card {
+  height: var(--search-result-card-height);
+  background-color: var(--color-surface);
+}
+
+.search-result-card-active {
+  background-color: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface));
+}
+
+.search-result-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-result-meta {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.search-result-excerpt {
+  display: -webkit-box;
+  min-height: 2.75rem;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
