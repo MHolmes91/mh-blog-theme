@@ -667,6 +667,13 @@ test("search opens and shows matching posts", async ({ page }) => {
   await expect(page.getByPlaceholder("Search posts")).toBeHidden();
 });
 
+test("search focuses the input when opened", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+
+  await expect(page.getByPlaceholder("Search posts")).toBeFocused();
+});
+
 test("search closes when clicking the overlay", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Search" }).click();
