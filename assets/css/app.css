@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;800&family=Roboto+Mono:wght@400;500&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@400;700;800&family=Roboto+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
 
 @source "/layouts/**/*.html";
@@ -34,7 +34,7 @@
   }
 }
 
-body[data-theme='light'] {
+body[data-theme="light"] {
   --color-bg: #faf7ff;
   --color-surface: #ffffff;
   --color-text: #20172b;
@@ -44,7 +44,7 @@ body[data-theme='light'] {
   color-scheme: light;
 }
 
-body[data-theme='dark'] {
+body[data-theme="dark"] {
   --color-bg: #111827;
   --color-surface: #1f2937;
   --color-text: #f5f3ff;
@@ -55,13 +55,18 @@ body[data-theme='dark'] {
 }
 
 body {
-  font-family: 'Lato', sans-serif;
+  font-family: "Lato", sans-serif;
   background: var(--color-bg);
   color: var(--color-text);
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Lato', sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Lato", sans-serif;
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.02em;
@@ -88,7 +93,7 @@ h1, h2, h3, h4, h5, h6 {
 #post-content [data-content-body] pre,
 #post-content [data-content-body] pre code,
 #post-content [data-content-body] .highlight code {
-  font-family: 'Roboto Mono', monospace;
+  font-family: "Roboto Mono", monospace;
 }
 
 :is(:root, body[data-theme]) .bg-white,
@@ -140,7 +145,9 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.875rem;
   color: var(--color-text);
   opacity: 0.8;
-  transition: color 0.2s, opacity 0.2s;
+  transition:
+    color 0.2s,
+    opacity 0.2s;
 }
 
 #TableOfContents > ul > li > ul > li > a,
@@ -149,7 +156,9 @@ h1, h2, h3, h4, h5, h6 {
   padding-left: 1rem;
   color: var(--color-muted);
   opacity: 0.7;
-  transition: color 0.2s, opacity 0.2s;
+  transition:
+    color 0.2s,
+    opacity 0.2s;
 }
 
 #TableOfContents > ul > li > ul > li > ul > li > a,
@@ -158,7 +167,9 @@ h1, h2, h3, h4, h5, h6 {
   padding-left: 2rem;
   color: var(--color-muted);
   opacity: 0.5;
-  transition: color 0.2s, opacity 0.2s;
+  transition:
+    color 0.2s,
+    opacity 0.2s;
 }
 
 #TableOfContents a[aria-current="location"],
@@ -181,11 +192,15 @@ mark {
 }
 
 .search-keycap {
-  background-color: color-mix(in srgb, var(--color-surface) 88%, var(--color-text));
+  background-color: color-mix(
+    in srgb,
+    var(--color-surface) 88%,
+    var(--color-text)
+  );
 }
 
 .search-results-list {
-  --search-result-card-height: 8rem;
+  --search-result-card-height: 7rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -199,7 +214,11 @@ mark {
 }
 
 .search-result-card-active {
-  background-color: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface));
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent) 14%,
+    var(--color-surface)
+  );
 }
 
 .search-result-title {
