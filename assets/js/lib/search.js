@@ -1,18 +1,34 @@
+import { decodeHTML } from 'entities'
+
 function escapeHtml(text) {
   return text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+}
+
+function decodeText(text = '') {
+  return decodeHTML(text)
+}
+
+function normalizeHeading(heading = '') {
+  return decodeText(heading)
+    .replace(/^##+\s+/, '')
+    .replace(/\s+#+\s*$/, '')
+    .trim()
+}
+
+function createTextSnippet(text = '') {
+  return { kind: 'text', heading: '', text }
 }
 
 export function highlightText(text, query) {
   const needle = query.trim()
-  if (!needle) return escapeHtml(text)
-  const safeText = escapeHtml(text)
+  const safeText = escapeHtml(decodeText(text))
+  if (!needle) return safeText
   const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const regex = new RegExp(`(${escaped})`, 'gi')
-  return safeText.replace(regex, '<mark>$1</mark>')
+  const regex = new RegExp(`(["'])${escaped}\\1|(${escaped})`, 'gi')
+  return safeText.replace(regex, '<mark>$&</mark>')
 }
 
 export function rankRecord(record, query) {
@@ -37,47 +53,56 @@ const CONTEXT_LENGTH = 120
 
 export function extractContext(record, query) {
   const needle = query.trim().toLowerCase()
-  if (!needle) return ''
+  if (!needle) return createTextSnippet('')
+
+  const content = decodeText(record.content || '')
+  const lowerContent = content.toLowerCase()
 
   const rank = rankRecord(record, query)
 
   if (rank <= 1) {
-    return record.content.slice(0, CONTEXT_LENGTH)
+    return createTextSnippet(content.slice(0, CONTEXT_LENGTH))
   }
 
-  const lowerContent = record.content.toLowerCase()
-
   for (const heading of (record.headings || [])) {
-    const headingText = heading.replace(/^##+\s+/, '')
+    const headingText = normalizeHeading(heading)
     if (headingText.toLowerCase().includes(needle)) {
       const headingPos = lowerContent.indexOf(headingText.toLowerCase())
-      if (headingPos !== -1) {
-        const afterHeading = record.content.slice(headingPos + headingText.length).trimStart()
-        return headingText + ' ' + afterHeading.slice(0, CONTEXT_LENGTH)
+
+      // Heading matches get labeled separately so the UI can render section titles distinctly.
+      const afterHeading = headingPos === -1
+        ? ''
+        : content.slice(headingPos + headingText.length).trimStart()
+
+      return {
+        kind: 'heading',
+        heading: headingText,
+        text: afterHeading.slice(0, CONTEXT_LENGTH).trim()
       }
     }
   }
 
   const matchIndex = lowerContent.indexOf(needle)
-  if (matchIndex === -1) return record.content.slice(0, CONTEXT_LENGTH)
+  if (matchIndex === -1) return createTextSnippet(content.slice(0, CONTEXT_LENGTH))
 
   let start = Math.max(0, matchIndex - 60)
-  let end = Math.min(record.content.length, matchIndex + needle.length + 60)
+  let end = Math.min(content.length, matchIndex + needle.length + 60)
 
-  if (start > 0 && record.content[start] !== ' ' && record.content[start - 1] !== ' ') {
-    const nextSpace = record.content.indexOf(' ', start)
+  // Snap excerpts to nearby word boundaries so the snippet reads naturally around the match.
+  if (start > 0 && content[start] !== ' ' && content[start - 1] !== ' ') {
+    const nextSpace = content.indexOf(' ', start)
     if (nextSpace !== -1) start = nextSpace + 1
   }
-  if (end < record.content.length && record.content[end - 1] !== ' ' && record.content[end] !== ' ') {
-    const prevSpace = record.content.lastIndexOf(' ', end)
+  if (end < content.length && content[end - 1] !== ' ' && content[end] !== ' ') {
+    const prevSpace = content.lastIndexOf(' ', end)
     if (prevSpace > start) end = prevSpace
   }
 
-  let context = record.content.slice(start, end).trim()
+  let context = content.slice(start, end).trim()
   if (start > 0) context = '\u2026' + context
-  if (end < record.content.length) context = context + '\u2026'
+  if (end < content.length) context = context + '\u2026'
 
-  return context
+  return createTextSnippet(context)
 }
 
 const MIN_QUERY_LENGTH = 3
@@ -88,16 +113,30 @@ export function filterSearchRecords(records, query) {
 
   return records
     .filter((record) => {
-      const haystack = [record.title, ...(record.tags || []), ...(record.series || []), record.content, ...(record.headings || [])].join(' ').toLowerCase()
+      const haystack = [
+        record.title,
+        ...(record.tags || []),
+        ...(record.series || []),
+        decodeText(record.content || ''),
+        ...(record.headings || []).map(normalizeHeading)
+      ].join(' ').toLowerCase()
+
       return haystack.includes(needle)
     })
-    .map(record => ({
-      ...record,
-      _rank: rankRecord(record, needle),
-      _context: extractContext(record, needle),
-      _matchedTags: getMatchedTags(record, needle),
-      _matchedSeries: getMatchedSeries(record, needle)
-    }))
+    .map((record) => {
+      const snippet = extractContext(record, needle)
+
+      // Keep the UI-facing fields flat while preserving how the snippet was chosen.
+      return {
+        ...record,
+        _rank: rankRecord(record, needle),
+        _context: snippet.text,
+        _snippetKind: snippet.kind,
+        _heading: snippet.heading,
+        _matchedTags: getMatchedTags(record, needle),
+        _matchedSeries: getMatchedSeries(record, needle)
+      }
+    })
     .sort((a, b) => {
       if (a._rank !== b._rank) return a._rank - b._rank
       return a.title.localeCompare(b.title)

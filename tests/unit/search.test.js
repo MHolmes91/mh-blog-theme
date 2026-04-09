@@ -123,12 +123,20 @@ describe('extractContext', () => {
 
   it('returns first 120 chars for tag match', () => {
     const result = extractContext(record, 'webdev')
-    expect(result).toBe(record.content.slice(0, 120))
+    expect(result).toEqual({
+      kind: 'text',
+      heading: '',
+      text: record.content.slice(0, 120)
+    })
   })
 
   it('returns first 120 chars for title match', () => {
     const result = extractContext(record, 'test post')
-    expect(result).toBe(record.content.slice(0, 120))
+    expect(result).toEqual({
+      kind: 'text',
+      heading: '',
+      text: record.content.slice(0, 120)
+    })
   })
 
   it('returns heading + content after heading for heading match', () => {
@@ -137,8 +145,11 @@ describe('extractContext', () => {
       content: 'Lorem ipsum dolor sit amet. Introduction This is the intro section with some content following the heading.'
     }
     const result = extractContext(recordWithHeadings, 'introduction')
-    expect(result).toContain('Introduction')
-    expect(result.length).toBeGreaterThan(10)
+    expect(result).toEqual({
+      kind: 'heading',
+      heading: 'Introduction',
+      text: 'This is the intro section with some content following the heading.'
+    })
   })
 
   it('returns structured heading snippets without markdown or trailing hash', () => {
@@ -175,8 +186,10 @@ describe('extractContext', () => {
 
   it('returns surrounding context for content match', () => {
     const result = extractContext(record, 'tempor')
-    expect(result).toContain('tempor')
-    expect(result.length).toBeLessThanOrEqual(140)
+    expect(result.kind).toBe('text')
+    expect(result.heading).toBe('')
+    expect(result.text).toContain('tempor')
+    expect(result.text.length).toBeLessThanOrEqual(140)
   })
 
   it('trims to word boundaries', () => {
@@ -185,24 +198,28 @@ describe('extractContext', () => {
       content: 'abcdefghijklmnopqrstuvwxyz now there is tempor incididunt ut'
     }
     const result = extractContext(record2, 'tempor')
-    expect(result).toMatch(/^\S/)
-    expect(result).toMatch(/\S$/)
+    expect(result.text).toMatch(/^\S/)
+    expect(result.text).toMatch(/\S$/)
   })
 
   it('returns empty string when query is empty', () => {
-    expect(extractContext(record, '')).toBe('')
+    expect(extractContext(record, '')).toEqual({
+      kind: 'text',
+      heading: '',
+      text: ''
+    })
   })
 
   it('handles match at start of content', () => {
     const record2 = { ...record, content: 'tempor is at the start of content.' }
     const result = extractContext(record2, 'tempor')
-    expect(result).toContain('tempor')
+    expect(result.text).toContain('tempor')
   })
 
   it('handles match near end of content', () => {
     const short = { ...record, content: 'some text before the tempor word' }
     const result = extractContext(short, 'tempor')
-    expect(result).toContain('tempor')
+    expect(result.text).toContain('tempor')
   })
 })
 
@@ -278,6 +295,24 @@ describe('filterSearchRecords', () => {
     expect(result._snippetKind).toBe('heading')
     expect(result._heading).toBe('Linked Heading')
     expect(result._context).toContain('Body copy after the heading.')
+  })
+
+  it('returns structured snippet metadata for text matches', () => {
+    const records = [{
+      title: 'Content Post',
+      summary: '',
+      content: 'A paragraph with &quot;quoted&quot; content in the middle of the snippet.',
+      permalink: '/content/',
+      tags: [],
+      series: [],
+      headings: []
+    }]
+
+    const [result] = filterSearchRecords(records, 'quoted')
+
+    expect(result._snippetKind).toBe('text')
+    expect(result._heading).toBe('')
+    expect(result._context).toContain('"quoted"')
   })
 })
 
