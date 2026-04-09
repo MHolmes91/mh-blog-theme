@@ -784,6 +784,40 @@ test("search shows no results for longer queries without matches", async ({ page
   await expect(page.locator("[data-result-index]")).toHaveCount(0);
 });
 
+test("search close restores a previously auto-hidden toolbar", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 400 });
+  await page.goto("/posts/first-post/");
+  await page.evaluate(() => {
+    const postContent = document.getElementById("post-content");
+    if (!postContent) throw new Error("Expected #post-content");
+
+    const filler = document.createElement("div");
+    filler.style.height = "1200px";
+    postContent.appendChild(filler);
+    window.dispatchEvent(new Event("resize"));
+  });
+
+  const banner = page.getByRole("banner");
+
+  await page.evaluate(() => window.scrollTo(0, 500));
+  await page.waitForTimeout(3200);
+  await expect(banner).toHaveClass(/opacity-0/);
+
+  await page.evaluate(async () => {
+    const siteUi = document.body._x_dataStack?.[0];
+    if (!siteUi) throw new Error("Expected Alpine siteUi data");
+    await siteUi.openSearch();
+  });
+
+  await expect(page.getByPlaceholder("Search posts")).toBeVisible();
+  await expect(banner).not.toHaveClass(/opacity-0/);
+
+  await page.getByRole("button", { name: "Close search" }).click();
+
+  await expect(page.getByPlaceholder("Search posts")).toBeHidden();
+  await expect(banner).toHaveClass(/opacity-0/);
+});
+
 test("back to top returns to the top of the page", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 400 });
   await page.goto("/posts/first-post/");
