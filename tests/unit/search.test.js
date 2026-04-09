@@ -168,6 +168,38 @@ describe('extractContext', () => {
     })
   })
 
+  it('falls back to the opening content when the heading label is not embedded in content', () => {
+    const recordWithDetachedHeading = {
+      title: 'Detached Heading Post',
+      tags: [],
+      series: [],
+      content: 'Body copy starts immediately without repeating the section heading in the flattened content.',
+      headings: ['## Missing Heading']
+    }
+
+    expect(extractContext(recordWithDetachedHeading, 'missing')).toEqual({
+      kind: 'heading',
+      heading: 'Missing Heading',
+      text: 'Body copy starts immediately without repeating the section heading in the flattened content.'
+    })
+  })
+
+  it('uses the later heading occurrence instead of earlier prose mentions', () => {
+    const recordWithRepeatedHeadingText = {
+      title: 'Repeated Heading Post',
+      tags: [],
+      series: [],
+      content: 'Linked Heading is referenced in the introduction. More setup text. Linked Heading Body copy after the real heading.',
+      headings: ['## Linked Heading']
+    }
+
+    expect(extractContext(recordWithRepeatedHeadingText, 'linked')).toEqual({
+      kind: 'heading',
+      heading: 'Linked Heading',
+      text: 'Body copy after the real heading.'
+    })
+  })
+
   it('returns structured text snippets for content matches', () => {
     const recordWithQuotedContent = {
       title: 'Content Post',

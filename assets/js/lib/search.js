@@ -22,6 +22,15 @@ function createTextSnippet(text = '') {
   return { kind: 'text', heading: '', text }
 }
 
+function extractHeadingText(content, headingText) {
+  const headingPos = content.toLowerCase().lastIndexOf(headingText.toLowerCase())
+  const bodyText = headingPos === -1
+    ? content
+    : content.slice(headingPos + headingText.length).trimStart()
+
+  return (bodyText || content).slice(0, CONTEXT_LENGTH).trim()
+}
+
 export function highlightText(text, query) {
   const needle = query.trim()
   const safeText = escapeHtml(decodeText(text))
@@ -67,17 +76,11 @@ export function extractContext(record, query) {
   for (const heading of (record.headings || [])) {
     const headingText = normalizeHeading(heading)
     if (headingText.toLowerCase().includes(needle)) {
-      const headingPos = lowerContent.indexOf(headingText.toLowerCase())
-
-      // Heading matches get labeled separately so the UI can render section titles distinctly.
-      const afterHeading = headingPos === -1
-        ? ''
-        : content.slice(headingPos + headingText.length).trimStart()
-
       return {
         kind: 'heading',
         heading: headingText,
-        text: afterHeading.slice(0, CONTEXT_LENGTH).trim()
+        // Prefer the section-looking occurrence; otherwise fall back to the opening body copy.
+        text: extractHeadingText(content, headingText)
       }
     }
   }
