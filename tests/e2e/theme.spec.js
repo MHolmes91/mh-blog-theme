@@ -667,6 +667,32 @@ test("search opens and shows matching posts", async ({ page }) => {
   await expect(page.getByPlaceholder("Search posts")).toBeHidden();
 });
 
+test("search focuses the input when opened", async ({ page }) => {
+  let releaseIndexRequest = () => {};
+  let resolveIndexRequestStarted;
+  const indexRequestStarted = new Promise((resolve) => {
+    resolveIndexRequestStarted = resolve;
+  });
+
+  await page.route("**/index.json", async (route) => {
+    resolveIndexRequestStarted();
+    await new Promise((resolve) => {
+      releaseIndexRequest = resolve;
+    });
+    await route.continue();
+  });
+
+  await page.goto("/");
+  const openSearch = page.getByRole("button", { name: "Search" }).click();
+
+  await indexRequestStarted;
+
+  await expect(page.getByPlaceholder("Search posts")).toBeFocused();
+
+  releaseIndexRequest();
+  await openSearch;
+});
+
 test("search closes when clicking the overlay", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Search" }).click();

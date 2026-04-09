@@ -165,6 +165,11 @@ Alpine.data('siteUi', (searchUrl) => ({
     this.clearToolbarHideTimer()
     this.toolbarVisible = true
     this.searchOpen = true
+
+    this.$nextTick(() => {
+      this.$refs.searchInput?.focus()
+    })
+
     if (!this.records.length) {
       this.records = await loadSearchRecords(fetch, searchUrl)
     }
