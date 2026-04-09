@@ -19,6 +19,18 @@ Alpine.data('siteUi', (searchUrl) => ({
   theme: resolveTheme({
     systemPrefersDark: window.matchMedia('(prefers-color-scheme: dark)').matches
   }),
+  clearToolbarHideTimer() {
+    clearTimeout(this._toolbarTimer)
+    this._toolbarTimer = null
+  },
+  scheduleToolbarHide() {
+    this.clearToolbarHideTimer()
+    this._toolbarTimer = setTimeout(() => {
+      if (!this.searchOpen) {
+        this.toolbarVisible = false
+      }
+    }, 3000)
+  },
   init() {
     const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
     const syncTheme = ({ matches }) => {
@@ -111,13 +123,16 @@ Alpine.data('siteUi', (searchUrl) => ({
       const isScrollingUp = scrollY < (this._lastScrollY ?? scrollY)
       this._lastScrollY = scrollY
 
-      clearTimeout(this._toolbarTimer)
+      this.clearToolbarHideTimer()
+
+      if (this.searchOpen) {
+        this.toolbarVisible = true
+        return
+      }
 
       if (isAboveThreshold || isScrollingUp || this.toolbarVisible) {
         this.toolbarVisible = true
-        this._toolbarTimer = setTimeout(() => {
-          this.toolbarVisible = false
-        }, 3000)
+        this.scheduleToolbarHide()
       }
     }
 
@@ -138,19 +153,30 @@ Alpine.data('siteUi', (searchUrl) => ({
     window.addEventListener('scroll', updateToolbarVisibility, { passive: true })
     window.addEventListener('resize', updateToolbarVisibility)
     document.addEventListener('focusin', () => {
-      clearTimeout(this._toolbarTimer)
+      this.clearToolbarHideTimer()
       this.toolbarVisible = true
     })
     this.$watch('query', () => { this.activeResultIndex = -1 })
+    this.$watch('searchOpen', (searchOpen) => {
+      this.clearToolbarHideTimer()
+      this.toolbarVisible = true
+      if (!searchOpen) {
+        this._lastScrollY = window.scrollY
+      }
+    })
   },
   async openSearch() {
+    this.clearToolbarHideTimer()
+    this.toolbarVisible = true
     this.searchOpen = true
     if (!this.records.length) {
       this.records = await loadSearchRecords(fetch, searchUrl)
     }
   },
   closeSearch() {
+    this.clearToolbarHideTimer()
     this.searchOpen = false
+    this.toolbarVisible = true
     this.query = ''
     this.activeResultIndex = -1
   },

@@ -652,6 +652,7 @@ test("tag term pages render row summaries instead of cards", async ({
 test("search opens and shows matching posts", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Search" }).click();
+  await expect(page.getByRole("banner")).toBeVisible();
   await page.getByPlaceholder("Search posts").fill("paragraph");
 
   const resultLink = page.getByRole("link", { name: /First Post/ });
@@ -663,6 +664,17 @@ test("search opens and shows matching posts", async ({ page }) => {
 
   await page.getByRole("button", { name: "Search" }).click();
   await page.keyboard.press("Escape");
+  await expect(page.getByPlaceholder("Search posts")).toBeHidden();
+});
+
+test("search closes when clicking the overlay", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+
+  await expect(page.getByPlaceholder("Search posts")).toBeVisible();
+
+  await page.getByTestId("search-overlay").click({ position: { x: 12, y: 12 } });
+
   await expect(page.getByPlaceholder("Search posts")).toBeHidden();
 });
 
@@ -759,6 +771,16 @@ test("search shows type more message for short queries", async ({ page }) => {
   await page.getByPlaceholder("Search posts").fill("ab");
 
   await expect(page.getByText("Type at least 3 characters to search")).toBeVisible();
+  await expect(page.locator("[data-result-index]")).toHaveCount(0);
+});
+
+test("search shows no results for longer queries without matches", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("zzzmissing");
+
+  await expect(page.getByText("No results")).toBeVisible();
+  await expect(page.getByText("Type at least 3 characters to search")).toHaveCount(0);
   await expect(page.locator("[data-result-index]")).toHaveCount(0);
 });
 

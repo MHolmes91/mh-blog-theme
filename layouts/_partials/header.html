@@ -1,7 +1,7 @@
 <header
   role="banner"
   class="sticky top-0 z-40 border-b border-purple-200 bg-white/80 px-6 py-4 backdrop-blur-md transition-opacity duration-300"
-  :class="{ 'opacity-0 pointer-events-none': !toolbarVisible }"
+  :class="{ 'opacity-0 pointer-events-none': !toolbarVisible && !searchOpen }"
 >
   <div class="mx-auto flex max-w-6xl px-6 items-center justify-between gap-4">
     <a
@@ -29,6 +29,7 @@
         x-show="searchOpen"
         @click.self="closeSearch"
         @keydown.escape.window="closeSearch"
+        data-testid="search-overlay"
         class="fixed inset-0 z-50 bg-black/40 p-6"
       >
         <div class="mx-auto max-w-2xl rounded-2xl bg-white p-4">
@@ -45,13 +46,16 @@
               type="button"
               aria-label="Close search"
               @click="closeSearch"
-              class="inline-flex items-center justify-center rounded border border-purple-300 p-2"
+              class="inline-flex items-center justify-center rounded border border-purple-300 px-2.5 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-600"
             >
-              {{ partial "icon.html" (dict "name" "x" "class" "h-4 w-4") }}
+              ESC
             </button>
           </div>
           <template x-if="query.trim().length > 0 && query.trim().length < 3">
             <p class="mt-4 text-sm text-slate-500 text-center">Type at least 3 characters to search</p>
+          </template>
+          <template x-if="query.trim().length >= 3 && !results.length">
+            <p class="mt-4 text-sm text-slate-500 text-center">No results</p>
           </template>
           <div data-results-container class="mt-4 space-y-2 max-h-[17rem] overflow-y-auto">
             <template x-for="(result, index) in results" :key="result.permalink">
