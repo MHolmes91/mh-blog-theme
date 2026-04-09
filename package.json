@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "entities": "^8.0.0"
+    "entities": "7.0.1"
   },
   "scripts": {
     "dev": "node ./scripts/hugo.mjs server",
