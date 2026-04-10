@@ -264,6 +264,13 @@ describe('filterSearchRecords', () => {
 
     expect(result._orderedSeries).toEqual(['needle series', 'guide'])
     expect(result._orderedTags).toEqual(['needle tag', 'alpha', 'omega'])
+    expect(result._orderedMetadata).toEqual([
+      { kind: 'series', label: 'needle series', matched: true },
+      { kind: 'tag', label: 'needle tag', matched: true },
+      { kind: 'series', label: 'guide', matched: false },
+      { kind: 'tag', label: 'alpha', matched: false },
+      { kind: 'tag', label: 'omega', matched: false }
+    ])
   })
 
   it('matches summary before content in rank ordering', () => {
