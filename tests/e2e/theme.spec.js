@@ -811,36 +811,54 @@ test("search shows no results for longer queries without matches", async ({ page
 });
 
 test("search shows all metadata and orders matching items first", async ({ page }) => {
+  await page.setViewportSize({ width: 280, height: 900 });
   await page.goto("/");
   await page.getByRole("button", { name: "Search" }).click();
   await page.getByPlaceholder("Search posts").fill("fixture");
 
   const result = page
     .locator("[data-result-index]")
-    .filter({ has: page.getByText("Series Part 4", { exact: true }) })
+    .filter({ has: page.getByText("TOC Stress Post", { exact: true }) })
     .first();
   const metadata = result.locator(".search-result-meta span");
   const labels = await metadata.evaluateAll((nodes) =>
     nodes.map((node) => node.textContent?.trim()),
   );
   const metrics = await result.locator(".search-result-meta").evaluate((node) => {
+    const lastChild = node.querySelector("span:last-of-type");
     const children = Array.from(node.querySelectorAll("span")).map((child) => {
       const rect = child.getBoundingClientRect();
 
       return { top: rect.top, height: rect.height };
     });
 
+    if (lastChild) {
+      lastChild.scrollIntoView({ inline: "end", block: "nearest" });
+    }
+
+    const containerRect = node.getBoundingClientRect();
+    const lastRect = lastChild?.getBoundingClientRect();
+    const styles = getComputedStyle(node);
+
     return {
+      clientWidth: node.clientWidth,
       clientHeight: node.clientHeight,
+      scrollLeft: node.scrollLeft,
       scrollHeight: node.scrollHeight,
+      scrollWidth: node.scrollWidth,
       heights: children.map((child) => child.height),
+      lastRight: lastRect?.right ?? 0,
+      containerRight: containerRect.right,
     };
   });
 
   await expect(result).toBeVisible();
-  expect(labels).toEqual(["fixture-series", "fixture", "series", "part-4"]);
+  expect(labels).toEqual(["fixture", "toc", "longform", "testing"]);
   expect(metrics.scrollHeight).toBe(metrics.clientHeight);
   expect(Math.max(...metrics.heights)).toBeLessThanOrEqual(metrics.clientHeight);
+  expect(metrics.scrollWidth).toBeGreaterThan(metrics.clientWidth);
+  expect(metrics.scrollLeft).toBeGreaterThan(0);
+  expect(metrics.lastRight).toBeLessThanOrEqual(metrics.containerRight);
 });
 
 test("search uses summary text in the snippet when summary matches", async ({ page }) => {

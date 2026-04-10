@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { filterSearchRecords, collectMatches, loadSearchRecords, highlightText, rankRecord, getMatchedTags, getMatchedSeries, extractContext } from '../../assets/js/lib/search.js'
+import { filterSearchRecords, collectMatches, loadSearchRecords, highlightText, rankRecord, extractContext } from '../../assets/js/lib/search.js'
 
 const SEARCH_INDEX_TEMPLATE = readFileSync(new URL('../../layouts/index.json', import.meta.url), 'utf8')
 const HEADING_LINK_HASH_REGEX_SOURCE = String.raw`(?m)\s+#\s*$`
@@ -71,48 +71,6 @@ describe('rankRecord', () => {
 
   it('returns 0 for title match even when other fields also match', () => {
     expect(rankRecord({ ...record, title: 'Setup Guide' }, 'setup')).toBe(0)
-  })
-})
-
-describe('getMatchedTags', () => {
-  const record = {
-    tags: ['webdev', 'hugo'],
-    series: ['Getting Started']
-  }
-
-  it('returns matching tags only', () => {
-    expect(getMatchedTags(record, 'webdev')).toEqual(['webdev'])
-  })
-
-  it('does not include matching series', () => {
-    expect(getMatchedTags(record, 'started')).toEqual([])
-  })
-
-  it('returns empty array when no match', () => {
-    expect(getMatchedTags(record, 'python')).toEqual([])
-  })
-
-  it('returns matching tags', () => {
-    expect(getMatchedTags(record, 'hugo')).toEqual(['hugo'])
-  })
-})
-
-describe('getMatchedSeries', () => {
-  const record = {
-    tags: ['webdev', 'hugo'],
-    series: ['Getting Started']
-  }
-
-  it('returns matching series only', () => {
-    expect(getMatchedSeries(record, 'started')).toEqual(['Getting Started'])
-  })
-
-  it('does not include matching tags', () => {
-    expect(getMatchedSeries(record, 'webdev')).toEqual([])
-  })
-
-  it('returns empty array when no match', () => {
-    expect(getMatchedSeries(record, 'python')).toEqual([])
   })
 })
 
@@ -193,7 +151,7 @@ describe('extractContext', () => {
 })
 
 describe('filterSearchRecords', () => {
-  it('returns enriched results with rank, context, and matchedTags', () => {
+  it('returns enriched results with rank, context, and ordered metadata only', () => {
     const records = [
       { title: 'First Post', summary: 'Alpha', content: 'Search should find this paragraph.', permalink: '/posts/first-post/', tags: [], series: [] },
       { title: 'Second Post', summary: 'Beta', content: 'Nothing relevant here.', permalink: '/posts/second-post/', tags: [], series: [] }
@@ -203,9 +161,13 @@ describe('filterSearchRecords', () => {
     expect(results).toHaveLength(1)
     expect(results[0]._rank).toBe(3)
     expect(results[0]._context).toMatch(/search/i)
-    expect(results[0]._snippetKind).toBe('text')
-    expect(results[0]._heading).toBe('')
-    expect(results[0]._matchedTags).toEqual([])
+    expect(results[0]._orderedSeries).toEqual([])
+    expect(results[0]._orderedTags).toEqual([])
+    expect(results[0]._orderedMetadata).toEqual([])
+    expect(results[0]).not.toHaveProperty('_snippetKind')
+    expect(results[0]).not.toHaveProperty('_heading')
+    expect(results[0]).not.toHaveProperty('_matchedTags')
+    expect(results[0]).not.toHaveProperty('_matchedSeries')
   })
 
   it('sorts by rank then alphabetically by title', () => {
@@ -229,25 +191,6 @@ describe('filterSearchRecords', () => {
     const records = [{ title: 'Test Post', content: 'test content', tags: [], series: [] }]
     expect(filterSearchRecords(records, 'te')).toEqual([])
     expect(filterSearchRecords(records, 't')).toEqual([])
-  })
-
-  it('includes matched tags in _matchedTags', () => {
-    const records = [
-      { title: 'Post', summary: '', content: 'text', permalink: '/p/', tags: ['hugo', 'web'], series: ['tutorial'] }
-    ]
-
-    const results = filterSearchRecords(records, 'web')
-    expect(results[0]._matchedTags).toEqual(['web'])
-  })
-
-  it('includes matched series in _matchedSeries', () => {
-    const records = [
-      { title: 'Post', summary: '', content: 'text', permalink: '/p/', tags: [], series: ['tutorial'] }
-    ]
-
-    const results = filterSearchRecords(records, 'tutorial')
-    expect(results[0]._matchedSeries).toEqual(['tutorial'])
-    expect(results[0]._matchedTags).toEqual([])
   })
 
   it('keeps all series and tags and moves matching items first', () => {

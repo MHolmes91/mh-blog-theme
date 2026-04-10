@@ -72,7 +72,7 @@
                   x-html="highlightText(result.title, query)"
                   class="search-result-title font-medium"
                 ></div>
-                <div class="search-result-meta mt-1 flex min-h-[1.25rem] flex-nowrap items-center gap-1.5 overflow-hidden whitespace-nowrap">
+                <div class="search-result-meta mt-1 flex min-h-[1.25rem] flex-nowrap items-center gap-1.5 overflow-x-auto overflow-y-hidden whitespace-nowrap">
                   <template x-for="item in (result._orderedMetadata || [])" :key="`${item.kind}-${item.label}`">
                     <span
                       x-text="item.label"

@@ -31,14 +31,6 @@ export function rankRecord(record, query) {
   return 3
 }
 
-export function getMatchedTags(record, needle) {
-  return (record.tags || []).filter(t => t.toLowerCase().includes(needle))
-}
-
-export function getMatchedSeries(record, needle) {
-  return (record.series || []).filter(s => s.toLowerCase().includes(needle))
-}
-
 function matchesMetadataItem(item, needle) {
   return item.toLowerCase().includes(needle)
 }
@@ -143,10 +135,6 @@ export function filterSearchRecords(records, query) {
         ...record,
         _rank: rankRecord(record, needle),
         _context: extractContext(record, needle),
-        _snippetKind: 'text',
-        _heading: '',
-        _matchedTags: getMatchedTags(record, needle),
-        _matchedSeries: getMatchedSeries(record, needle),
         _orderedSeries: orderedSeries,
         _orderedTags: orderedTags,
         _orderedMetadata: buildOrderedMetadata(orderedSeries, orderedTags, needle)
