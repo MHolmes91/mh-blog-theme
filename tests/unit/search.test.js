@@ -41,8 +41,8 @@ describe('rankRecord', () => {
     title: 'Hugo Tutorial',
     tags: ['webdev', 'hugo'],
     series: ['Getting Started'],
-    content: 'This is some content about Hugo.',
-    headings: ['## Setup', '## Usage']
+    summary: 'A short summary about setup.',
+    content: 'This is some content about Hugo.'
   }
 
   it('returns 0 for title match', () => {
@@ -57,12 +57,12 @@ describe('rankRecord', () => {
     expect(rankRecord(record, 'started')).toBe(1)
   })
 
-  it('returns 2 for content match', () => {
-    expect(rankRecord(record, 'content')).toBe(2)
+  it('returns 2 for summary match', () => {
+    expect(rankRecord(record, 'setup')).toBe(2)
   })
 
-  it('returns 2 for heading match', () => {
-    expect(rankRecord(record, 'setup')).toBe(2)
+  it('returns 3 for content match', () => {
+    expect(rankRecord(record, 'content')).toBe(3)
   })
 
   it('returns -1 when query is empty', () => {
@@ -120,142 +120,75 @@ describe('extractContext', () => {
   const record = {
     title: 'Test Post',
     tags: ['webdev'],
-    series: [],
-    content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.',
-    headings: ['## Introduction', '## Getting Started']
+    series: ['Guides'],
+    summary: 'Summary text that mentions setup clearly.',
+    content: 'Longer body content that also mentions setup later in the article.'
   }
 
-  it('returns first 120 chars for tag match', () => {
-    const result = extractContext(record, 'webdev')
-    expect(result).toEqual({
-      kind: 'text',
-      heading: '',
-      text: record.content.slice(0, 120)
-    })
+  it('uses summary for metadata matches when summary exists', () => {
+    expect(extractContext(record, 'webdev')).toBe('Summary text that mentions setup clearly.')
   })
 
-  it('returns first 120 chars for title match', () => {
-    const result = extractContext(record, 'test post')
-    expect(result).toEqual({
-      kind: 'text',
-      heading: '',
-      text: record.content.slice(0, 120)
-    })
+  it('uses summary for title matches when summary exists', () => {
+    expect(extractContext(record, 'test post')).toBe('Summary text that mentions setup clearly.')
   })
 
-  it('returns heading + content after heading for heading match', () => {
-    const recordWithHeadings = {
-      ...record,
-      content: 'Lorem ipsum dolor sit amet. Introduction This is the intro section with some content following the heading.'
-    }
-    const result = extractContext(recordWithHeadings, 'introduction')
-    expect(result).toEqual({
-      kind: 'heading',
-      heading: 'Introduction',
-      text: 'This is the intro section with some content following the heading.'
-    })
+  it('uses summary when the summary matches', () => {
+    expect(extractContext(record, 'setup')).toBe('Summary text that mentions setup clearly.')
   })
 
-  it('returns structured heading snippets without markdown or trailing hash', () => {
-    const recordWithHeadings = {
-      title: 'Heading Post',
-      tags: [],
-      series: [],
-      content: 'Intro text. Linked Heading This excerpt follows the heading in plain text.',
-      headings: ['## Linked Heading #']
-    }
-
-    expect(extractContext(recordWithHeadings, 'linked')).toEqual({
-      kind: 'heading',
-      heading: 'Linked Heading',
-      text: 'This excerpt follows the heading in plain text.'
-    })
+  it('falls back to opening content when summary is empty', () => {
+    expect(extractContext({ ...record, summary: '' }, 'webdev')).toBe(record.content.slice(0, 120))
   })
 
-  it('falls back to the opening content when the heading label is not embedded in content', () => {
-    const recordWithDetachedHeading = {
-      title: 'Detached Heading Post',
-      tags: [],
-      series: [],
-      content: 'Body copy starts immediately without repeating the section heading in the flattened content.',
-      headings: ['## Missing Heading']
-    }
-
-    expect(extractContext(recordWithDetachedHeading, 'missing')).toEqual({
-      kind: 'heading',
-      heading: 'Missing Heading',
-      text: 'Body copy starts immediately without repeating the section heading in the flattened content.'
-    })
-  })
-
-  it('uses the later heading occurrence instead of earlier prose mentions', () => {
-    const recordWithRepeatedHeadingText = {
-      title: 'Repeated Heading Post',
-      tags: [],
-      series: [],
-      content: 'Linked Heading is referenced in the introduction. More setup text. Linked Heading Body copy after the real heading.',
-      headings: ['## Linked Heading']
-    }
-
-    expect(extractContext(recordWithRepeatedHeadingText, 'linked')).toEqual({
-      kind: 'heading',
-      heading: 'Linked Heading',
-      text: 'Body copy after the real heading.'
-    })
-  })
-
-  it('returns structured text snippets for content matches', () => {
+  it('returns decoded summary text for summary matches', () => {
     const recordWithQuotedContent = {
       title: 'Content Post',
       tags: [],
       series: [],
-      content: 'A paragraph with &quot;quoted&quot; content in the middle of the snippet.',
-      headings: []
+      summary: 'A short &quot;quoted&quot; summary.',
+      content: 'A paragraph with quoted content in the middle of the snippet.'
     }
 
-    expect(extractContext(recordWithQuotedContent, 'quoted')).toEqual({
-      kind: 'text',
-      heading: '',
-      text: expect.stringContaining('"quoted"')
-    })
+    expect(extractContext(recordWithQuotedContent, 'quoted')).toBe('A short "quoted" summary.')
   })
 
   it('returns surrounding context for content match', () => {
-    const result = extractContext(record, 'tempor')
-    expect(result.kind).toBe('text')
-    expect(result.heading).toBe('')
-    expect(result.text).toContain('tempor')
-    expect(result.text.length).toBeLessThanOrEqual(140)
+    const recordWithLongContent = {
+      ...record,
+      summary: 'Concise intro.',
+      content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.'
+    }
+    const result = extractContext(recordWithLongContent, 'tempor')
+    expect(result).toContain('tempor')
+    expect(result.length).toBeLessThanOrEqual(140)
   })
 
   it('trims to word boundaries', () => {
     const record2 = {
       ...record,
+      summary: '',
       content: 'abcdefghijklmnopqrstuvwxyz now there is tempor incididunt ut'
     }
     const result = extractContext(record2, 'tempor')
-    expect(result.text).toMatch(/^\S/)
-    expect(result.text).toMatch(/\S$/)
+    expect(result).toMatch(/^\S/)
+    expect(result).toMatch(/\S$/)
   })
 
   it('returns empty string when query is empty', () => {
-    expect(extractContext(record, '')).toEqual({
-      kind: 'text',
-      heading: '',
-      text: ''
-    })
+    expect(extractContext(record, '')).toBe('')
   })
 
   it('handles match at start of content', () => {
-    const record2 = { ...record, content: 'tempor is at the start of content.' }
+    const record2 = { ...record, summary: '', content: 'tempor is at the start of content.' }
     const result = extractContext(record2, 'tempor')
-    expect(result.text).toContain('tempor')
+    expect(result).toContain('tempor')
   })
 
   it('handles match near end of content', () => {
-    const short = { ...record, content: 'some text before the tempor word' }
+    const short = { ...record, summary: '', content: 'some text before the tempor word' }
     const result = extractContext(short, 'tempor')
-    expect(result.text).toContain('tempor')
+    expect(result).toContain('tempor')
   })
 })
 
@@ -268,7 +201,7 @@ describe('filterSearchRecords', () => {
 
     const results = filterSearchRecords(records, 'search')
     expect(results).toHaveLength(1)
-    expect(results[0]._rank).toBe(2)
+    expect(results[0]._rank).toBe(3)
     expect(results[0]._context).toMatch(/search/i)
     expect(results[0]._matchedTags).toEqual([])
   })
@@ -315,40 +248,15 @@ describe('filterSearchRecords', () => {
     expect(results[0]._matchedTags).toEqual([])
   })
 
-  it('returns structured snippet metadata for heading matches', () => {
-    const records = [{
-      title: 'Heading Post',
-      summary: '',
-      content: 'Intro text. Linked Heading Body copy after the heading.',
-      permalink: '/heading/',
-      tags: [],
-      series: [],
-      headings: ['## Linked Heading #']
-    }]
+  it('matches summary before content in rank ordering', () => {
+    const records = [
+      { title: 'Content Match', summary: '', content: 'setup appears only in content', permalink: '/content/', tags: [], series: [] },
+      { title: 'Summary Match', summary: 'setup appears in summary', content: 'nothing else', permalink: '/summary/', tags: [], series: [] }
+    ]
 
-    const [result] = filterSearchRecords(records, 'linked')
-
-    expect(result._snippetKind).toBe('heading')
-    expect(result._heading).toBe('Linked Heading')
-    expect(result._context).toContain('Body copy after the heading.')
-  })
-
-  it('returns structured snippet metadata for text matches', () => {
-    const records = [{
-      title: 'Content Post',
-      summary: '',
-      content: 'A paragraph with &quot;quoted&quot; content in the middle of the snippet.',
-      permalink: '/content/',
-      tags: [],
-      series: [],
-      headings: []
-    }]
-
-    const [result] = filterSearchRecords(records, 'quoted')
-
-    expect(result._snippetKind).toBe('text')
-    expect(result._heading).toBe('')
-    expect(result._context).toContain('"quoted"')
+    const results = filterSearchRecords(records, 'setup')
+    expect(results.map((result) => result.title)).toEqual(['Summary Match', 'Content Match'])
+    expect(results[0]._context).toBe('setup appears in summary')
   })
 })
 

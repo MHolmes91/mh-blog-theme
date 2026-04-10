@@ -11,26 +11,6 @@ function decodeText(text = '') {
   return decodeHTML(text)
 }
 
-function normalizeHeading(heading = '') {
-  return decodeText(heading)
-    .replace(/^##+\s+/, '')
-    .replace(/\s+#+\s*$/, '')
-    .trim()
-}
-
-function createTextSnippet(text = '') {
-  return { kind: 'text', heading: '', text }
-}
-
-function extractHeadingText(content, headingText) {
-  const headingPos = content.toLowerCase().lastIndexOf(headingText.toLowerCase())
-  const bodyText = headingPos === -1
-    ? content
-    : content.slice(headingPos + headingText.length).trimStart()
-
-  return (bodyText || content).slice(0, CONTEXT_LENGTH).trim()
-}
-
 export function highlightText(text, query) {
   const needle = query.trim()
   const safeText = escapeHtml(decodeText(text))
@@ -44,10 +24,11 @@ export function rankRecord(record, query) {
   const needle = query.trim().toLowerCase()
   if (!needle) return -1
 
-  if (record.title.toLowerCase().includes(needle)) return 0
-  if ((record.tags || []).some(t => t.toLowerCase().includes(needle))) return 1
-  if ((record.series || []).some(s => s.toLowerCase().includes(needle))) return 1
-  return 2
+  if ((record.title || '').toLowerCase().includes(needle)) return 0
+  if ((record.series || []).some((item) => item.toLowerCase().includes(needle))) return 1
+  if ((record.tags || []).some((item) => item.toLowerCase().includes(needle))) return 1
+  if (decodeText(record.summary || '').toLowerCase().includes(needle)) return 2
+  return 3
 }
 
 export function getMatchedTags(record, needle) {
@@ -62,31 +43,23 @@ const CONTEXT_LENGTH = 120
 
 export function extractContext(record, query) {
   const needle = query.trim().toLowerCase()
-  if (!needle) return createTextSnippet('')
+  if (!needle) return ''
 
+  const summary = decodeText(record.summary || '')
   const content = decodeText(record.content || '')
-  const lowerContent = content.toLowerCase()
-
   const rank = rankRecord(record, query)
 
   if (rank <= 1) {
-    return createTextSnippet(content.slice(0, CONTEXT_LENGTH))
+    return (summary || content).slice(0, CONTEXT_LENGTH)
   }
 
-  for (const heading of (record.headings || [])) {
-    const headingText = normalizeHeading(heading)
-    if (headingText.toLowerCase().includes(needle)) {
-      return {
-        kind: 'heading',
-        heading: headingText,
-        // Prefer the section-looking occurrence; otherwise fall back to the opening body copy.
-        text: extractHeadingText(content, headingText)
-      }
-    }
+  if (rank === 2) {
+    return summary.slice(0, CONTEXT_LENGTH)
   }
 
+  const lowerContent = content.toLowerCase()
   const matchIndex = lowerContent.indexOf(needle)
-  if (matchIndex === -1) return createTextSnippet(content.slice(0, CONTEXT_LENGTH))
+  if (matchIndex === -1) return content.slice(0, CONTEXT_LENGTH)
 
   let start = Math.max(0, matchIndex - 60)
   let end = Math.min(content.length, matchIndex + needle.length + 60)
@@ -105,7 +78,7 @@ export function extractContext(record, query) {
   if (start > 0) context = '\u2026' + context
   if (end < content.length) context = context + '\u2026'
 
-  return createTextSnippet(context)
+  return context
 }
 
 const MIN_QUERY_LENGTH = 3
@@ -120,22 +93,17 @@ export function filterSearchRecords(records, query) {
         record.title,
         ...(record.tags || []),
         ...(record.series || []),
-        decodeText(record.content || ''),
-        ...(record.headings || []).map(normalizeHeading)
+        decodeText(record.summary || ''),
+        decodeText(record.content || '')
       ].join(' ').toLowerCase()
 
       return haystack.includes(needle)
     })
     .map((record) => {
-      const snippet = extractContext(record, needle)
-
-      // Keep the UI-facing fields flat while preserving how the snippet was chosen.
       return {
         ...record,
         _rank: rankRecord(record, needle),
-        _context: snippet.text,
-        _snippetKind: snippet.kind,
-        _heading: snippet.heading,
+        _context: extractContext(record, needle),
         _matchedTags: getMatchedTags(record, needle),
         _matchedSeries: getMatchedSeries(record, needle)
       }
