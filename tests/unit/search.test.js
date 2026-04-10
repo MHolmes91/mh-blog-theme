@@ -356,10 +356,18 @@ describe('collectMatches', () => {
 })
 
 describe('search index template', () => {
-  it('uses the markdown heading regex expected by Hugo findRE', () => {
+  it('does not emit a headings field in the search index', () => {
     const template = readFileSync(new URL('../../layouts/index.json', import.meta.url), 'utf8')
 
-    expect(template).toContain('(?m)^##+\\s+.+$')
+    expect(template).not.toContain('"headings"')
+    expect(template).not.toContain('findRE')
+  })
+
+  it('sanitizes heading-link hashes from emitted content', () => {
+    const template = readFileSync(new URL('../../layouts/index.json', import.meta.url), 'utf8')
+
+    expect(template).toContain('replaceRE')
+    expect(template).toContain('\\s+#+\\s*$')
   })
 })
 

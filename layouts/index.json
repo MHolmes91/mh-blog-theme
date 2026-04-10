@@ -1,10 +1,10 @@
 {{- $records := slice -}}
 {{- range where site.RegularPages "Section" "posts" -}}
+  {{- $content := .Plain | replaceRE `(?m)\s+#+\s*$` "" -}}
   {{- $records = $records | append (dict
     "title" .Title
     "summary" (.Summary | plainify)
-    "content" .Plain
-    "headings" (findRE `(?m)^##+\s+.+$` .RawContent)
+    "content" $content
     "permalink" .RelPermalink
     "tags" (.Params.tags | default (slice))
     "series" (.Params.series | default (slice))
