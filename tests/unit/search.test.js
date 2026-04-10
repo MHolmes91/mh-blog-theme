@@ -250,6 +250,22 @@ describe('filterSearchRecords', () => {
     expect(results[0]._matchedTags).toEqual([])
   })
 
+  it('keeps all series and tags and moves matching items first', () => {
+    const records = [{
+      title: 'Post',
+      summary: 'Summary',
+      content: 'Body',
+      permalink: '/post/',
+      tags: ['alpha', 'needle tag', 'omega'],
+      series: ['guide', 'needle series']
+    }]
+
+    const [result] = filterSearchRecords(records, 'needle')
+
+    expect(result._orderedSeries).toEqual(['needle series', 'guide'])
+    expect(result._orderedTags).toEqual(['needle tag', 'alpha', 'omega'])
+  })
+
   it('matches summary before content in rank ordering', () => {
     const records = [
       { title: 'Content Match', summary: '', content: 'setup appears only in content', permalink: '/content/', tags: [], series: [] },

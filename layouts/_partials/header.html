@@ -72,26 +72,21 @@
                   x-html="highlightText(result.title, query)"
                   class="search-result-title font-medium"
                 ></div>
-                <div class="search-result-meta mt-1 flex items-center gap-1.5 min-h-[1.25rem]">
-                  <template x-for="s in (result._matchedSeries || [])" :key="s">
-                    <span x-text="s" class="shrink-0 text-xs underline"></span>
-                  </template>
-                  <template x-for="tag in (result._matchedTags || [])" :key="tag">
+                <div class="search-result-meta mt-1 flex min-h-[1.25rem] flex-nowrap items-center gap-1.5 overflow-hidden whitespace-nowrap">
+                  <template x-for="item in (result._orderedMetadata || [])" :key="`${item.kind}-${item.label}`">
                     <span
-                      x-text="tag"
-                      class="inline-block shrink-0 rounded-full bg-purple-100 px-2 py-0.5 text-xs"
+                      x-text="item.label"
+                      class="shrink-0 text-xs"
+                      :class="item.kind === 'series'
+                        ? (item.matched ? 'underline font-semibold text-slate-900' : 'underline text-slate-500')
+                        : (item.matched
+                          ? 'inline-block rounded-full bg-purple-200 px-2 py-0.5 font-semibold text-purple-900'
+                          : 'inline-block rounded-full bg-purple-100 px-2 py-0.5 text-slate-700')"
                     ></span>
                   </template>
                 </div>
                 <div x-show="result._context" class="search-result-excerpt mt-1 text-sm text-slate-500">
-                  <template x-if="result._snippetKind === 'heading' && result._heading">
-                    <span
-                      x-html="`<strong>${highlightText(result._heading, query)}:</strong> ${highlightText(result._context, query)}`"
-                    ></span>
-                  </template>
-                  <template x-if="result._snippetKind !== 'heading' || !result._heading">
-                    <span x-html="highlightText(result._context, query)"></span>
-                  </template>
+                  <span x-html="highlightText(result._context, query)"></span>
                 </div>
               </a>
             </template>

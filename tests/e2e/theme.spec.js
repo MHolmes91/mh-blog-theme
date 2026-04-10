@@ -810,20 +810,53 @@ test("search shows no results for longer queries without matches", async ({ page
   await expect(page.locator("[data-result-index]")).toHaveCount(0);
 });
 
-test("search renders heading matches with an inline heading prefix", async ({ page }) => {
+test("search shows all metadata and orders matching items first", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Search" }).click();
-  await page.getByPlaceholder("Search posts").fill("large section");
+  await page.getByPlaceholder("Search posts").fill("fixture");
 
   const result = page
     .locator("[data-result-index]")
-    .filter({ has: page.getByText("TOC Stress Post", { exact: true }) })
+    .filter({ has: page.getByText("Series Part 4", { exact: true }) })
     .first();
-  const headingPrefix = result.locator("strong").first();
+  const metadata = result.locator(".search-result-meta span");
+  const labels = await metadata.evaluateAll((nodes) =>
+    nodes.map((node) => node.textContent?.trim()),
+  );
+  const metrics = await result.locator(".search-result-meta").evaluate((node) => {
+    const children = Array.from(node.querySelectorAll("span")).map((child) => {
+      const rect = child.getBoundingClientRect();
+
+      return { top: rect.top, height: rect.height };
+    });
+
+    return {
+      clientHeight: node.clientHeight,
+      scrollHeight: node.scrollHeight,
+      heights: children.map((child) => child.height),
+    };
+  });
 
   await expect(result).toBeVisible();
-  await expect(headingPrefix).toHaveText("Large Section One:");
-  await expect(headingPrefix).not.toContainText("#");
+  expect(labels).toEqual(["fixture-series", "fixture", "series", "part-4"]);
+  expect(metrics.scrollHeight).toBe(metrics.clientHeight);
+  expect(Math.max(...metrics.heights)).toBeLessThanOrEqual(metrics.clientHeight);
+});
+
+test("search uses summary text in the snippet when summary matches", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("closing entry");
+
+  const result = page
+    .locator("[data-result-index]")
+    .filter({ has: page.getByText("Series Part 4", { exact: true }) })
+    .first();
+  const excerpt = result.locator(".search-result-excerpt");
+
+  await expect(result).toBeVisible();
+  await expect(excerpt).toContainText("Closing entry in the shared fixture series.");
+  await expect(excerpt).not.toContainText("This is the closing entry in the shared series fixture.");
 });
 
 test("search caps the visible results area to three cards", async ({ page }) => {

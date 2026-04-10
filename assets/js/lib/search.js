@@ -39,6 +39,42 @@ export function getMatchedSeries(record, needle) {
   return (record.series || []).filter(s => s.toLowerCase().includes(needle))
 }
 
+function matchesMetadataItem(item, needle) {
+  return item.toLowerCase().includes(needle)
+}
+
+function orderMetadata(items = [], needle) {
+  const matching = []
+  const rest = []
+
+  for (const item of items) {
+    if (matchesMetadataItem(item, needle)) {
+      matching.push(item)
+    } else {
+      rest.push(item)
+    }
+  }
+
+  return [...matching, ...rest]
+}
+
+function buildOrderedMetadata(orderedSeries, orderedTags, needle) {
+  return [
+    ...orderedSeries
+      .filter((item) => matchesMetadataItem(item, needle))
+      .map((label) => ({ kind: 'series', label, matched: true })),
+    ...orderedTags
+      .filter((item) => matchesMetadataItem(item, needle))
+      .map((label) => ({ kind: 'tag', label, matched: true })),
+    ...orderedSeries
+      .filter((item) => !matchesMetadataItem(item, needle))
+      .map((label) => ({ kind: 'series', label, matched: false })),
+    ...orderedTags
+      .filter((item) => !matchesMetadataItem(item, needle))
+      .map((label) => ({ kind: 'tag', label, matched: false }))
+  ]
+}
+
 const CONTEXT_LENGTH = 120
 
 export function extractContext(record, query) {
@@ -100,6 +136,9 @@ export function filterSearchRecords(records, query) {
       return haystack.includes(needle)
     })
     .map((record) => {
+      const orderedSeries = orderMetadata(record.series || [], needle)
+      const orderedTags = orderMetadata(record.tags || [], needle)
+
       return {
         ...record,
         _rank: rankRecord(record, needle),
@@ -107,7 +146,10 @@ export function filterSearchRecords(records, query) {
         _snippetKind: 'text',
         _heading: '',
         _matchedTags: getMatchedTags(record, needle),
-        _matchedSeries: getMatchedSeries(record, needle)
+        _matchedSeries: getMatchedSeries(record, needle),
+        _orderedSeries: orderedSeries,
+        _orderedTags: orderedTags,
+        _orderedMetadata: buildOrderedMetadata(orderedSeries, orderedTags, needle)
       }
     })
     .sort((a, b) => {
