@@ -104,6 +104,8 @@ export function filterSearchRecords(records, query) {
         ...record,
         _rank: rankRecord(record, needle),
         _context: extractContext(record, needle),
+        _snippetKind: 'text',
+        _heading: '',
         _matchedTags: getMatchedTags(record, needle),
         _matchedSeries: getMatchedSeries(record, needle)
       }

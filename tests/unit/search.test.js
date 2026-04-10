@@ -203,6 +203,8 @@ describe('filterSearchRecords', () => {
     expect(results).toHaveLength(1)
     expect(results[0]._rank).toBe(3)
     expect(results[0]._context).toMatch(/search/i)
+    expect(results[0]._snippetKind).toBe('text')
+    expect(results[0]._heading).toBe('')
     expect(results[0]._matchedTags).toEqual([])
   })
 
