@@ -1,6 +1,6 @@
 {{- $records := slice -}}
 {{- range where site.RegularPages "Section" "posts" -}}
-  {{- $content := .Plain | replaceRE `(?m)\s+#+\s*$` "" -}}
+  {{- $content := .Plain | replaceRE `(?m)\s+#\s*$` "" -}}
   {{- $records = $records | append (dict
     "title" .Title
     "summary" (.Summary | plainify)

@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { filterSearchRecords, collectMatches, loadSearchRecords, highlightText, rankRecord, getMatchedTags, getMatchedSeries, extractContext } from '../../assets/js/lib/search.js'
 
+const SEARCH_INDEX_TEMPLATE = readFileSync(new URL('../../layouts/index.json', import.meta.url), 'utf8')
+const HEADING_LINK_HASH_REGEX_SOURCE = String.raw`(?m)\s+#\s*$`
+const headingLinkHashPattern = /\s+#\s*$/gm
+
 describe('highlightText', () => {
   it('returns escaped text when query is empty', () => {
     expect(highlightText('hello <world>', '')).toBe('hello &lt;world&gt;')
@@ -258,8 +262,8 @@ describe('extractContext', () => {
 describe('filterSearchRecords', () => {
   it('returns enriched results with rank, context, and matchedTags', () => {
     const records = [
-      { title: 'First Post', summary: 'Alpha', content: 'Search should find this paragraph.', permalink: '/posts/first-post/', tags: [], series: [], headings: [] },
-      { title: 'Second Post', summary: 'Beta', content: 'Nothing relevant here.', permalink: '/posts/second-post/', tags: [], series: [], headings: [] }
+      { title: 'First Post', summary: 'Alpha', content: 'Search should find this paragraph.', permalink: '/posts/first-post/', tags: [], series: [] },
+      { title: 'Second Post', summary: 'Beta', content: 'Nothing relevant here.', permalink: '/posts/second-post/', tags: [], series: [] }
     ]
 
     const results = filterSearchRecords(records, 'search')
@@ -271,10 +275,10 @@ describe('filterSearchRecords', () => {
 
   it('sorts by rank then alphabetically by title', () => {
     const records = [
-      { title: 'Content Match', summary: '', content: 'The search word is here.', permalink: '/a/', tags: [], series: [], headings: [] },
-      { title: 'Alpha search', summary: '', content: 'No match here.', permalink: '/b/', tags: [], series: [], headings: [] },
-      { title: 'Beta search', summary: '', content: 'No match here.', permalink: '/c/', tags: [], series: [], headings: [] },
-      { title: 'Zeta Tag Match', summary: '', content: 'No match here.', permalink: '/d/', tags: ['search'], series: [], headings: [] }
+      { title: 'Content Match', summary: '', content: 'The search word is here.', permalink: '/a/', tags: [], series: [] },
+      { title: 'Alpha search', summary: '', content: 'No match here.', permalink: '/b/', tags: [], series: [] },
+      { title: 'Beta search', summary: '', content: 'No match here.', permalink: '/c/', tags: [], series: [] },
+      { title: 'Zeta Tag Match', summary: '', content: 'No match here.', permalink: '/d/', tags: ['search'], series: [] }
     ]
 
     const results = filterSearchRecords(records, 'search')
@@ -287,14 +291,14 @@ describe('filterSearchRecords', () => {
   })
 
   it('returns empty array when query is shorter than 3 characters', () => {
-    const records = [{ title: 'Test Post', content: 'test content', tags: [], series: [], headings: [] }]
+    const records = [{ title: 'Test Post', content: 'test content', tags: [], series: [] }]
     expect(filterSearchRecords(records, 'te')).toEqual([])
     expect(filterSearchRecords(records, 't')).toEqual([])
   })
 
   it('includes matched tags in _matchedTags', () => {
     const records = [
-      { title: 'Post', summary: '', content: 'text', permalink: '/p/', tags: ['hugo', 'web'], series: ['tutorial'], headings: [] }
+      { title: 'Post', summary: '', content: 'text', permalink: '/p/', tags: ['hugo', 'web'], series: ['tutorial'] }
     ]
 
     const results = filterSearchRecords(records, 'web')
@@ -303,7 +307,7 @@ describe('filterSearchRecords', () => {
 
   it('includes matched series in _matchedSeries', () => {
     const records = [
-      { title: 'Post', summary: '', content: 'text', permalink: '/p/', tags: [], series: ['tutorial'], headings: [] }
+      { title: 'Post', summary: '', content: 'text', permalink: '/p/', tags: [], series: ['tutorial'] }
     ]
 
     const results = filterSearchRecords(records, 'tutorial')
@@ -357,18 +361,23 @@ describe('collectMatches', () => {
 
 describe('search index template', () => {
   it('does not emit a headings field in the search index', () => {
-    const template = readFileSync(new URL('../../layouts/index.json', import.meta.url), 'utf8')
-
-    expect(template).not.toContain('"headings"')
-    expect(template).not.toContain('findRE')
+    expect(SEARCH_INDEX_TEMPLATE).not.toContain('"headings"')
+    expect(SEARCH_INDEX_TEMPLATE).not.toContain('findRE')
   })
 
-  it('sanitizes heading-link hashes from emitted content', () => {
-    const template = readFileSync(new URL('../../layouts/index.json', import.meta.url), 'utf8')
+  it('uses the sanitized content variable in the emitted search index', () => {
+    expect(SEARCH_INDEX_TEMPLATE).toContain(`replaceRE \`${HEADING_LINK_HASH_REGEX_SOURCE}\` ""`)
+    expect(SEARCH_INDEX_TEMPLATE).toContain('"content" $content')
+  })
 
-    expect(template).toContain('replaceRE')
-    expect(template).toContain('\\s+#+\\s*$')
-    expect(template).toContain('"content" $content')
+  it('strips only the trailing single heading-link hash artifact from content lines', () => {
+    const flattenedContent = ['Linked Heading #', 'Keep ## markdown markers', 'Keep trailing ###'].join('\n')
+
+    expect(flattenedContent.replace(headingLinkHashPattern, '')).toBe([
+      'Linked Heading',
+      'Keep ## markdown markers',
+      'Keep trailing ###'
+    ].join('\n'))
   })
 })
 
