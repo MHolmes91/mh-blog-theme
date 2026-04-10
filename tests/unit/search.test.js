@@ -368,6 +368,7 @@ describe('search index template', () => {
 
     expect(template).toContain('replaceRE')
     expect(template).toContain('\\s+#+\\s*$')
+    expect(template).toContain('"content" $content')
   })
 })
 
