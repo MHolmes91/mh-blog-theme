@@ -16,6 +16,49 @@ async function getBox(locator) {
   };
 }
 
+async function getSeriesNavIconBoxes(card, labelText, dateText) {
+  const boxes = await card.evaluate((node, { labelText, dateText }) => {
+    const rows = Array.from(node.querySelectorAll("span"));
+    const findRow = (text) =>
+      rows.find((row) => row.textContent?.trim() === text && row.querySelector("svg"));
+    const toBox = (element) => {
+      const rect = element?.getBoundingClientRect();
+
+      if (!rect) {
+        return null;
+      }
+
+      return {
+        left: rect.left,
+        right: rect.right,
+        top: rect.top,
+        bottom: rect.bottom,
+        width: rect.width,
+        height: rect.height,
+      };
+    };
+    const labelRow = findRow(labelText);
+    const dateRow = findRow(dateText);
+    const chevron = labelRow?.querySelector("svg");
+    const calendar = dateRow?.querySelector("svg");
+
+    if (!labelRow || !dateRow || !chevron || !calendar) {
+      return null;
+    }
+
+    return {
+      chevron: toBox(chevron),
+      calendar: toBox(calendar),
+    };
+  }, { labelText, dateText });
+
+  expect(boxes).not.toBeNull();
+  expect(boxes.chevron).not.toBeNull();
+  expect(boxes.calendar).not.toBeNull();
+
+  return boxes;
+}
+
 function expectTrailingTaxonomyBlock(containerBox, titleBox, seriesBox, tagBox) {
   expect(seriesBox.left).toBeGreaterThan(containerBox.left + containerBox.width / 2);
   expect(tagBox.left).toBeGreaterThan(containerBox.left + containerBox.width / 2);
@@ -1430,29 +1473,27 @@ test("series navigation mirrors chevron and calendar placement per side", async 
   const nav = page.getByRole("navigation", { name: "Series navigation" });
   const previousCard = nav.locator('[data-series-nav-card="previous"]');
   const nextCard = nav.locator('[data-series-nav-card="next"]');
-  const previousLabelRow = previousCard.locator("a > span").nth(0);
-  const previousDateRow = previousCard.locator("a > span").nth(2);
-  const nextLabelRow = nextCard.locator("a > span").nth(0);
-  const nextDateRow = nextCard.locator("a > span").nth(2);
-  const [previousChevronBox, previousLabelBox, previousCalendarBox, previousDateBox] =
+  const previousLabel = previousCard.getByText("Previous", { exact: true });
+  const previousDate = previousCard.getByText("Apr 8, 2026", { exact: true });
+  const nextLabel = nextCard.getByText("Next", { exact: true });
+  const nextDate = nextCard.getByText("Apr 10, 2026", { exact: true });
+  const [previousIconBoxes, previousLabelBox, previousDateBox] =
     await Promise.all([
-      getBox(previousLabelRow.locator("svg")),
-      getBox(previousLabelRow.locator("xpath=./span")),
-      getBox(previousDateRow.locator("svg")),
-      getBox(previousDateRow.locator("xpath=./span")),
+      getSeriesNavIconBoxes(previousCard, "Previous", "Apr 8, 2026"),
+      getBox(previousLabel),
+      getBox(previousDate),
     ]);
-  const [nextChevronBox, nextLabelBox, nextCalendarBox, nextDateBox] =
+  const [nextIconBoxes, nextLabelBox, nextDateBox] =
     await Promise.all([
-      getBox(nextLabelRow.locator("svg")),
-      getBox(nextLabelRow.locator("xpath=./span")),
-      getBox(nextDateRow.locator("svg")),
-      getBox(nextDateRow.locator("xpath=./span")),
+      getSeriesNavIconBoxes(nextCard, "Next", "Apr 10, 2026"),
+      getBox(nextLabel),
+      getBox(nextDate),
     ]);
 
-  expect(previousChevronBox.right).toBeLessThan(previousLabelBox.left);
-  expect(previousCalendarBox.right).toBeLessThan(previousDateBox.left);
-  expect(nextChevronBox.left).toBeGreaterThan(nextLabelBox.right);
-  expect(nextCalendarBox.left).toBeGreaterThan(nextDateBox.right);
+  expect(previousIconBoxes.chevron.right).toBeLessThan(previousLabelBox.left);
+  expect(previousIconBoxes.calendar.right).toBeLessThan(previousDateBox.left);
+  expect(nextIconBoxes.chevron.left).toBeGreaterThan(nextLabelBox.right);
+  expect(nextIconBoxes.calendar.left).toBeGreaterThan(nextDateBox.right);
 });
 
 test("series term page lists all four parts", async ({ page }) => {
