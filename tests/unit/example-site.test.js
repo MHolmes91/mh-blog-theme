@@ -186,12 +186,16 @@ describe('example site', () => {
     expect(middleHtml).toContain('Last Post')
 
     expect(firstHtml).toContain('No Previous')
+    expect(firstHtml).toContain('Next')
     expect(firstHtml).toContain('href="/posts/middle/"')
     expect(firstHtml).toContain('Middle Post')
+    expect(firstHtml).not.toContain('href="/posts/last/"')
 
+    expect(lastHtml).toContain('Previous')
     expect(lastHtml).toContain('href="/posts/middle/"')
     expect(lastHtml).toContain('Middle Post')
     expect(lastHtml).toContain('No Next')
+    expect(lastHtml).not.toContain('href="/posts/first/"')
   })
 
   it('renders series navigation using series_order before date order', () => {
