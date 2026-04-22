@@ -1465,6 +1465,44 @@ test("series navigation keeps disabled edge cards visible on first and last post
   await expect(nextCard.getByRole("link")).toHaveCount(0);
 });
 
+test("series navigation cards keep equal heights when stacked", async ({ page }) => {
+  await page.setViewportSize({ width: 480, height: 900 });
+  await page.goto("/posts/series-part-1/");
+
+  const nav = page.getByRole("navigation", { name: "Series navigation" });
+  const previousCard = nav.locator('[data-series-nav-card="previous"]');
+  const nextCard = nav.locator('[data-series-nav-card="next"]');
+  const [previousBox, nextBox] = await Promise.all([
+    getBox(previousCard),
+    getBox(nextCard),
+  ]);
+
+  expect(Math.abs(previousBox.height - nextBox.height)).toBeLessThanOrEqual(1);
+});
+
+test("series navigation uses dark palette in dark mode", async ({ browser }) => {
+  const context = await browser.newContext({ colorScheme: "dark" });
+  const page = await context.newPage();
+
+  await page.goto("/posts/series-part-2/");
+
+  const previousCard = page
+    .getByRole("navigation", { name: "Series navigation" })
+    .locator('[data-series-nav-card="previous"]');
+  const textColor = await previousCard.evaluate(
+    (element) => getComputedStyle(element).color,
+  );
+  const borderColor = await previousCard.evaluate(
+    (element) => getComputedStyle(element).borderColor,
+  );
+
+  await expect(previousCard).toHaveCSS("background-color", "rgb(31, 41, 55)");
+  expect(textColor).not.toBe("rgb(15, 23, 42)");
+  expect(borderColor).not.toBe("rgb(233, 213, 255)");
+
+  await context.close();
+});
+
 test("series navigation mirrors chevron and calendar placement per side", async ({
   page,
 }) => {

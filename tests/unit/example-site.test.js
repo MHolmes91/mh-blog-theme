@@ -253,4 +253,18 @@ describe('example site', () => {
     expect(firstHtml).toContain('Date First')
     expect(firstHtml).not.toContain('href="/posts/date-third/"')
   })
+
+  it('omits series navigation when a series has only one post', () => {
+    const { siteDir, themeDir, themesDir } = createSiteFixture('mh-theme-series-single-entry-')
+
+    writePost(siteDir, 'solo', '---\ntitle: Solo Post\ndate: 2026-04-01\nseries: [solo-series]\nsummary: Solo summary\n---\n')
+
+    renderSite(themeDir, siteDir, themesDir)
+
+    const soloHtml = readPostHtml(siteDir, 'solo')
+
+    expect(soloHtml).not.toContain('aria-label="Series navigation"')
+    expect(soloHtml).not.toContain('No Previous')
+    expect(soloHtml).not.toContain('No Next')
+  })
 })

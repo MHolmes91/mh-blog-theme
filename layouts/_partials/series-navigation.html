@@ -13,13 +13,14 @@
     {{ $entries = $entries | append (dict "page" $entryPage "sortKey" $sortKey) }}
   {{ end }}
   {{ $entries = sort $entries "sortKey" }}
-  {{ $currentIndex := -1 }}
-  {{ range $index, $entry := $entries }}
-    {{ if eq $entry.page.RelPermalink $page.RelPermalink }}
-      {{ $currentIndex = $index }}
+  {{ if gt (len $entries) 1 }}
+    {{ $currentIndex := -1 }}
+    {{ range $index, $entry := $entries }}
+      {{ if eq $entry.page.RelPermalink $page.RelPermalink }}
+        {{ $currentIndex = $index }}
+      {{ end }}
     {{ end }}
-  {{ end }}
-  {{ if ge $currentIndex 0 }}
+    {{ if ge $currentIndex 0 }}
     {{ $previous := false }}
     {{ $next := false }}
     {{ if gt $currentIndex 0 }}
@@ -29,44 +30,44 @@
       {{ $next = (index $entries (add $currentIndex 1)).page }}
     {{ end }}
     <nav aria-label="Series navigation" class="grid gap-4 pt-2 md:grid-cols-2">
-      <div data-series-nav-card="previous" class="h-full rounded-2xl border border-slate-200 bg-slate-50 p-5">
+      <div data-series-nav-card="previous" class="min-h-[9.5rem] rounded-2xl border border-purple-200 bg-white/95 p-5 text-slate-900 shadow-sm backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
         {{ with $previous }}
-          <a href="{{ .RelPermalink }}" class="flex h-full flex-col gap-3 text-left transition hover:border-slate-300 hover:text-slate-950">
-            <span class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+          <a href="{{ .RelPermalink }}" class="flex h-full min-h-[6.75rem] flex-col justify-between gap-3 text-left transition hover:text-slate-950 dark:hover:text-white">
+            <span class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-300">
               {{ partial "icon.html" (dict "name" "chevron-left" "class" "h-4 w-4") }}
               <span>Previous</span>
             </span>
-            <span class="text-xl font-bold tracking-tight text-slate-950">{{ .Title }}</span>
-            <span class="inline-flex items-center gap-2 text-sm text-slate-500">
+            <span class="line-clamp-2 text-xl font-bold tracking-tight text-slate-950 dark:text-slate-100">{{ .Title }}</span>
+            <span class="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-300">
               {{ partial "icon.html" (dict "name" "calendar" "class" "h-4 w-4") }}
               <span>{{ .Date | time.Format ":date_medium" }}</span>
             </span>
           </a>
         {{ else }}
-          <div class="flex h-full items-start text-left text-slate-500">
-            <span class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+          <div class="flex h-full min-h-[6.75rem] flex-col justify-start text-left text-slate-500 dark:text-slate-300">
+            <span class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-slate-400">
               {{ partial "icon.html" (dict "name" "chevron-left" "class" "h-4 w-4") }}
               <span>No Previous</span>
             </span>
           </div>
         {{ end }}
       </div>
-      <div data-series-nav-card="next" class="h-full rounded-2xl border border-slate-200 bg-slate-50 p-5">
+      <div data-series-nav-card="next" class="min-h-[9.5rem] rounded-2xl border border-purple-200 bg-white/95 p-5 text-slate-900 shadow-sm backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
         {{ with $next }}
-          <a href="{{ .RelPermalink }}" class="flex h-full flex-col gap-3 text-right transition hover:border-slate-300 hover:text-slate-950">
-            <span class="inline-flex items-center justify-end gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+          <a href="{{ .RelPermalink }}" class="flex h-full min-h-[6.75rem] flex-col justify-between gap-3 text-right transition hover:text-slate-950 dark:hover:text-white">
+            <span class="inline-flex items-center justify-end gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-300">
               <span>Next</span>
               {{ partial "icon.html" (dict "name" "chevron-right" "class" "h-4 w-4") }}
             </span>
-            <span class="text-xl font-bold tracking-tight text-slate-950">{{ .Title }}</span>
-            <span class="inline-flex items-center justify-end gap-2 text-sm text-slate-500">
+            <span class="line-clamp-2 text-xl font-bold tracking-tight text-slate-950 dark:text-slate-100">{{ .Title }}</span>
+            <span class="inline-flex items-center justify-end gap-2 text-sm text-slate-500 dark:text-slate-300">
               <span>{{ .Date | time.Format ":date_medium" }}</span>
               {{ partial "icon.html" (dict "name" "calendar" "class" "h-4 w-4") }}
             </span>
           </a>
         {{ else }}
-          <div class="flex h-full justify-end text-right text-slate-500">
-            <span class="inline-flex items-center justify-end gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+          <div class="flex h-full min-h-[6.75rem] flex-col justify-start text-right text-slate-500 dark:text-slate-300">
+            <span class="inline-flex items-center justify-end gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-slate-400">
               <span>No Next</span>
               {{ partial "icon.html" (dict "name" "chevron-right" "class" "h-4 w-4") }}
             </span>
@@ -74,6 +75,7 @@
         {{ end }}
       </div>
     </nav>
+    {{ end }}
   {{ end }}
   {{ end }}
 {{ end }}
