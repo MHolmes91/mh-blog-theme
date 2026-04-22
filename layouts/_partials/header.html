@@ -53,13 +53,18 @@
             </button>
           </div>
           <template x-if="query.trim().length > 0 && query.trim().length < 3">
-            <p class="mt-4 text-sm text-slate-500 text-center">Type at least 3 characters to search</p>
+            <p class="mt-4 text-sm text-slate-500 text-center">
+              Type at least 3 characters to search
+            </p>
           </template>
           <template x-if="query.trim().length >= 3 && !results.length">
             <p class="mt-4 text-sm text-slate-500 text-center">No results</p>
           </template>
           <div data-results-container class="search-results-list mt-4">
-            <template x-for="(result, index) in results" :key="result.permalink">
+            <template
+              x-for="(result, index) in results"
+              :key="result.permalink"
+            >
               <a
                 :href="result.permalink"
                 :data-result-index="index"
@@ -72,20 +77,28 @@
                   x-html="highlightText(result.title, query)"
                   class="search-result-title font-medium"
                 ></div>
-                <div class="search-result-meta mt-1 flex min-h-[1.25rem] flex-nowrap items-center gap-1.5 overflow-x-auto overflow-y-hidden whitespace-nowrap">
-                  <template x-for="item in (result._orderedMetadata || [])" :key="`${item.kind}-${item.label}`">
+                <div
+                  class="search-result-meta mt-1 flex min-h-[1.25rem] flex-nowrap items-center gap-1.5 overflow-x-auto overflow-y-hidden whitespace-nowrap"
+                >
+                  <template
+                    x-for="item in (result._orderedMetadata || [])"
+                    :key="`${item.kind}-${item.label}`"
+                  >
                     <span
                       x-text="item.label"
                       class="shrink-0 text-xs"
                       :class="item.kind === 'series'
-                        ? (item.matched ? 'underline font-semibold text-slate-900' : 'underline text-slate-500')
+                        ? (item.matched ? 'underline font-semibold text-slate-900' : 'underline text-slate-900')
                         : (item.matched
                           ? 'inline-block rounded-full bg-purple-200 px-2 py-0.5 font-semibold text-purple-900'
                           : 'inline-block rounded-full bg-purple-100 px-2 py-0.5 text-slate-700')"
                     ></span>
                   </template>
                 </div>
-                <div x-show="result._context" class="search-result-excerpt mt-1 text-sm text-slate-500">
+                <div
+                  x-show="result._context"
+                  class="search-result-excerpt mt-1 text-sm text-slate-500"
+                >
                   <span x-html="highlightText(result._context, query)"></span>
                 </div>
               </a>
