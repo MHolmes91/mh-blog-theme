@@ -1368,6 +1368,93 @@ test("series fixture posts render shared series metadata", async ({ page }) => {
   await expect(page.getByRole("main")).toContainText("fixture-series");
 });
 
+test("series navigation shows previous and next cards for middle posts", async ({
+  page,
+}) => {
+  await page.goto("/posts/series-part-2/");
+
+  const nav = page.getByRole("navigation", { name: "Series navigation" });
+  const previousCard = nav.locator('[data-series-nav-card="previous"]');
+  const nextCard = nav.locator('[data-series-nav-card="next"]');
+
+  await expect(nav).toBeVisible();
+  await expect(previousCard.getByRole("link", { name: /Series Part 1/ })).toHaveAttribute(
+    "href",
+    "/posts/series-part-1/",
+  );
+  await expect(nextCard.getByRole("link", { name: /Series Part 3/ })).toHaveAttribute(
+    "href",
+    "/posts/series-part-3/",
+  );
+  await expect(previousCard).toContainText("Previous");
+  await expect(nextCard).toContainText("Next");
+});
+
+test("series navigation keeps disabled edge cards visible on first and last posts", async ({
+  page,
+}) => {
+  await page.goto("/posts/series-part-1/");
+
+  let nav = page.getByRole("navigation", { name: "Series navigation" });
+  let previousCard = nav.locator('[data-series-nav-card="previous"]');
+  let nextCard = nav.locator('[data-series-nav-card="next"]');
+
+  await expect(nav).toBeVisible();
+  await expect(previousCard).toContainText("No Previous");
+  await expect(previousCard.getByRole("link")).toHaveCount(0);
+  await expect(nextCard.getByRole("link", { name: /Series Part 2/ })).toHaveAttribute(
+    "href",
+    "/posts/series-part-2/",
+  );
+
+  await page.goto("/posts/series-part-4/");
+
+  nav = page.getByRole("navigation", { name: "Series navigation" });
+  previousCard = nav.locator('[data-series-nav-card="previous"]');
+  nextCard = nav.locator('[data-series-nav-card="next"]');
+
+  await expect(nav).toBeVisible();
+  await expect(previousCard.getByRole("link", { name: /Series Part 3/ })).toHaveAttribute(
+    "href",
+    "/posts/series-part-3/",
+  );
+  await expect(nextCard).toContainText("No Next");
+  await expect(nextCard.getByRole("link")).toHaveCount(0);
+});
+
+test("series navigation mirrors chevron and calendar placement per side", async ({
+  page,
+}) => {
+  await page.goto("/posts/series-part-2/");
+
+  const nav = page.getByRole("navigation", { name: "Series navigation" });
+  const previousCard = nav.locator('[data-series-nav-card="previous"]');
+  const nextCard = nav.locator('[data-series-nav-card="next"]');
+  const previousLabelRow = previousCard.locator("a > span").nth(0);
+  const previousDateRow = previousCard.locator("a > span").nth(2);
+  const nextLabelRow = nextCard.locator("a > span").nth(0);
+  const nextDateRow = nextCard.locator("a > span").nth(2);
+  const [previousChevronBox, previousLabelBox, previousCalendarBox, previousDateBox] =
+    await Promise.all([
+      getBox(previousLabelRow.locator("svg")),
+      getBox(previousLabelRow.locator("xpath=./span")),
+      getBox(previousDateRow.locator("svg")),
+      getBox(previousDateRow.locator("xpath=./span")),
+    ]);
+  const [nextChevronBox, nextLabelBox, nextCalendarBox, nextDateBox] =
+    await Promise.all([
+      getBox(nextLabelRow.locator("svg")),
+      getBox(nextLabelRow.locator("xpath=./span")),
+      getBox(nextDateRow.locator("svg")),
+      getBox(nextDateRow.locator("xpath=./span")),
+    ]);
+
+  expect(previousChevronBox.right).toBeLessThan(previousLabelBox.left);
+  expect(previousCalendarBox.right).toBeLessThan(previousDateBox.left);
+  expect(nextChevronBox.left).toBeGreaterThan(nextLabelBox.right);
+  expect(nextCalendarBox.left).toBeGreaterThan(nextDateBox.right);
+});
+
 test("series term page lists all four parts", async ({ page }) => {
   await page.goto("/series/fixture-series/");
 
