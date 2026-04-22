@@ -2,12 +2,12 @@
 {{ with $page.GetTerms "series" }}
   {{ with index . 0 }}
   {{ $entries := slice }}
-  {{ range .Pages }}
-    {{ $entryPage := . }}
-    {{ $sortKey := printf "1-%s-%s" ($entryPage.Date | time.Format "20060102150405") $entryPage.RelPermalink }}
+  {{ range $index, $entryPage := .Pages.ByDate }}
+    {{ $sortOrder := add $index 1 }}
     {{ if isset $entryPage.Params "series_order" }}
-      {{ $sortKey = printf "0-%012v-%s" $entryPage.Params.series_order $entryPage.RelPermalink }}
+      {{ $sortOrder = int $entryPage.Params.series_order }}
     {{ end }}
+    {{ $sortKey := printf "%012d-%s-%s" $sortOrder ($entryPage.Date | time.Format "20060102150405") $entryPage.RelPermalink }}
     {{ $entries = $entries | append (dict "page" $entryPage "sortKey" $sortKey) }}
   {{ end }}
   {{ $entries = sort $entries "sortKey" }}

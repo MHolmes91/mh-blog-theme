@@ -216,4 +216,23 @@ describe('example site', () => {
     expect(middleHtml).toContain('href="/posts/date-middle/"')
     expect(middleHtml).toContain('Date Middle')
   })
+
+  it('mixes series_order posts with date-only posts by effective position', () => {
+    const { siteDir, themeDir, themesDir } = createSiteFixture('mh-theme-series-mixed-order-')
+
+    writePost(siteDir, 'first', '---\ntitle: First Post\ndate: 2026-04-01\nseries: [mixed-series]\nsummary: First summary\n---\n')
+    writePost(siteDir, 'second', '---\ntitle: Second Post\ndate: 2026-04-02\nseries: [mixed-series]\nseries_order: 2\nsummary: Second summary\n---\n')
+    writePost(siteDir, 'third', '---\ntitle: Third Post\ndate: 2026-04-03\nseries: [mixed-series]\nsummary: Third summary\n---\n')
+
+    renderSite(themeDir, siteDir, themesDir)
+
+    const middleHtml = readPostHtml(siteDir, 'second')
+
+    expect(middleHtml).toContain('Previous')
+    expect(middleHtml).toContain('href="/posts/first/"')
+    expect(middleHtml).toContain('First Post')
+    expect(middleHtml).toContain('Next')
+    expect(middleHtml).toContain('href="/posts/third/"')
+    expect(middleHtml).toContain('Third Post')
+  })
 })
