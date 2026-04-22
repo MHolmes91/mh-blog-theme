@@ -795,8 +795,10 @@ test("search shows type more message for short queries", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Search" }).click();
   await page.getByPlaceholder("Search posts").fill("ab");
+  const searchOverlay = page.getByTestId("search-overlay");
 
   await expect(page.getByText("Type at least 3 characters to search")).toBeVisible();
+  await expect(searchOverlay.getByText(/^\d+ results?$/)).toHaveCount(0);
   await expect(page.locator("[data-result-index]")).toHaveCount(0);
 });
 
@@ -804,10 +806,35 @@ test("search shows no results for longer queries without matches", async ({ page
   await page.goto("/");
   await page.getByRole("button", { name: "Search" }).click();
   await page.getByPlaceholder("Search posts").fill("zzzmissing");
+  const searchOverlay = page.getByTestId("search-overlay");
 
   await expect(page.getByText("No results")).toBeVisible();
   await expect(page.getByText("Type at least 3 characters to search")).toHaveCount(0);
+  await expect(searchOverlay.getByText(/^\d+ results?$/)).toHaveCount(0);
   await expect(page.locator("[data-result-index]")).toHaveCount(0);
+});
+
+test("search shows a plural count when multiple results are found", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("post");
+  const searchOverlay = page.getByTestId("search-overlay");
+  const results = searchOverlay.locator("[data-result-index]");
+  const resultCount = await results.count();
+
+  await expect(resultCount).toBeGreaterThan(1);
+  await expect(searchOverlay.getByText(new RegExp(`^${resultCount} results$`))).toBeVisible();
+  await expect(searchOverlay.getByText(/^1 result$/)).toHaveCount(0);
+});
+
+test("search shows a singular count when one result is found", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("closing entry");
+  const searchOverlay = page.getByTestId("search-overlay");
+
+  await expect(searchOverlay.getByText(/^1 result$/)).toBeVisible();
+  await expect(searchOverlay.getByText(/^\d+ results$/)).toHaveCount(0);
 });
 
 test("search shows all metadata and orders matching items first", async ({ page }) => {

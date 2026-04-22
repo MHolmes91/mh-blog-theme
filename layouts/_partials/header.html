@@ -60,6 +60,11 @@
           <template x-if="query.trim().length >= 3 && !results.length">
             <p class="mt-4 text-sm text-slate-500 text-center">No results</p>
           </template>
+          <template x-if="query.trim().length >= 3 && results.length">
+            <p class="mt-4 text-xs font-medium text-slate-600">
+              <span x-text="results.length === 1 ? '1 result' : `${results.length} results`"></span>
+            </p>
+          </template>
           <div data-results-container class="search-results-list mt-4">
             <template
               x-for="(result, index) in results"
