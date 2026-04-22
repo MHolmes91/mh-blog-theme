@@ -41,12 +41,11 @@
             </span>
           </a>
         {{ else }}
-          <div class="flex h-full flex-col justify-between gap-3 text-left text-slate-500">
+          <div class="flex h-full items-start text-left text-slate-500">
             <span class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
               {{ partial "icon.html" (dict "name" "chevron-left" "class" "h-4 w-4") }}
               <span>No Previous</span>
             </span>
-            <span class="text-xl font-bold tracking-tight text-slate-400">Start of series</span>
           </div>
         {{ end }}
       </div>
@@ -64,12 +63,11 @@
             </span>
           </a>
         {{ else }}
-          <div class="flex h-full flex-col justify-between gap-3 text-right text-slate-500">
+          <div class="flex h-full justify-end text-right text-slate-500">
             <span class="inline-flex items-center justify-end gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
               <span>No Next</span>
               {{ partial "icon.html" (dict "name" "chevron-right" "class" "h-4 w-4") }}
             </span>
-            <span class="text-xl font-bold tracking-tight text-slate-400">End of series</span>
           </div>
         {{ end }}
       </div>
