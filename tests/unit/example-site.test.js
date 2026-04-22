@@ -5,6 +5,36 @@ import path from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
+function createSiteFixture(prefix) {
+  const siteDir = fs.mkdtempSync(path.join(os.tmpdir(), prefix))
+  const themeDir = fileURLToPath(new URL('../../', import.meta.url))
+  const themesDir = path.join(siteDir, 'themes')
+
+  fs.mkdirSync(path.join(siteDir, 'content', 'posts'), { recursive: true })
+  fs.mkdirSync(themesDir, { recursive: true })
+  fs.writeFileSync(path.join(siteDir, 'hugo.yaml'), 'baseURL: https://example.org/\nlanguageCode: en-us\ntitle: Minimal Site\ntheme: mh-blog-theme\ntaxonomies:\n  series: series\n')
+  fs.writeFileSync(path.join(siteDir, 'content', '_index.md'), '---\ntitle: Home\n---\n')
+  fs.symlinkSync(path.join(themeDir, 'node_modules'), path.join(siteDir, 'node_modules'))
+  fs.symlinkSync(themeDir, path.join(themesDir, 'mh-blog-theme'))
+
+  return { siteDir, themeDir, themesDir }
+}
+
+function renderSite(themeDir, siteDir, themesDir) {
+  execFileSync('hugo', ['--source', siteDir, '--themesDir', themesDir], {
+    cwd: themeDir,
+    stdio: 'pipe'
+  })
+}
+
+function writePost(siteDir, name, content) {
+  fs.writeFileSync(path.join(siteDir, 'content', 'posts', `${name}.md`), content)
+}
+
+function readPostHtml(siteDir, name) {
+  return fs.readFileSync(path.join(siteDir, 'public', 'posts', name, 'index.html'), 'utf8')
+}
+
 describe('example site', () => {
   it('uses hugo.yaml and points to the theme', () => {
     const yaml = fs.readFileSync(new URL('../../exampleSite/hugo.yaml', import.meta.url), 'utf8')
@@ -133,5 +163,53 @@ describe('example site', () => {
     expect(html).toContain('post-tag')
     expect(html).not.toContain('note-series')
     expect(html).not.toContain('note-tag')
+  })
+
+  it('renders series navigation from date order with edge placeholders', () => {
+    const { siteDir, themeDir, themesDir } = createSiteFixture('mh-theme-series-date-')
+
+    writePost(siteDir, 'first', '---\ntitle: First Post\ndate: 2026-04-01\nseries: [alpha-series]\nsummary: First summary\n---\n')
+    writePost(siteDir, 'middle', '---\ntitle: Middle Post\ndate: 2026-04-02\nseries: [alpha-series]\nsummary: Middle summary\n---\n')
+    writePost(siteDir, 'last', '---\ntitle: Last Post\ndate: 2026-04-03\nseries: [alpha-series]\nsummary: Last summary\n---\n')
+
+    renderSite(themeDir, siteDir, themesDir)
+
+    const middleHtml = readPostHtml(siteDir, 'middle')
+    const firstHtml = readPostHtml(siteDir, 'first')
+    const lastHtml = readPostHtml(siteDir, 'last')
+
+    expect(middleHtml).toContain('Previous')
+    expect(middleHtml).toContain('href="/posts/first/"')
+    expect(middleHtml).toContain('First Post')
+    expect(middleHtml).toContain('Next')
+    expect(middleHtml).toContain('href="/posts/last/"')
+    expect(middleHtml).toContain('Last Post')
+
+    expect(firstHtml).toContain('No Previous')
+    expect(firstHtml).toContain('href="/posts/middle/"')
+    expect(firstHtml).toContain('Middle Post')
+
+    expect(lastHtml).toContain('href="/posts/middle/"')
+    expect(lastHtml).toContain('Middle Post')
+    expect(lastHtml).toContain('No Next')
+  })
+
+  it('renders series navigation using series_order before date order', () => {
+    const { siteDir, themeDir, themesDir } = createSiteFixture('mh-theme-series-order-')
+
+    writePost(siteDir, 'date-first', '---\ntitle: Date First\ndate: 2026-04-01\nseries: [ordered-series]\nseries_order: 2\nsummary: Date first summary\n---\n')
+    writePost(siteDir, 'date-middle', '---\ntitle: Date Middle\ndate: 2026-04-02\nseries: [ordered-series]\nseries_order: 3\nsummary: Date middle summary\n---\n')
+    writePost(siteDir, 'date-last', '---\ntitle: Date Last\ndate: 2026-04-03\nseries: [ordered-series]\nseries_order: 1\nsummary: Date last summary\n---\n')
+
+    renderSite(themeDir, siteDir, themesDir)
+
+    const middleHtml = readPostHtml(siteDir, 'date-first')
+
+    expect(middleHtml).toContain('Previous')
+    expect(middleHtml).toContain('href="/posts/date-last/"')
+    expect(middleHtml).toContain('Date Last')
+    expect(middleHtml).toContain('Next')
+    expect(middleHtml).toContain('href="/posts/date-middle/"')
+    expect(middleHtml).toContain('Date Middle')
   })
 })
