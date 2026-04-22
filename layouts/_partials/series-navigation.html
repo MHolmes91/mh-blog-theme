@@ -4,10 +4,12 @@
   {{ $entries := slice }}
   {{ range $index, $entryPage := .Pages.ByDate }}
     {{ $sortOrder := add $index 1 }}
+    {{ $sortPrecedence := 1 }}
     {{ if isset $entryPage.Params "series_order" }}
       {{ $sortOrder = int $entryPage.Params.series_order }}
+      {{ $sortPrecedence = 0 }}
     {{ end }}
-    {{ $sortKey := printf "%012d-%s-%s" $sortOrder ($entryPage.Date | time.Format "20060102150405") $entryPage.RelPermalink }}
+    {{ $sortKey := printf "%012d-%d-%s-%s" $sortOrder $sortPrecedence ($entryPage.Date | time.Format "20060102150405") $entryPage.RelPermalink }}
     {{ $entries = $entries | append (dict "page" $entryPage "sortKey" $sortKey) }}
   {{ end }}
   {{ $entries = sort $entries "sortKey" }}

@@ -235,4 +235,22 @@ describe('example site', () => {
     expect(middleHtml).toContain('href="/posts/third/"')
     expect(middleHtml).toContain('Third Post')
   })
+
+  it('prioritizes explicit series_order over colliding date fallback positions', () => {
+    const { siteDir, themeDir, themesDir } = createSiteFixture('mh-theme-series-order-collision-')
+
+    writePost(siteDir, 'date-first', '---\ntitle: Date First\ndate: 2026-04-01\nseries: [collision-series]\nsummary: Date first summary\n---\n')
+    writePost(siteDir, 'ordered-first', '---\ntitle: Ordered First\ndate: 2026-04-02\nseries: [collision-series]\nseries_order: 1\nsummary: Ordered first summary\n---\n')
+    writePost(siteDir, 'date-third', '---\ntitle: Date Third\ndate: 2026-04-03\nseries: [collision-series]\nsummary: Date third summary\n---\n')
+
+    renderSite(themeDir, siteDir, themesDir)
+
+    const firstHtml = readPostHtml(siteDir, 'ordered-first')
+
+    expect(firstHtml).toContain('No Previous')
+    expect(firstHtml).toContain('Next')
+    expect(firstHtml).toContain('href="/posts/date-first/"')
+    expect(firstHtml).toContain('Date First')
+    expect(firstHtml).not.toContain('href="/posts/date-third/"')
+  })
 })
