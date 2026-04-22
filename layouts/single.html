@@ -5,6 +5,7 @@
       {{ with .Params.featuredImage }}<img src="{{ . }}" alt="" class="w-full rounded-2xl object-cover">{{ end }}
       {{ partial "post-header.html" (dict "page" . "surface" "aligned") }}
       <div class="prose prose-slate max-w-none" data-content-body>{{ .Content }}</div>
+      {{ partial "series-navigation.html" . }}
     </article>
     {{ partial "toc.html" . }}
   </section>

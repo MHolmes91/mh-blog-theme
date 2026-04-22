@@ -15,9 +15,20 @@
 <svg class="{{ $class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
   <path stroke-linecap="round" stroke-linejoin="round" d="m18 15-6-6-6 6" />
 </svg>
+{{- else if eq $name "chevron-left" -}}
+<svg class="{{ $class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m15 6-6 6 6 6" />
+</svg>
 {{- else if eq $name "chevron-right" -}}
 <svg class="{{ $class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
   <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6" />
+</svg>
+{{- else if eq $name "calendar" -}}
+<svg class="{{ $class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 2.25v3" />
+  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 2.25v3" />
+  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 8.25h16.5" />
+  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 5.25h15A2.25 2.25 0 0 1 21.75 7.5v12A2.25 2.25 0 0 1 19.5 21.75h-15A2.25 2.25 0 0 1 2.25 19.5v-12A2.25 2.25 0 0 1 4.5 5.25Z" />
 </svg>
 {{- else if eq $name "email" -}}
 <svg class="{{ $class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
