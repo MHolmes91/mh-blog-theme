@@ -1581,21 +1581,21 @@ test("related rows include expected non-series posts", async ({ page }) => {
 test("related rows reuse home-page row styling and stay capped at four items", async ({
   page,
 }) => {
-  await page.goto("/");
-
-  const homeRow = page.locator("main article").first();
-  const homeRowClass = await homeRow.getAttribute("class");
-
   await page.goto("/posts/series-part-2/");
 
   const relatedSection = page.locator(
     'section[aria-labelledby="related-posts-heading"]',
   );
   const relatedRows = relatedSection.locator("article");
+  const relatedHeading = relatedRows.first().getByRole("heading").first();
 
   await expect(relatedRows).toHaveCount(4);
-  await expect(relatedRows.first()).toHaveAttribute("class", homeRowClass ?? "");
+  await expect(relatedRows.first()).toHaveClass(/py-5/);
+  await expect(relatedHeading).toHaveClass(/text-2xl/);
+  await expect(relatedHeading).toHaveClass(/font-extrabold/);
+  await expect(relatedHeading).toHaveClass(/tracking-tight/);
   await expect(relatedSection.locator("hr")).toHaveCount(3);
+  await expect(relatedSection.locator("hr").first()).toHaveClass(/border-purple-200/);
 });
 
 test("single posts hide related heading when no eligible related posts remain", async ({
@@ -1605,6 +1605,7 @@ test("single posts hide related heading when no eligible related posts remain", 
   const fs = await import("node:fs");
   const os = await import("node:os");
   const path = await import("node:path");
+  const { pathToFileURL } = await import("node:url");
   const siteDir = fs.mkdtempSync(path.join(os.tmpdir(), "mh-theme-related-hidden-e2e-"));
   const themeDir = process.cwd();
   const themesDir = path.join(siteDir, "themes");
@@ -1641,7 +1642,7 @@ test("single posts hide related heading when no eligible related posts remain", 
     });
 
     await page.goto(
-      `file://${path.join(siteDir, "public", "posts", "anchor", "index.html")}`,
+      pathToFileURL(path.join(siteDir, "public", "posts", "anchor", "index.html")).href,
     );
 
     await expect(
