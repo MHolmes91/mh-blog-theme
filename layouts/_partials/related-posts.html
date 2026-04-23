@@ -2,7 +2,7 @@
 {{ $related := slice }}
 {{ $currentSeries := $page.GetTerms "series" }}
 
-{{ range $candidate := $page.Site.RegularPages.Related $page }}
+{{ range $candidate := where ($page.Site.RegularPages.Related $page) "Section" "posts" }}
   {{ if ne $candidate.RelPermalink $page.RelPermalink }}
     {{ $exclude := false }}
     {{ if gt (len $currentSeries) 0 }}

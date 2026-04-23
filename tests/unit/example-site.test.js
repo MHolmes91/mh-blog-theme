@@ -317,4 +317,25 @@ describe('example site', () => {
 
     expect(html).not.toContain('aria-labelledby="related-posts-heading"')
   })
+
+  it('renders related posts from the posts section only', () => {
+    const { siteDir, themeDir, themesDir } = createSiteFixture('mh-theme-related-posts-only-')
+
+    fs.writeFileSync(path.join(siteDir, 'hugo.yaml'), readExampleSiteConfig())
+    fs.mkdirSync(path.join(siteDir, 'content', 'notes'), { recursive: true })
+
+    writePost(siteDir, 'anchor', '---\ntitle: Anchor Post\ndate: 2026-04-05\nsummary: Hugo theme anchor summary\ntags: [hugo, theme]\n---\n')
+    writePost(siteDir, 'related-a', '---\ntitle: Related A\ndate: 2026-04-04\nsummary: Hugo theme anchor summary\ntags: [hugo, theme]\n---\n')
+    fs.writeFileSync(path.join(siteDir, 'content', 'notes', 'note.md'), '---\ntitle: Related Note\ndate: 2026-04-06\nsummary: Hugo theme anchor summary\ntags: [hugo, theme, testing]\n---\n')
+
+    renderSite(themeDir, siteDir, themesDir)
+
+    const html = readPostHtml(siteDir, 'anchor')
+    const relatedSectionStart = html.indexOf('aria-labelledby="related-posts-heading"')
+    const relatedSection = relatedSectionStart === -1 ? '' : html.slice(relatedSectionStart)
+
+    expect(relatedSection).toContain('Related A')
+    expect(relatedSection).not.toContain('Related Note')
+    expect(relatedSection).not.toContain('href="/notes/note/"')
+  })
 })
