@@ -1534,6 +1534,127 @@ test("series navigation mirrors chevron and calendar placement per side", async 
   expect(nextIconBoxes.calendar.left).toBeGreaterThan(nextDateBox.right);
 });
 
+test("single posts show related rows below series navigation", async ({ page }) => {
+  await page.goto("/posts/series-part-2/");
+
+  const nav = page.getByRole("navigation", { name: "Series navigation" });
+  const relatedSection = page.locator(
+    'section[aria-labelledby="related-posts-heading"]',
+  );
+  const relatedHeading = relatedSection.getByRole("heading", {
+    name: "Related",
+    exact: true,
+  });
+
+  await expect(nav).toBeVisible();
+  await expect(relatedHeading).toBeVisible();
+
+  const [navBox, relatedBox] = await Promise.all([getBox(nav), getBox(relatedSection)]);
+
+  expect(relatedBox.top).toBeGreaterThan(navBox.bottom);
+});
+
+test("related rows include expected non-series posts", async ({ page }) => {
+  await page.goto("/posts/series-part-2/");
+
+  const relatedSection = page.locator(
+    'section[aria-labelledby="related-posts-heading"]',
+  );
+
+  await expect(
+    relatedSection.getByRole("heading", {
+      name: "Built-In Shortcodes Post",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    relatedSection.getByRole("heading", { name: "TOC Stress Post", exact: true }),
+  ).toBeVisible();
+  await expect(
+    relatedSection.getByRole("heading", { name: "Series Part 1", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    relatedSection.getByRole("heading", { name: "Series Part 3", exact: true }),
+  ).toHaveCount(0);
+});
+
+test("related rows reuse home-page row styling and stay capped at four items", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const homeRow = page.locator("main article").first();
+  const homeRowClass = await homeRow.getAttribute("class");
+
+  await page.goto("/posts/series-part-2/");
+
+  const relatedSection = page.locator(
+    'section[aria-labelledby="related-posts-heading"]',
+  );
+  const relatedRows = relatedSection.locator("article");
+
+  await expect(relatedRows).toHaveCount(4);
+  await expect(relatedRows.first()).toHaveAttribute("class", homeRowClass ?? "");
+  await expect(relatedSection.locator("hr")).toHaveCount(3);
+});
+
+test("single posts hide related heading when no eligible related posts remain", async ({
+  page,
+}) => {
+  const { execFileSync } = await import("node:child_process");
+  const fs = await import("node:fs");
+  const os = await import("node:os");
+  const path = await import("node:path");
+  const siteDir = fs.mkdtempSync(path.join(os.tmpdir(), "mh-theme-related-hidden-e2e-"));
+  const themeDir = process.cwd();
+  const themesDir = path.join(siteDir, "themes");
+  const writePost = (name, content) => {
+    fs.writeFileSync(path.join(siteDir, "content", "posts", `${name}.md`), content);
+  };
+
+  try {
+    fs.mkdirSync(path.join(siteDir, "content", "posts"), { recursive: true });
+    fs.mkdirSync(themesDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(siteDir, "hugo.yaml"),
+      fs.readFileSync(path.join(themeDir, "exampleSite", "hugo.yaml"), "utf8"),
+    );
+    fs.writeFileSync(path.join(siteDir, "content", "_index.md"), "---\ntitle: Home\n---\n");
+    fs.symlinkSync(path.join(themeDir, "node_modules"), path.join(siteDir, "node_modules"));
+    fs.symlinkSync(themeDir, path.join(themesDir, "mh-blog-theme"));
+    writePost(
+      "anchor",
+      "---\ntitle: Anchor Post\ndate: 2026-04-05\nsummary: Hugo theme anchor summary\ntags: [hugo, theme]\nseries: [alpha-series]\n---\n",
+    );
+    writePost(
+      "same-series-a",
+      "---\ntitle: Same Series A\ndate: 2026-04-04\nsummary: Hugo theme anchor summary\ntags: [hugo, theme]\nseries: [alpha-series]\n---\n",
+    );
+    writePost(
+      "same-series-b",
+      "---\ntitle: Same Series B\ndate: 2026-04-03\nsummary: Hugo theme anchor summary\ntags: [hugo, theme]\nseries: [alpha-series]\n---\n",
+    );
+
+    execFileSync("hugo", ["--source", siteDir, "--themesDir", themesDir], {
+      cwd: themeDir,
+      stdio: "pipe",
+    });
+
+    await page.goto(
+      `file://${path.join(siteDir, "public", "posts", "anchor", "index.html")}`,
+    );
+
+    await expect(
+      page.getByRole("heading", { name: "Related", exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      page.locator('section[aria-labelledby="related-posts-heading"]'),
+    ).toHaveCount(0);
+  } finally {
+    fs.rmSync(siteDir, { force: true, recursive: true });
+  }
+});
+
 test("series term page lists all four parts", async ({ page }) => {
   await page.goto("/series/fixture-series/");
 
