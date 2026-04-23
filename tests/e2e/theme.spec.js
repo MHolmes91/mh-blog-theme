@@ -309,7 +309,7 @@ test("posts list page shows post summaries", async ({ page }) => {
   ).toBeVisible();
   await expect(page.getByRole("link", { name: "Series Part 4" })).toBeVisible();
   await expect(
-    page.getByText("A searchable post with headings."),
+    page.getByText("A searchable Hugo theme post with headings."),
   ).toBeVisible();
 });
 
@@ -507,7 +507,7 @@ test("single posts right-align taxonomy with the title on wide layouts", async (
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/posts/series-part-1/");
 
-  const header = page.locator("main article header");
+  const header = page.locator("#post-content > header");
   const title = header.getByRole("heading", { name: "Series Part 1" });
   const seriesGroup = header.locator('[data-taxonomy-group="series"]');
   const tagsGroup = header.locator('[data-taxonomy-group="tags"]');
@@ -566,7 +566,7 @@ test("single post metadata wraps taxonomy below the left content on narrow layou
   await page.setViewportSize({ width: 480, height: 900 });
   await page.goto("/posts/series-part-1/");
 
-  const singleHeader = page.locator("main article header");
+  const singleHeader = page.locator("#post-content > header");
   const singleLeftContent = singleHeader.locator(':scope > div').first();
   const singleSeriesGroup = singleHeader.locator('[data-taxonomy-group="series"]');
   const singleTagsGroup = singleHeader.locator('[data-taxonomy-group="tags"]');
@@ -671,7 +671,6 @@ test("taxonomy index pages do not show post read time metadata", async ({
 test("tag term page includes multiple fixture types", async ({ page }) => {
   await page.goto("/tags/fixture/");
 
-  await expect(page.getByText("TOC Stress Post")).toBeVisible();
   await expect(page.getByText("Built-In Shortcodes Post")).toBeVisible();
   await expect(page.getByText("Series Part 1")).toBeVisible();
   await expect(page.getByText("Series Part 2")).toBeVisible();
@@ -685,11 +684,11 @@ test("tag term pages render row summaries instead of cards", async ({
   await page.goto("/tags/fixture/");
 
   await expect(page.getByRole("heading", { name: "Fixture" })).toBeVisible();
-  await expect(page.locator("main article")).toHaveCount(6);
+  await expect(page.locator("main article")).toHaveCount(5);
   await expect(page.locator("main article").first()).not.toHaveClass(
     /rounded-2xl/,
   );
-  await expect(page.locator("main hr")).toHaveCount(5);
+  await expect(page.locator("main hr")).toHaveCount(4);
 });
 
 test("search opens and shows matching posts", async ({ page }) => {
@@ -923,7 +922,7 @@ test("search shows all metadata and orders matching items first", async ({ page 
   });
 
   await expect(result).toBeVisible();
-  expect(labels).toEqual(["fixture", "toc", "longform", "testing"]);
+  expect(labels).toEqual(["hugo", "theme", "toc", "longform", "testing"]);
   expect(metrics.scrollHeight).toBe(metrics.clientHeight);
   expect(Math.max(...metrics.heights)).toBeLessThanOrEqual(metrics.clientHeight);
   expect(metrics.scrollWidth).toBeGreaterThan(metrics.clientWidth);
@@ -1283,7 +1282,12 @@ test("post without optional metadata does not render an empty taxonomy wrapper",
 }) => {
   await page.goto("/posts/second-post/");
 
-  await expect(page.locator("article header > div")).toHaveCount(1);
+  await expect(
+    page.locator("#post-content > header [data-taxonomy-group=\"series\"]"),
+  ).toHaveCount(0);
+  await expect(
+    page.locator("#post-content > header [data-taxonomy-group=\"tags\"]"),
+  ).toHaveCount(1);
 });
 
 test("shortcodes fixture renders visible built-in shortcode output", async ({
