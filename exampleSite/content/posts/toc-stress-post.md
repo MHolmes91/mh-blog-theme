@@ -1,8 +1,8 @@
 ---
 title: TOC Stress Post
 date: 2026-04-06
-summary: A long post for TOC rendering and scroll behavior.
-tags: [toc, longform, testing, fixture]
+summary: A long Hugo theme post for TOC rendering and scroll behavior.
+tags: [hugo, theme, toc, longform, testing]
 ---
 
 ## Large Section One

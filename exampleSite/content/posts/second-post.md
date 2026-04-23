@@ -1,7 +1,8 @@
 ---
 title: Second Post
 date: 2026-04-04
-summary: A post without optional metadata.
+summary: A Hugo theme follow-up post without optional metadata.
+tags: [hugo, theme]
 ---
 
 ## Plain Post

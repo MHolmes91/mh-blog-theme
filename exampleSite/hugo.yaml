@@ -21,6 +21,19 @@ taxonomies:
   tag: tags
   series: series
 
+related:
+  includeNewer: true
+  threshold: 20
+  toLower: true
+  indices:
+    - name: tags
+      weight: 100
+    - name: summary
+      weight: 70
+    - name: date
+      weight: 20
+      pattern: "200601"
+
 params:
   description: Example site for MH Blog Theme
   siteIcon: /favicon.svg

@@ -1,7 +1,7 @@
 ---
 title: First Post
 date: 2026-04-05
-summary: A searchable post with headings.
+summary: A searchable Hugo theme post with headings.
 tags: [hugo, theme]
 series: [build-notes]
 featuredImage: /images/post-1.jpg

@@ -35,6 +35,8 @@ function readPostHtml(siteDir, name) {
   return fs.readFileSync(path.join(siteDir, 'public', 'posts', name, 'index.html'), 'utf8')
 }
 
+const relatedConfig = 'baseURL: https://example.org/\nlanguageCode: en-us\ntitle: Minimal Site\ntheme: mh-blog-theme\ntaxonomies:\n  tag: tags\n  series: series\nrelated:\n  includeNewer: true\n  threshold: 20\n  toLower: true\n  indices:\n    - name: tags\n      weight: 100\n    - name: summary\n      weight: 70\n    - name: date\n      weight: 20\n      pattern: "200601"\n'
+
 describe('example site', () => {
   it('uses hugo.yaml and points to the theme', () => {
     const yaml = fs.readFileSync(new URL('../../exampleSite/hugo.yaml', import.meta.url), 'utf8')
@@ -266,5 +268,51 @@ describe('example site', () => {
     expect(soloHtml).not.toContain('aria-label="Series navigation"')
     expect(soloHtml).not.toContain('No Previous')
     expect(soloHtml).not.toContain('No Next')
+  })
+
+  it('renders related posts below series navigation and excludes same-series posts', () => {
+    const { siteDir, themeDir, themesDir } = createSiteFixture('mh-theme-related-posts-')
+
+    fs.writeFileSync(path.join(siteDir, 'hugo.yaml'), relatedConfig)
+
+    writePost(siteDir, 'anchor', '---\ntitle: Anchor Post\ndate: 2026-04-05\nsummary: Hugo theme anchor summary\ntags: [hugo, theme]\nseries: [alpha-series]\n---\n')
+    writePost(siteDir, 'same-series', '---\ntitle: Same Series Post\ndate: 2026-04-06\nsummary: Hugo theme anchor summary\ntags: [hugo, theme]\nseries: [alpha-series]\n---\n')
+    writePost(siteDir, 'related-a', '---\ntitle: Related A\ndate: 2026-04-04\nsummary: Hugo theme anchor summary\ntags: [hugo, theme]\n---\n')
+    writePost(siteDir, 'related-b', '---\ntitle: Related B\ndate: 2026-04-03\nsummary: Hugo theme anchor summary\ntags: [hugo, theme]\n---\n')
+    writePost(siteDir, 'related-c', '---\ntitle: Related C\ndate: 2026-04-02\nsummary: Hugo theme anchor summary\ntags: [hugo, theme]\n---\n')
+    writePost(siteDir, 'related-d', '---\ntitle: Related D\ndate: 2026-04-01\nsummary: Hugo theme anchor summary\ntags: [hugo, theme]\n---\n')
+    writePost(siteDir, 'related-e', '---\ntitle: Related E\ndate: 2026-03-31\nsummary: Hugo theme anchor summary\ntags: [hugo, theme]\n---\n')
+
+    renderSite(themeDir, siteDir, themesDir)
+
+    const html = readPostHtml(siteDir, 'anchor')
+
+    expect(html).toContain('>Related<')
+    expect(html).toContain('aria-label="Series navigation"')
+    expect(html.indexOf('aria-label="Series navigation"')).toBeLessThan(html.indexOf('>Related<'))
+    expect(html).toContain('Related A')
+    expect(html).toContain('Related B')
+    expect(html).toContain('Related C')
+    expect(html).toContain('Related D')
+    expect(html).not.toContain('Same Series Post')
+    expect(html).not.toContain('Related E')
+  })
+
+  it('hides related posts when only same-series candidates remain', () => {
+    const { siteDir, themeDir, themesDir } = createSiteFixture('mh-theme-related-hidden-')
+
+    fs.writeFileSync(path.join(siteDir, 'hugo.yaml'), relatedConfig)
+
+    writePost(siteDir, 'anchor', '---\ntitle: Anchor Post\ndate: 2026-04-05\nsummary: Hugo theme anchor summary\ntags: [hugo, theme]\nseries: [alpha-series]\n---\n')
+    writePost(siteDir, 'same-series-a', '---\ntitle: Same Series A\ndate: 2026-04-04\nsummary: Hugo theme anchor summary\ntags: [hugo, theme]\nseries: [alpha-series]\n---\n')
+    writePost(siteDir, 'same-series-b', '---\ntitle: Same Series B\ndate: 2026-04-03\nsummary: Hugo theme anchor summary\ntags: [hugo, theme]\nseries: [alpha-series]\n---\n')
+
+    renderSite(themeDir, siteDir, themesDir)
+
+    const html = readPostHtml(siteDir, 'anchor')
+
+    expect(html).not.toContain('>Related<')
+    expect(html).not.toContain('Same Series A')
+    expect(html).not.toContain('Same Series B')
   })
 })
