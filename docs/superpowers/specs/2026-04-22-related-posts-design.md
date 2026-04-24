@@ -82,6 +82,14 @@ Each related item:
 
 Current example site config does not define a `related` block. Hugo may still return related results from defaults, but deterministic tests may require explicit related configuration in `exampleSite/hugo.yaml` if fixture behavior is otherwise unstable.
 
+If explicit related configuration is added, prefer indices that match fields already used in this theme's content model:
+
+- `tags`
+- `summary`
+- `date`
+
+Do not use `keywords` in related configuration for this feature because current content does not use that field.
+
 ## Testing
 
 Verify:

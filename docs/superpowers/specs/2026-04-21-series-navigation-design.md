@@ -109,6 +109,7 @@ Responsive behavior:
 ### `layouts/_partials/icon.html`
 
 - Add `chevron-left` icon.
+- Add `chevron-right` icon if not already present.
 - Add `calendar` icon.
 
 ## Content Expectations
