@@ -709,6 +709,43 @@ test("search opens and shows matching posts", async ({ page }) => {
   await expect(page.getByPlaceholder("Search posts")).toBeHidden();
 });
 
+test("search result body match highlights and scrolls on the post", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("paragraph");
+
+  await page.getByRole("link", { name: /First Post/ }).click();
+
+  await expect(page).toHaveURL(/\/posts\/first-post\/\?highlight=paragraph/);
+  const mark = page.locator("#post-content [data-content-body] mark").first();
+  await expect(mark).toHaveText(/paragraph/i);
+
+  const box = await mark.boundingBox();
+  const viewport = page.viewportSize();
+  expect(box).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  expect(box.y).toBeGreaterThanOrEqual(0);
+  expect(box.y).toBeLessThan(viewport.height);
+});
+
+test("search result metadata-only match opens at top without body highlight", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("fixture-series");
+
+  await page.getByRole("link", { name: /Series Part 1/ }).click();
+
+  await expect(page).toHaveURL(/\/posts\/series-part-1\/\?highlight=fixture-series/);
+  await page.waitForFunction(
+    () => window.Alpine && document.querySelector("[data-content-body]"),
+  );
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(resolve)));
+  await expect(page.locator("#post-content mark")).toHaveCount(0);
+
+  const scrollY = await page.evaluate(() => window.scrollY);
+  expect(scrollY).toBe(0);
+});
+
 test("search focuses the input when opened", async ({ page }) => {
   let releaseIndexRequest = () => {};
   let resolveIndexRequestStarted;
@@ -1598,8 +1635,9 @@ test("related rows reuse home-page row styling and stay capped at four items", a
   await expect(relatedHeading).toHaveClass(/text-2xl/);
   await expect(relatedHeading).toHaveClass(/font-extrabold/);
   await expect(relatedHeading).toHaveClass(/tracking-tight/);
-  await expect(relatedSection.locator("hr")).toHaveCount(3);
-  await expect(relatedSection.locator("hr").first()).toHaveClass(/border-purple-200/);
+  const rowDividers = relatedSection.locator("div.mt-4 hr");
+  await expect(rowDividers).toHaveCount(3);
+  await expect(rowDividers.first()).toHaveClass(/border-purple-200/);
 });
 
 test("single posts hide related heading when no eligible related posts remain", async ({

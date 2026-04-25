@@ -1,10 +1,115 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { filterSearchRecords, collectMatches, loadSearchRecords, highlightText, rankRecord, extractContext } from '../../assets/js/lib/search.js'
+import { filterSearchRecords, collectMatches, loadSearchRecords, highlightText, rankRecord, extractContext, buildHighlightedPostUrl, highlightFirstTextMatch } from '../../assets/js/lib/search.js'
 
 const SEARCH_INDEX_TEMPLATE = readFileSync(new URL('../../layouts/index.json', import.meta.url), 'utf8')
 const HEADING_LINK_HASH_REGEX_SOURCE = String.raw`(?m)\s+#\s*$`
 const headingLinkHashPattern = /\s+#\s*$/gm
+
+class TestHTMLElement {
+  constructor(tagName) {
+    this.tagName = tagName.toUpperCase()
+    this.children = []
+    this.parentNode = null
+  }
+
+  set innerHTML(value) {
+    this.children = []
+    for (const match of value.matchAll(/<p>(.*?)<\/p>/g)) {
+      const paragraph = document.createElement('p')
+      paragraph.appendChild(new TestText(match[1]))
+      this.appendChild(paragraph)
+    }
+  }
+
+  get textContent() {
+    return this.children.map((child) => child.textContent).join('')
+  }
+
+  appendChild(child) {
+    child.parentNode = this
+    this.children.push(child)
+    return child
+  }
+
+  querySelector(selector) {
+    return this.querySelectorAll(selector)[0] || null
+  }
+
+  querySelectorAll(selector) {
+    const tagName = selector.toUpperCase()
+    const results = []
+    const visit = (node) => {
+      if (node instanceof TestHTMLElement && node.tagName === tagName) results.push(node)
+      for (const child of node.children || []) visit(child)
+    }
+    visit(this)
+    return results
+  }
+}
+
+class TestText {
+  constructor(value) {
+    this.nodeValue = value
+    this.parentNode = null
+  }
+
+  get textContent() {
+    return this.nodeValue
+  }
+}
+
+function installTestDomGlobals() {
+  globalThis.HTMLElement = TestHTMLElement
+  globalThis.NodeFilter = { SHOW_TEXT: 4 }
+  globalThis.document = {
+    createElement(tagName) {
+      return new TestHTMLElement(tagName)
+    },
+    createRange() {
+      return {
+        setStart(node, index) {
+          this.node = node
+          this.start = index
+        },
+        setEnd(node, index) {
+          this.node = node
+          this.end = index
+        },
+        surroundContents(mark) {
+          const parent = this.node.parentNode
+          const siblings = parent.children
+          const siblingIndex = siblings.indexOf(this.node)
+          const text = this.node.nodeValue
+          mark.appendChild(new TestText(text.slice(this.start, this.end)))
+
+          const nodes = [
+            new TestText(text.slice(0, this.start)),
+            mark,
+            new TestText(text.slice(this.end))
+          ].filter((node) => node instanceof TestHTMLElement || node.textContent)
+
+          for (const node of nodes) node.parentNode = parent
+          siblings.splice(siblingIndex, 1, ...nodes)
+        }
+      }
+    },
+    createTreeWalker(root) {
+      const textNodes = []
+      const visit = (node) => {
+        if (node instanceof TestText) textNodes.push(node)
+        for (const child of node.children || []) visit(child)
+      }
+      visit(root)
+
+      return {
+        nextNode() {
+          return textNodes.shift() || null
+        }
+      }
+    }
+  }
+}
 
 describe('highlightText', () => {
   it('returns escaped text when query is empty', () => {
@@ -147,6 +252,75 @@ describe('extractContext', () => {
     const short = { ...record, summary: '', content: 'some text before the tempor word' }
     const result = extractContext(short, 'tempor')
     expect(result).toContain('tempor')
+  })
+})
+
+describe('buildHighlightedPostUrl', () => {
+  it('adds the highlight parameter to a post permalink', () => {
+    expect(buildHighlightedPostUrl('/posts/example/', 'search term', 'https://example.org')).toBe('/posts/example/?highlight=search+term')
+  })
+
+  it('adds the highlight parameter without an explicit base URL', () => {
+    expect(buildHighlightedPostUrl('/posts/example/', 'search term')).toBe('/posts/example/?highlight=search+term')
+  })
+
+  it('preserves existing query strings and hash fragments', () => {
+    expect(buildHighlightedPostUrl('/posts/example/?page=2#section', 'alpha beta', 'https://example.org')).toBe('/posts/example/?page=2&highlight=alpha+beta#section')
+  })
+
+  it('returns the clean permalink for empty queries', () => {
+    expect(buildHighlightedPostUrl('/posts/example/', '   ', 'https://example.org')).toBe('/posts/example/')
+  })
+})
+
+describe('highlightFirstTextMatch', () => {
+  let previousGlobals
+
+  beforeEach(() => {
+    previousGlobals = ['HTMLElement', 'NodeFilter', 'document'].map((key) => ({
+      key,
+      hadValue: key in globalThis,
+      value: globalThis[key]
+    }))
+    installTestDomGlobals()
+  })
+
+  afterEach(() => {
+    for (const { key, hadValue, value } of previousGlobals) {
+      if (hadValue) {
+        globalThis[key] = value
+      } else {
+        delete globalThis[key]
+      }
+    }
+  })
+
+  it('wraps only the first matching body text occurrence', () => {
+    const body = document.createElement('div')
+    body.innerHTML = '<p>Alpha body text.</p><p>Second alpha body text.</p>'
+
+    const mark = highlightFirstTextMatch(body, 'alpha')
+
+    expect(mark).toBeInstanceOf(HTMLElement)
+    expect(body.querySelectorAll('mark')).toHaveLength(1)
+    expect(body.querySelector('mark')?.textContent).toBe('Alpha')
+    expect(body.textContent).toBe('Alpha body text.Second alpha body text.')
+  })
+
+  it('returns null when the query is missing from body text', () => {
+    const body = document.createElement('div')
+    body.innerHTML = '<p>Body paragraph.</p>'
+
+    expect(highlightFirstTextMatch(body, 'metadata')).toBeNull()
+    expect(body.querySelector('mark')).toBeNull()
+  })
+
+  it('returns null for empty queries', () => {
+    const body = document.createElement('div')
+    body.innerHTML = '<p>Body paragraph.</p>'
+
+    expect(highlightFirstTextMatch(body, '   ')).toBeNull()
+    expect(body.querySelector('mark')).toBeNull()
   })
 })
 
