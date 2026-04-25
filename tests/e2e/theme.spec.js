@@ -264,8 +264,12 @@ test("theme setup does not subscribe to live color-scheme changes", async ({ pag
 
   await page.goto("/");
 
-  const registrations = await page.evaluate(() => window.__themeMediaRegistrations);
-  expect(registrations).toEqual([]);
+  const colorSchemeRegistrations = await page.evaluate(() =>
+    window.__themeMediaRegistrations.filter(
+      ({ query }) => query === "(prefers-color-scheme: dark)",
+    ),
+  );
+  expect(colorSchemeRegistrations).toEqual([]);
 });
 
 test("archive page lists all posts", async ({ page }) => {
