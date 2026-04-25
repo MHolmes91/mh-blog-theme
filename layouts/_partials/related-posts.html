@@ -1,12 +1,27 @@
-{{ $page := . }} {{ $related := slice }} {{ $currentSeries := $page.GetTerms
-"series" }} {{ range $candidate := where ($page.Site.RegularPages.Related $page)
-"Section" "posts" }} {{ if ne $candidate.RelPermalink $page.RelPermalink }} {{
-$exclude := false }} {{ if gt (len $currentSeries) 0 }} {{ $candidateSeries :=
-$candidate.GetTerms "series" }} {{ range $seriesPage := $currentSeries }} {{
-range $candidateTerm := $candidateSeries }} {{ if eq $seriesPage.RelPermalink
-$candidateTerm.RelPermalink }} {{ $exclude = true }} {{ end }} {{ end }} {{ end
-}} {{ end }} {{ if not $exclude }} {{ $related = $related | append $candidate }}
-{{ end }} {{ end }} {{ end }} {{ with first 4 $related }}
+{{ $page := . }}
+{{ $related := slice }}
+{{ $currentSeries := $page.GetTerms "series" }}
+
+{{ range $candidate := where ($page.Site.RegularPages.Related $page) "Section" "posts" }}
+  {{ if ne $candidate.RelPermalink $page.RelPermalink }}
+    {{ $exclude := false }}
+    {{ if gt (len $currentSeries) 0 }}
+      {{ $candidateSeries := $candidate.GetTerms "series" }}
+      {{ range $seriesPage := $currentSeries }}
+        {{ range $candidateTerm := $candidateSeries }}
+          {{ if eq $seriesPage.RelPermalink $candidateTerm.RelPermalink }}
+            {{ $exclude = true }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+    {{ if not $exclude }}
+      {{ $related = $related | append $candidate }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{ with first 4 $related }}
 <section class="pt-4" aria-labelledby="related-posts-heading">
   <hr class="border-purple-200 py-5" />
   <h2
@@ -16,9 +31,12 @@ $candidateTerm.RelPermalink }} {{ $exclude = true }} {{ end }} {{ end }} {{ end
     Related
   </h2>
   <div class="mt-4">
-    {{ range $index, $relatedPage := . }} {{ if gt $index 0 }}
-    <hr class="border-purple-200" />
-    {{ end }} {{ partial "post-row.html" $relatedPage }} {{ end }}
+    {{ range $index, $relatedPage := . }}
+      {{ if gt $index 0 }}
+        <hr class="border-purple-200" />
+      {{ end }}
+      {{ partial "post-row.html" $relatedPage }}
+    {{ end }}
   </div>
 </section>
 {{ end }}
