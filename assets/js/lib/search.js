@@ -168,6 +168,34 @@ export function buildHighlightedPostUrl(permalink, query, baseUrl = globalThis.l
   return `${url.pathname}${url.search}${url.hash}`
 }
 
+export function highlightFirstTextMatch(root, query) {
+  const needle = query.trim()
+  if (!root || !needle) return null
+
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+  const lowerNeedle = needle.toLowerCase()
+  let node = walker.nextNode()
+
+  while (node) {
+    const text = node.nodeValue || ''
+    const index = text.toLowerCase().indexOf(lowerNeedle)
+
+    if (index !== -1) {
+      const range = document.createRange()
+      range.setStart(node, index)
+      range.setEnd(node, index + needle.length)
+
+      const mark = document.createElement('mark')
+      range.surroundContents(mark)
+      return mark
+    }
+
+    node = walker.nextNode()
+  }
+
+  return null
+}
+
 export function collectMatches(text, query) {
   const source = text.toLowerCase()
   const needle = query.trim().toLowerCase()
