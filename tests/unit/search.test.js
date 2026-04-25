@@ -155,6 +155,10 @@ describe('buildHighlightedPostUrl', () => {
     expect(buildHighlightedPostUrl('/posts/example/', 'search term', 'https://example.org')).toBe('/posts/example/?highlight=search+term')
   })
 
+  it('adds the highlight parameter without an explicit base URL', () => {
+    expect(buildHighlightedPostUrl('/posts/example/', 'search term')).toBe('/posts/example/?highlight=search+term')
+  })
+
   it('preserves existing query strings and hash fragments', () => {
     expect(buildHighlightedPostUrl('/posts/example/?page=2#section', 'alpha beta', 'https://example.org')).toBe('/posts/example/?page=2&highlight=alpha+beta#section')
   })

@@ -158,7 +158,7 @@ export async function loadSearchRecords(fetchImpl, searchUrl) {
   }
 }
 
-export function buildHighlightedPostUrl(permalink, query, baseUrl = window.location.origin) {
+export function buildHighlightedPostUrl(permalink, query, baseUrl = globalThis.location?.origin ?? 'https://example.org') {
   const needle = query.trim()
   if (!needle) return permalink
 
