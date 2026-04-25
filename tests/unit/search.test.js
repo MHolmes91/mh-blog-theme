@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { filterSearchRecords, collectMatches, loadSearchRecords, highlightText, rankRecord, extractContext, buildHighlightedPostUrl, highlightFirstTextMatch } from '../../assets/js/lib/search.js'
 
@@ -59,51 +59,53 @@ class TestText {
   }
 }
 
-globalThis.HTMLElement = TestHTMLElement
-globalThis.NodeFilter = { SHOW_TEXT: 4 }
-globalThis.document = {
-  createElement(tagName) {
-    return new TestHTMLElement(tagName)
-  },
-  createRange() {
-    return {
-      setStart(node, index) {
-        this.node = node
-        this.start = index
-      },
-      setEnd(node, index) {
-        this.node = node
-        this.end = index
-      },
-      surroundContents(mark) {
-        const parent = this.node.parentNode
-        const siblings = parent.children
-        const siblingIndex = siblings.indexOf(this.node)
-        const text = this.node.nodeValue
-        mark.appendChild(new TestText(text.slice(this.start, this.end)))
+function installTestDomGlobals() {
+  globalThis.HTMLElement = TestHTMLElement
+  globalThis.NodeFilter = { SHOW_TEXT: 4 }
+  globalThis.document = {
+    createElement(tagName) {
+      return new TestHTMLElement(tagName)
+    },
+    createRange() {
+      return {
+        setStart(node, index) {
+          this.node = node
+          this.start = index
+        },
+        setEnd(node, index) {
+          this.node = node
+          this.end = index
+        },
+        surroundContents(mark) {
+          const parent = this.node.parentNode
+          const siblings = parent.children
+          const siblingIndex = siblings.indexOf(this.node)
+          const text = this.node.nodeValue
+          mark.appendChild(new TestText(text.slice(this.start, this.end)))
 
-        const nodes = [
-          new TestText(text.slice(0, this.start)),
-          mark,
-          new TestText(text.slice(this.end))
-        ].filter((node) => node instanceof TestHTMLElement || node.textContent)
+          const nodes = [
+            new TestText(text.slice(0, this.start)),
+            mark,
+            new TestText(text.slice(this.end))
+          ].filter((node) => node instanceof TestHTMLElement || node.textContent)
 
-        for (const node of nodes) node.parentNode = parent
-        siblings.splice(siblingIndex, 1, ...nodes)
+          for (const node of nodes) node.parentNode = parent
+          siblings.splice(siblingIndex, 1, ...nodes)
+        }
       }
-    }
-  },
-  createTreeWalker(root) {
-    const textNodes = []
-    const visit = (node) => {
-      if (node instanceof TestText) textNodes.push(node)
-      for (const child of node.children || []) visit(child)
-    }
-    visit(root)
+    },
+    createTreeWalker(root) {
+      const textNodes = []
+      const visit = (node) => {
+        if (node instanceof TestText) textNodes.push(node)
+        for (const child of node.children || []) visit(child)
+      }
+      visit(root)
 
-    return {
-      nextNode() {
-        return textNodes.shift() || null
+      return {
+        nextNode() {
+          return textNodes.shift() || null
+        }
       }
     }
   }
@@ -272,6 +274,27 @@ describe('buildHighlightedPostUrl', () => {
 })
 
 describe('highlightFirstTextMatch', () => {
+  let previousGlobals
+
+  beforeEach(() => {
+    previousGlobals = ['HTMLElement', 'NodeFilter', 'document'].map((key) => ({
+      key,
+      hadValue: key in globalThis,
+      value: globalThis[key]
+    }))
+    installTestDomGlobals()
+  })
+
+  afterEach(() => {
+    for (const { key, hadValue, value } of previousGlobals) {
+      if (hadValue) {
+        globalThis[key] = value
+      } else {
+        delete globalThis[key]
+      }
+    }
+  })
+
   it('wraps only the first matching body text occurrence', () => {
     const body = document.createElement('div')
     body.innerHTML = '<p>Alpha body text.</p><p>Second alpha body text.</p>'
