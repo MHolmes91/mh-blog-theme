@@ -1635,8 +1635,9 @@ test("related rows reuse home-page row styling and stay capped at four items", a
   await expect(relatedHeading).toHaveClass(/text-2xl/);
   await expect(relatedHeading).toHaveClass(/font-extrabold/);
   await expect(relatedHeading).toHaveClass(/tracking-tight/);
-  await expect(relatedSection.locator("hr")).toHaveCount(3);
-  await expect(relatedSection.locator("hr").first()).toHaveClass(/border-purple-200/);
+  const rowDividers = relatedSection.locator("div.mt-4 hr");
+  await expect(rowDividers).toHaveCount(3);
+  await expect(rowDividers.first()).toHaveClass(/border-purple-200/);
 });
 
 test("single posts hide related heading when no eligible related posts remain", async ({
