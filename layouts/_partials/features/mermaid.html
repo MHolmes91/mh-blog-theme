@@ -55,22 +55,5 @@
 
     await waitForTheme();
     await renderMermaid(".mermaid");
-
-    window.addEventListener("themeChanged", async () => {
-      const diagrams = document.querySelectorAll('[data-mermaid-diagram="true"]');
-
-      for (const element of diagrams) {
-        const originalCode = element.getAttribute("data-original-code");
-
-        if (!originalCode) continue;
-
-        element.removeAttribute("data-processed");
-        element.innerHTML = "";
-        element.textContent = originalCode;
-        element.classList.add("mermaid");
-      }
-
-      await renderMermaid(".mermaid");
-    });
   </script>
 {{ end }}
