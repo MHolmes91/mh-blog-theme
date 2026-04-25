@@ -158,6 +158,16 @@ export async function loadSearchRecords(fetchImpl, searchUrl) {
   }
 }
 
+export function buildHighlightedPostUrl(permalink, query, baseUrl = window.location.origin) {
+  const needle = query.trim()
+  if (!needle) return permalink
+
+  const url = new URL(permalink, baseUrl)
+  url.searchParams.set('highlight', needle)
+
+  return `${url.pathname}${url.search}${url.hash}`
+}
+
 export function collectMatches(text, query) {
   const source = text.toLowerCase()
   const needle = query.trim().toLowerCase()
