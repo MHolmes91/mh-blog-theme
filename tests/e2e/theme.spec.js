@@ -709,6 +709,35 @@ test("search opens and shows matching posts", async ({ page }) => {
   await expect(page.getByPlaceholder("Search posts")).toBeHidden();
 });
 
+test("search result body match highlights and scrolls on the post", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("paragraph");
+
+  await page.getByRole("link", { name: /First Post/ }).click();
+
+  await expect(page).toHaveURL(/\/posts\/first-post\/\?highlight=paragraph/);
+  const mark = page.locator("#post-content [data-content-body] mark").first();
+  await expect(mark).toHaveText(/paragraph/i);
+
+  const scrollY = await page.evaluate(() => window.scrollY);
+  expect(scrollY).toBeGreaterThan(0);
+});
+
+test("search result metadata-only match opens at top without body highlight", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("fixture-series");
+
+  await page.getByRole("link", { name: /Series Part 1/ }).click();
+
+  await expect(page).toHaveURL(/\/posts\/series-part-1\/\?highlight=fixture-series/);
+  await expect(page.locator("#post-content [data-content-body] mark")).toHaveCount(0);
+
+  const scrollY = await page.evaluate(() => window.scrollY);
+  expect(scrollY).toBe(0);
+});
+
 test("search focuses the input when opened", async ({ page }) => {
   let releaseIndexRequest = () => {};
   let resolveIndexRequestStarted;
