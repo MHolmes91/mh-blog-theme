@@ -9,5 +9,8 @@ describe('mermaid feature partial', () => {
     expect(partial).toContain('await waitForTheme();')
     expect(partial).toContain('await renderMermaid(".mermaid");')
     expect(partial).not.toContain('window.addEventListener("themeChanged"')
+    expect(partial).not.toContain('storeOriginalCode')
+    expect(partial).not.toContain('data-original-code')
+    expect(partial).not.toContain('data-mermaid-diagram')
   })
 })
