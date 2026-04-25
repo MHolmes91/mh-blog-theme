@@ -1,6 +1,6 @@
 import Alpine from 'alpinejs'
 import { getReadingProgress } from './lib/progress.js'
-import { filterSearchRecords, loadSearchRecords, highlightText } from './lib/search.js'
+import { filterSearchRecords, loadSearchRecords, highlightText, buildHighlightedPostUrl, highlightFirstTextMatch } from './lib/search.js'
 import { pickActiveHeading } from './lib/toc.js'
 import { resolveTheme } from './lib/theme.js'
 
@@ -16,6 +16,7 @@ Alpine.data('siteUi', (searchUrl) => ({
   tocOpen: false,
   activeResultIndex: -1,
   highlightText,
+  buildHighlightedPostUrl,
   theme: resolveTheme({
     systemPrefersDark: window.matchMedia('(prefers-color-scheme: dark)').matches
   }),
@@ -142,6 +143,7 @@ Alpine.data('siteUi', (searchUrl) => ({
     updateActiveTocEntry()
     updateBackToTopVisibility()
     updateDockOffset()
+    this.highlightPostBodyMatch()
     window.addEventListener('scroll', updateReadingProgress, { passive: true })
     window.addEventListener('resize', updateReadingProgress)
     window.addEventListener('scroll', updateActiveTocEntry, { passive: true })
@@ -224,13 +226,19 @@ Alpine.data('siteUi', (searchUrl) => ({
   },
   navigateToActiveResult() {
     const target = this.results[this.activeResultIndex] || this.results[0]
-    if (target) window.location.href = target.permalink
+    if (target) window.location.href = this.buildHighlightedPostUrl(target.permalink, this.query)
   },
   scrollActiveResultIntoView() {
     this.$nextTick(() => {
       const active = document.querySelector(`[data-result-index="${this.activeResultIndex}"]`)
       active?.scrollIntoView({ block: 'nearest' })
     })
+  },
+  highlightPostBodyMatch() {
+    const query = new URLSearchParams(window.location.search).get('highlight') || ''
+    const body = document.querySelector('[data-content-body]')
+    const mark = highlightFirstTextMatch(body, query)
+    mark?.scrollIntoView({ block: 'center' })
   },
   get results() {
     return filterSearchRecords(this.records, this.query)
