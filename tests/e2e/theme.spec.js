@@ -216,9 +216,7 @@ test("browser dark preference sets the palette even when JavaScript is unavailab
   await context.close();
 });
 
-test("theme preference updates the page palette while the page is open", async ({
-  page,
-}) => {
+test("theme preference changes apply only after reload", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/");
 
@@ -230,11 +228,48 @@ test("theme preference updates the page palette while the page is open", async (
 
   await page.emulateMedia({ colorScheme: "dark" });
 
+  await expect(page.locator("body")).toHaveAttribute("data-theme", "light");
+  await expect(page.locator("body")).toHaveCSS(
+    "background-color",
+    "rgb(250, 247, 255)",
+  );
+
+  await page.reload();
+
   await expect(page.locator("body")).toHaveAttribute("data-theme", "dark");
   await expect(page.locator("body")).toHaveCSS(
     "background-color",
     "rgb(17, 24, 39)",
   );
+});
+
+test("theme setup does not subscribe to live color-scheme changes", async ({ page }) => {
+  await page.addInitScript(() => {
+    const originalMatchMedia = window.matchMedia.bind(window);
+    const registrations = [];
+
+    window.__themeMediaRegistrations = registrations;
+    window.matchMedia = (query) => {
+      const mediaQueryList = originalMatchMedia(query);
+      const originalAddEventListener = mediaQueryList.addEventListener.bind(mediaQueryList);
+
+      mediaQueryList.addEventListener = (type, listener, options) => {
+        registrations.push({ query, type });
+        return originalAddEventListener(type, listener, options);
+      };
+
+      return mediaQueryList;
+    };
+  });
+
+  await page.goto("/");
+
+  const colorSchemeRegistrations = await page.evaluate(() =>
+    window.__themeMediaRegistrations.filter(
+      ({ query }) => query === "(prefers-color-scheme: dark)",
+    ),
+  );
+  expect(colorSchemeRegistrations).toEqual([]);
 });
 
 test("archive page lists all posts", async ({ page }) => {

@@ -31,16 +31,7 @@
       });
     }
 
-    function storeOriginalCode(selector) {
-      document.querySelectorAll(selector).forEach((element) => {
-        if (!element.getAttribute("data-original-code")) {
-          element.setAttribute("data-original-code", element.textContent.trim());
-        }
-      });
-    }
-
     async function renderMermaid(selector) {
-      storeOriginalCode(selector);
       mermaid.initialize({
         startOnLoad: false,
         theme: getCurrentTheme(),
@@ -49,28 +40,10 @@
       await mermaid.run({ querySelector: selector });
       document.querySelectorAll(selector).forEach((element) => {
         element.classList.remove("mermaid");
-        element.setAttribute("data-mermaid-diagram", "true");
       });
     }
 
     await waitForTheme();
     await renderMermaid(".mermaid");
-
-    window.addEventListener("themeChanged", async () => {
-      const diagrams = document.querySelectorAll('[data-mermaid-diagram="true"]');
-
-      for (const element of diagrams) {
-        const originalCode = element.getAttribute("data-original-code");
-
-        if (!originalCode) continue;
-
-        element.removeAttribute("data-processed");
-        element.innerHTML = "";
-        element.textContent = originalCode;
-        element.classList.add("mermaid");
-      }
-
-      await renderMermaid(".mermaid");
-    });
   </script>
 {{ end }}
