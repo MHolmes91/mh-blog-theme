@@ -33,14 +33,6 @@ Alpine.data('siteUi', (searchUrl) => ({
     }, 3000)
   },
   init() {
-    const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const syncTheme = ({ matches }) => {
-      this.theme = resolveTheme({ systemPrefersDark: matches })
-      window.dispatchEvent(new CustomEvent('themeChanged', {
-        detail: { theme: this.theme }
-      }))
-    }
-
     const updateActiveTocEntry = () => {
       const navIds = ['TableOfContents', 'TableOfContentsMobile']
       const allEntries = []
@@ -137,8 +129,6 @@ Alpine.data('siteUi', (searchUrl) => ({
       }
     }
 
-    syncTheme(colorSchemeQuery)
-    colorSchemeQuery.addEventListener('change', syncTheme)
     updateReadingProgress()
     updateActiveTocEntry()
     updateBackToTopVisibility()

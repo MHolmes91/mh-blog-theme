@@ -216,9 +216,7 @@ test("browser dark preference sets the palette even when JavaScript is unavailab
   await context.close();
 });
 
-test("theme preference updates the page palette while the page is open", async ({
-  page,
-}) => {
+test("theme preference changes apply only after reload", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/");
 
@@ -229,6 +227,14 @@ test("theme preference updates the page palette while the page is open", async (
   );
 
   await page.emulateMedia({ colorScheme: "dark" });
+
+  await expect(page.locator("body")).toHaveAttribute("data-theme", "light");
+  await expect(page.locator("body")).toHaveCSS(
+    "background-color",
+    "rgb(250, 247, 255)",
+  );
+
+  await page.reload();
 
   await expect(page.locator("body")).toHaveAttribute("data-theme", "dark");
   await expect(page.locator("body")).toHaveCSS(
