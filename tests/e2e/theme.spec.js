@@ -243,6 +243,31 @@ test("theme preference changes apply only after reload", async ({ page }) => {
   );
 });
 
+test("theme setup does not subscribe to live color-scheme changes", async ({ page }) => {
+  await page.addInitScript(() => {
+    const originalMatchMedia = window.matchMedia.bind(window);
+    const registrations = [];
+
+    window.__themeMediaRegistrations = registrations;
+    window.matchMedia = (query) => {
+      const mediaQueryList = originalMatchMedia(query);
+      const originalAddEventListener = mediaQueryList.addEventListener.bind(mediaQueryList);
+
+      mediaQueryList.addEventListener = (type, listener, options) => {
+        registrations.push({ query, type });
+        return originalAddEventListener(type, listener, options);
+      };
+
+      return mediaQueryList;
+    };
+  });
+
+  await page.goto("/");
+
+  const registrations = await page.evaluate(() => window.__themeMediaRegistrations);
+  expect(registrations).toEqual([]);
+});
+
 test("archive page lists all posts", async ({ page }) => {
   await page.goto("/archives/");
 
