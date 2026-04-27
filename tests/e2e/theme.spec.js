@@ -1756,6 +1756,25 @@ test("header is sticky with backdrop blur on all pages", async ({ page }) => {
   await expect(banner).toHaveClass(/z-40/);
 });
 
+test("header stays visible after scroll inactivity on non-post pages", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 400 });
+  await page.goto("/");
+
+  await page.evaluate(() => {
+    const filler = document.createElement("div");
+    filler.style.height = "1200px";
+    document.querySelector("main")?.appendChild(filler);
+    window.dispatchEvent(new Event("resize"));
+  });
+
+  const banner = page.getByRole("banner");
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(3500);
+
+  await expect(banner).not.toHaveClass(/opacity-0/);
+});
+
 test("header stays visible when scrolled above the threshold", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 400 });
   await page.goto("/posts/first-post/");

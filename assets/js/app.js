@@ -33,6 +33,9 @@ Alpine.data('siteUi', (searchUrl) => ({
     }, 3000)
   },
   init() {
+    const postContent = document.getElementById('post-content')
+    const isPostPage = Boolean(postContent)
+
     const updateActiveTocEntry = () => {
       const navIds = ['TableOfContents', 'TableOfContentsMobile']
       const allEntries = []
@@ -88,8 +91,7 @@ Alpine.data('siteUi', (searchUrl) => ({
     }
 
     const updateBackToTopVisibility = () => {
-      const isSinglePost = Boolean(document.getElementById('post-content'))
-      this.showBackToTop = isSinglePost && window.scrollY > 320
+      this.showBackToTop = isPostPage && window.scrollY > 320
     }
 
     const updateDockOffset = () => {
@@ -110,6 +112,12 @@ Alpine.data('siteUi', (searchUrl) => ({
     }
 
     const updateToolbarVisibility = () => {
+      if (!isPostPage) {
+        this.clearToolbarHideTimer()
+        this.toolbarVisible = true
+        return
+      }
+
       const main = document.querySelector('main')
       const isAboveThreshold = !main || main.getBoundingClientRect().top > 0
       const scrollY = window.scrollY
