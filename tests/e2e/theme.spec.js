@@ -113,6 +113,19 @@ test("home page renders shared chrome", async ({ page }) => {
   );
 });
 
+test("non-post pages never show the back to top button", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 400 });
+
+  for (const path of ["/", "/posts/", "/series/", "/tags/", "/archives/"]) {
+    await page.goto(path);
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+
+    await expect(page.getByRole("button", { name: "Back to top" })).toHaveCount(
+      0,
+    );
+  }
+});
+
 test("home page shows intro and recent posts", async ({ page }) => {
   await page.goto("/");
 

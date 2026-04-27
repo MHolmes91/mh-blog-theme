@@ -74,7 +74,6 @@ Alpine.data('siteUi', (searchUrl) => ({
 
     const updateReadingProgress = () => {
       const progressBar = document.getElementById('reading-progress')
-      const postContent = document.getElementById('post-content')
       if (!progressBar || !postContent) return
 
       const { top } = postContent.getBoundingClientRect()

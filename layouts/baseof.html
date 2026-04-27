@@ -8,7 +8,9 @@
     <main :aria-hidden="searchOpen">
       {{ block "main" . }}{{ end }}
     </main>
-    {{ partial "dock.html" . }}
+    {{ if and .IsPage (eq .Section "posts") }}
+      {{ partial "dock.html" . }}
+    {{ end }}
     {{ partial "footer.html" . }}
     {{ partial "features/mermaid.html" . }}
     {{ $js := resources.Get "js/app.js" | js.Build | fingerprint }}
