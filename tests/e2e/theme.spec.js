@@ -1080,9 +1080,10 @@ test("search close restores a previously auto-hidden toolbar", async ({ page }) 
   await expect(banner).toHaveClass(/opacity-0/);
 
   await page.evaluate(async () => {
-    const siteUi = document.body._x_dataStack?.[0];
-    if (!siteUi) throw new Error("Expected Alpine siteUi data");
-    await siteUi.openSearch();
+    const searchButton = document.querySelector('button[aria-label="Search"]');
+    const searchUi = searchButton?.closest('[x-data]')?._x_dataStack?.[0];
+    if (!searchUi) throw new Error("Expected Alpine searchUi data");
+    await searchUi.openSearch();
   });
 
   await expect(page.getByPlaceholder("Search posts")).toBeVisible();
