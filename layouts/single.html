@@ -1,13 +1,25 @@
 {{ define "main" }}
-  <div id="reading-progress" class="fixed top-0 left-0 z-50 h-1 bg-purple-600" style="width:0%"></div>
-  <section class="mx-auto grid max-w-6xl gap-10 px-6 py-10 lg:grid-cols-[minmax(0,1fr)_280px]">
-    <article x-data="postProgress()" id="post-content" class="min-w-0 space-y-6">
-      {{ with .Params.featuredImage }}<img src="{{ . }}" alt="" class="w-full rounded-2xl object-cover">{{ end }}
-      {{ partial "post-header.html" (dict "page" . "surface" "aligned") }}
-      <div class="prose prose-slate max-w-none" data-content-body>{{ .Content }}</div>
-      {{ partial "series-navigation.html" . }}
-      {{ partial "related-posts.html" . }}
-    </article>
-    {{ partial "toc.html" . }}
-  </section>
+<div
+  id="reading-progress"
+  class="fixed top-0 left-0 z-50 h-1 bg-purple-600"
+  style="width: 0%"
+></div>
+<section
+  class="mx-auto grid max-w-6xl gap-10 px-6 py-10 lg:grid-cols-[minmax(0,1fr)_280px]"
+>
+  <article x-data="postProgress()" id="post-content" class="min-w-0 space-y-6">
+    {{ with .Params.featuredImage }}<img
+      src="{{ . }}"
+      alt=""
+      class="w-full rounded-2xl object-cover max-h-75"
+    />{{ end }} {{ partial "post-header.html" (dict "page" . "surface"
+    "aligned") }}
+    <div class="prose prose-slate max-w-none" data-content-body>
+      {{ .Content }}
+    </div>
+    {{ partial "series-navigation.html" . }} {{ partial "related-posts.html" .
+    }}
+  </article>
+  {{ partial "toc.html" . }}
+</section>
 {{ end }}
