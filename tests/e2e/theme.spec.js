@@ -1132,6 +1132,23 @@ test("search metadata uses muted color for unmatched series", async ({ page }) =
   expect(colors.seriesColor).toBe(colors.mutedColor);
 });
 
+test("search metadata keeps series before matching tags", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("part-1");
+
+  const result = page
+    .locator("[data-result-index]")
+    .filter({ has: page.getByText("Series Part 1", { exact: true }) })
+    .first();
+  const labels = await result.locator(".search-result-meta span").evaluateAll((nodes) =>
+    nodes.map((node) => node.textContent?.trim()),
+  );
+
+  await expect(result).toBeVisible();
+  expect(labels).toEqual(["fixture-series", "part-1", "series", "fixture"]);
+});
+
 test("search uses summary text in the snippet when summary matches", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Search" }).click();

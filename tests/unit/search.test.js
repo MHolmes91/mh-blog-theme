@@ -367,7 +367,7 @@ describe('filterSearchRecords', () => {
     expect(filterSearchRecords(records, 't')).toEqual([])
   })
 
-  it('keeps all series and tags and moves matching items first', () => {
+  it('keeps all series and tags with series before tags', () => {
     const records = [{
       title: 'Post',
       summary: 'Summary',
@@ -383,8 +383,8 @@ describe('filterSearchRecords', () => {
     expect(result._orderedTags).toEqual(['needle tag', 'alpha', 'omega'])
     expect(result._orderedMetadata).toEqual([
       { kind: 'series', label: 'needle series', matched: true },
-      { kind: 'tag', label: 'needle tag', matched: true },
       { kind: 'series', label: 'guide', matched: false },
+      { kind: 'tag', label: 'needle tag', matched: true },
       { kind: 'tag', label: 'alpha', matched: false },
       { kind: 'tag', label: 'omega', matched: false }
     ])

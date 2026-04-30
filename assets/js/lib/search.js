@@ -55,12 +55,12 @@ function buildOrderedMetadata(orderedSeries, orderedTags, needle) {
     ...orderedSeries
       .filter((item) => matchesMetadataItem(item, needle))
       .map((label) => ({ kind: 'series', label, matched: true })),
-    ...orderedTags
-      .filter((item) => matchesMetadataItem(item, needle))
-      .map((label) => ({ kind: 'tag', label, matched: true })),
     ...orderedSeries
       .filter((item) => !matchesMetadataItem(item, needle))
       .map((label) => ({ kind: 'series', label, matched: false })),
+    ...orderedTags
+      .filter((item) => matchesMetadataItem(item, needle))
+      .map((label) => ({ kind: 'tag', label, matched: true })),
     ...orderedTags
       .filter((item) => !matchesMetadataItem(item, needle))
       .map((label) => ({ kind: 'tag', label, matched: false }))
