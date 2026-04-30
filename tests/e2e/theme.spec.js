@@ -820,15 +820,56 @@ test("search focuses the input when opened", async ({ page }) => {
   await openSearch;
 });
 
-test("search closes when clicking the overlay", async ({ page }) => {
+test("search overlay covers viewport and closes on backdrop click", async ({ page }) => {
+  await page.setViewportSize({ width: 900, height: 600 });
   await page.goto("/");
   await page.getByRole("button", { name: "Search" }).click();
 
+  const overlay = page.getByTestId("search-overlay");
   await expect(page.getByPlaceholder("Search posts")).toBeVisible();
+  await expect(overlay).toHaveCSS("position", "fixed");
 
-  await page.getByTestId("search-overlay").click({ position: { x: 12, y: 12 } });
+  const overlayBox = await overlay.boundingBox();
+  expect(overlayBox).not.toBeNull();
+  expect(overlayBox?.x).toBe(0);
+  expect(overlayBox?.y).toBe(0);
+  expect(overlayBox?.width).toBe(900);
+  expect(overlayBox?.height).toBe(600);
+
+  await overlay.click({ position: { x: 12, y: 12 } });
 
   await expect(page.getByPlaceholder("Search posts")).toBeHidden();
+});
+
+test("search result cards brighten on hover and focus", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("paragraph");
+
+  const result = page.locator("[data-result-index]").first();
+  await expect(result).toBeVisible();
+
+  const baseBackground = await result.evaluate(
+    (node) => getComputedStyle(node).backgroundColor,
+  );
+
+  await result.hover();
+  await expect
+    .poll(() => result.evaluate((node) => getComputedStyle(node).backgroundColor))
+    .not.toBe(baseBackground);
+  const hoverBackground = await result.evaluate(
+    (node) => getComputedStyle(node).backgroundColor,
+  );
+
+  await page.mouse.move(0, 0);
+  await expect
+    .poll(() => result.evaluate((node) => getComputedStyle(node).backgroundColor))
+    .toBe(baseBackground);
+
+  await result.focus();
+  await expect
+    .poll(() => result.evaluate((node) => getComputedStyle(node).backgroundColor))
+    .toBe(hoverBackground);
 });
 
 test("search overlay starts hidden", async ({ page }) => {
@@ -1013,6 +1054,82 @@ test("search shows all metadata and orders matching items first", async ({ page 
   expect(metrics.scrollWidth).toBeGreaterThan(metrics.clientWidth);
   expect(metrics.scrollLeft).toBeGreaterThan(0);
   expect(metrics.lastRight).toBeLessThanOrEqual(metrics.containerRight);
+});
+
+test("search metadata styles series and tag spacing", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("fixture-series");
+
+  const result = page
+    .locator("[data-result-index]")
+    .filter({ has: page.getByText("Series Part 1", { exact: true }) })
+    .first();
+  const metadata = result.locator(".search-result-meta");
+  const matchedSeries = result.locator(".search-result-meta-series-matched").first();
+  const tag = result.locator(".search-result-meta-tag").first();
+
+  await expect(result).toBeVisible();
+  await expect(metadata).toBeVisible();
+  await expect(matchedSeries).toBeVisible();
+  await expect(tag).toBeVisible();
+
+  const metrics = await result.evaluate((node) => {
+    const metadataNode = node.querySelector(".search-result-meta");
+    const title = node.querySelector(".search-result-title");
+    const series = node.querySelector(".search-result-meta-series-matched");
+    const tagNode = node.querySelector(".search-result-meta-tag");
+    const mark = document.createElement("mark");
+    mark.textContent = "sample";
+    document.body.appendChild(mark);
+
+    const metadataRect = metadataNode?.getBoundingClientRect();
+    const titleRect = title?.getBoundingClientRect();
+    const seriesRect = series?.getBoundingClientRect();
+    const tagRect = tagNode?.getBoundingClientRect();
+    const seriesStyle = series ? getComputedStyle(series) : null;
+    const markBackground = getComputedStyle(mark).backgroundColor;
+    mark.remove();
+
+    return {
+      metadataGap: metadataRect && titleRect ? metadataRect.top - titleRect.bottom : 0,
+      seriesToTagGap: seriesRect && tagRect ? tagRect.left - seriesRect.right : 0,
+      seriesColor: seriesStyle?.color,
+      markBackground,
+    };
+  });
+
+  expect(metrics.metadataGap).toBeGreaterThanOrEqual(6);
+  expect(metrics.seriesToTagGap).toBeGreaterThanOrEqual(8);
+  expect(metrics.seriesColor).toBe(metrics.markBackground);
+});
+
+test("search metadata uses muted color for unmatched series", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByPlaceholder("Search posts").fill("part");
+
+  const result = page
+    .locator("[data-result-index]")
+    .filter({ has: page.getByText("Series Part 1", { exact: true }) })
+    .first();
+  const series = result.locator(".search-result-meta-series").first();
+
+  await expect(result).toBeVisible();
+  await expect(series).toBeVisible();
+
+  const colors = await series.evaluate((node) => {
+    const sample = document.createElement("span");
+    sample.style.color = "var(--color-muted)";
+    document.body.appendChild(sample);
+    const seriesColor = getComputedStyle(node).color;
+    const mutedColor = getComputedStyle(sample).color;
+    sample.remove();
+
+    return { seriesColor, mutedColor };
+  });
+
+  expect(colors.seriesColor).toBe(colors.mutedColor);
 });
 
 test("search uses summary text in the snippet when summary matches", async ({ page }) => {
