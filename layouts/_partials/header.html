@@ -31,9 +31,9 @@
         @click.self="closeSearch"
         @keydown.escape.window="closeSearch"
         data-testid="search-overlay"
-        class="fixed inset-0 z-50 bg-black/40 p-6"
+        class="fixed inset-0 z-50 flex min-h-screen w-screen items-start justify-center bg-black/40 p-6"
       >
-        <div class="mx-auto max-w-2xl rounded-2xl bg-white p-4">
+        <div class="w-full max-w-2xl rounded-2xl bg-white p-4">
           <div class="flex items-center gap-3">
             <input
               x-ref="searchInput"
@@ -75,16 +75,14 @@
                 :href="buildHighlightedPostUrl(result.permalink, query)"
                 :data-result-index="index"
                 class="search-result-card block rounded border px-3 py-2 transition-colors"
-                :class="index === activeResultIndex
-                  ? 'search-result-card-active border-purple-400'
-                  : 'border-purple-200 hover:border-purple-300'"
+                :class="{ 'search-result-card-active border-purple-400': index === activeResultIndex }"
               >
                 <div
                   x-html="highlightText(result.title, query)"
                   class="search-result-title font-medium"
                 ></div>
                 <div
-                  class="search-result-meta mt-1 flex min-h-[1.25rem] flex-nowrap items-center gap-1.5 overflow-x-auto overflow-y-hidden whitespace-nowrap"
+                  class="search-result-meta my-2 flex min-h-[1.25rem] flex-nowrap items-center overflow-x-auto overflow-y-hidden whitespace-nowrap"
                 >
                   <template
                     x-for="item in (result._orderedMetadata || [])"
@@ -92,12 +90,13 @@
                   >
                     <span
                       x-text="item.label"
-                      class="shrink-0 text-xs"
-                      :class="item.kind === 'series'
-                        ? (item.matched ? 'underline font-semibold text-slate-900' : 'underline text-slate-900')
-                        : (item.matched
-                          ? 'inline-block rounded-full bg-purple-200 px-2 py-0.5 font-semibold text-purple-900'
-                          : 'inline-block rounded-full bg-purple-100 px-2 py-0.5 text-slate-700')"
+                      class="search-result-meta-item shrink-0 text-xs"
+                      :class="{
+                        'search-result-meta-series': item.kind === 'series' && !item.matched,
+                        'search-result-meta-series-matched': item.kind === 'series' && item.matched,
+                        'search-result-meta-tag': item.kind === 'tag' && !item.matched,
+                        'search-result-meta-tag-matched': item.kind === 'tag' && item.matched,
+                      }"
                     ></span>
                   </template>
                 </div>
