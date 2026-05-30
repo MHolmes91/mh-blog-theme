@@ -1,5 +1,18 @@
-<div x-data="backToTopDock()" x-cloak x-show="showBackToTop" class="fixed" :style="dockStyle">
-  <button type="button" aria-label="Back to top" @click="backToTop" class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-purple-600 text-white shadow-sm transition hover:bg-purple-700">
-    {{ partial "icon.html" (dict "name" "arrow-up" "class" "h-4 w-4") }}
-  </button>
+<div
+  x-data="backToTopDock()"
+  x-cloak
+  x-show="showBackToTop"
+  class="fixed px-6 inset-x-0 z-30 w-full pointer-events-none"
+  :style="dockStyle"
+>
+  <div class="mx-auto flex max-w max-w-6xl justify-end">
+    <button
+      type="button"
+      aria-label="Back to top"
+      @click="backToTop"
+      class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-purple-600 text-white shadow-sm transition hover:bg-purple-700 pointer-events-auto"
+    >
+      {{ partial "icon.html" (dict "name" "arrow-up" "class" "h-4 w-4") }}
+    </button>
+  </div>
 </div>

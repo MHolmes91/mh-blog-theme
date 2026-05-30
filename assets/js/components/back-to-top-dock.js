@@ -1,3 +1,7 @@
+export function getDockBottomOffset({ footerTop, viewportHeight, baseOffset = 24 }) {
+  return baseOffset + Math.max(0, viewportHeight - footerTop)
+}
+
 export function backToTopDock() {
   return {
     showBackToTop: false,
@@ -9,19 +13,9 @@ export function backToTopDock() {
       }
       const updateDockOffset = () => {
         const footer = document.querySelector('footer[role="contentinfo"]')
-        const baseOffset = 24
-        const rightInset = 'max(1.5rem,calc((100vw - 72rem) / 2 + 1.5rem))'
+        const footerTop = footer ? footer.getBoundingClientRect().top : window.innerHeight
 
-        if (!footer) {
-          this.dockStyle = `right:${rightInset};bottom:${baseOffset}px;`
-          return
-        }
-
-        const footerRect = footer.getBoundingClientRect()
-        const overlap = Math.max(0, window.innerHeight - footerRect.top)
-        const bottomOffset = baseOffset + overlap
-
-        this.dockStyle = `right:${rightInset};bottom:${bottomOffset}px;`
+        this.dockStyle = `bottom:${getDockBottomOffset({ footerTop, viewportHeight: window.innerHeight })}px;`
       }
 
       updateBackToTopVisibility()

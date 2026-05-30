@@ -1,17 +1,18 @@
 {{ define "main" }}
-  <section class="mx-auto max-w-4xl px-6 py-10">
-    <h1 class="text-3xl font-extrabold tracking-tight">{{ .Title }}</h1>
-    <div class="mt-6">
-      {{ range $index, $page := .Pages }}
-        {{ if gt $index 0 }}<hr class="border-purple-200">{{ end }}
-        {{ if .IsPage }}
-          {{ partial "post-row.html" $page }}
-        {{ else }}
-          <article class="py-5">
-            <a href="{{ .RelPermalink }}" class="block text-2xl font-extrabold tracking-tight">{{ .Title }}</a>
-          </article>
-        {{ end }}
-      {{ end }}
-    </div>
-  </section>
+<section class="mx-auto max-w-4xl py-10">
+  <h1 class="text-3xl font-extrabold tracking-tight">{{ .Title }}</h1>
+  <div class="mt-6">
+    {{ range $index, $page := .Pages }} {{ if gt $index 0 }}
+    <hr class="border-purple-200" />
+    {{ end }} {{ if .IsPage }} {{ partial "post-row.html" $page }} {{ else }}
+    <article class="py-5">
+      <a
+        href="{{ .RelPermalink }}"
+        class="block text-2xl font-extrabold tracking-tight"
+        >{{ .Title }}</a
+      >
+    </article>
+    {{ end }} {{ end }}
+  </div>
+</section>
 {{ end }}

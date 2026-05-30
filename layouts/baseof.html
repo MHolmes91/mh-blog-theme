@@ -1,18 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="{{ site.Language.LanguageCode | default site.LanguageCode }}">
   <head>
     {{ partial "head.html" . }}
   </head>
   <body id="top" x-data="siteShell()" :data-theme="theme">
     {{ partial "header.html" . }}
-    <main :aria-hidden="searchOpen">
+    <main :aria-hidden="searchOpen" class="px-6">
       {{ block "main" . }}{{ end }}
     </main>
-    {{ if and .IsPage (eq .Section "posts") }}
-      {{ partial "dock.html" . }}
-    {{ end }}
-    {{ partial "footer.html" . }}
-    {{ partial "features/mermaid.html" . }}
+    {{ if and .IsPage (eq .Section "posts") }} {{ partial "dock.html" . }} {{
+    end }} {{ partial "footer.html" . }} {{ partial "features/mermaid.html" . }}
     {{ $js := resources.Get "js/app.js" | js.Build | fingerprint }}
     <script defer src="{{ $js.RelPermalink }}"></script>
   </body>
