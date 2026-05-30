@@ -103,7 +103,7 @@ h6 {
   background-color: var(--color-surface);
 }
 
-:is(:root, body[data-theme]) hr,
+:is(:root, body[data-theme]) hr:not([class]),
 :is(:root, body[data-theme]) .border-purple-200,
 :is(:root, body[data-theme]) .border-purple-300,
 :is(:root, body[data-theme]) .border-slate-200 {

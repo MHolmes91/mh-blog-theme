@@ -3,3 +3,4 @@
 test-results/
 */.hugo_build.lock
 */public/
+node_modules/
