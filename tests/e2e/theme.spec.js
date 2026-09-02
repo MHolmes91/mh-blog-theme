@@ -159,6 +159,7 @@ test("home page shows only the five most recent posts and a view all posts link"
   ).toBeVisible();
   await expect(viewAllLink).toHaveAttribute("href", "/archives/");
   await expect(viewAllLink.locator("svg")).toBeVisible();
+  await expect(viewAllLink.locator("xpath=..")).toHaveClass(/justify-end/);
 
   await viewAllLink.click();
 
@@ -1104,7 +1105,7 @@ test("search metadata styles series and tag spacing", async ({ page }) => {
   expect(metrics.seriesColor).toBe(metrics.markBackground);
 });
 
-test("search metadata uses muted color for unmatched series", async ({ page }) => {
+test("search metadata uses regular text color for unmatched series", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Search" }).click();
   await page.getByPlaceholder("Search posts").fill("part");
@@ -1120,16 +1121,16 @@ test("search metadata uses muted color for unmatched series", async ({ page }) =
 
   const colors = await series.evaluate((node) => {
     const sample = document.createElement("span");
-    sample.style.color = "var(--color-muted)";
+    sample.style.color = "var(--color-text)";
     document.body.appendChild(sample);
     const seriesColor = getComputedStyle(node).color;
-    const mutedColor = getComputedStyle(sample).color;
+    const textColor = getComputedStyle(sample).color;
     sample.remove();
 
-    return { seriesColor, mutedColor };
+    return { seriesColor, textColor };
   });
 
-  expect(colors.seriesColor).toBe(colors.mutedColor);
+  expect(colors.seriesColor).toBe(colors.textColor);
 });
 
 test("search metadata keeps series before matching tags", async ({ page }) => {

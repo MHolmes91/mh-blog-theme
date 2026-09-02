@@ -258,7 +258,7 @@ mark {
 }
 
 .search-result-meta-series {
-  color: var(--color-muted);
+  color: var(--color-text);
 }
 
 .search-result-meta-series-matched {

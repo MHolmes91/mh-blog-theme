@@ -14,12 +14,12 @@
     <hr class="border-purple-700" />
     {{ end }} {{ partial "post-row.html" $page }} {{ end }} {{ with site.GetPage
     "/archives" }}
-    <div class="mt-6">
+    <div class="mt-6 flex justify-end">
       <a
         href="{{ .RelPermalink }}"
         class="inline-flex items-center gap-2 text-sm font-semibold text-purple-700"
       >
-        <span>View All posts</span>
+        <span>View All Posts</span>
         {{ partial "icon.html" (dict "name" "chevron-right" "class" "h-4 w-4")
         }}
       </a>
