@@ -2,6 +2,7 @@
 @import "tailwindcss";
 
 @source "/layouts/**/*.html";
+@source inline("group-hover:text-slate-700 hover:text-slate-700");
 
 @theme {
   --color-bg: #faf7ff;
@@ -255,10 +256,6 @@ mark {
   margin-right: 0.75rem;
   padding-right: 0.75rem;
   text-decoration-line: underline;
-}
-
-.search-result-meta-series {
-  color: var(--color-text);
 }
 
 .search-result-meta-series-matched {

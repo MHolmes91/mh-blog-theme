@@ -16,15 +16,7 @@
       <span>{{ site.Title }}</span>
     </a>
     <div x-data="searchUi('{{ "index.json" | relURL }}')" class="flex items-center gap-3">
-      <button
-        type="button"
-        aria-label="Search"
-        @click="openSearch"
-        class="inline-flex items-center justify-center gap-2 rounded-full border border-purple-300 h-10 w-10"
-      >
-        {{ partial "icon.html" (dict "name" "search" "class" "h-4 w-4") }}
-        <span class="sr-only">Search</span>
-      </button>
+      {{ partial "button.html" (dict "label" "Search" "click" "openSearch" "icon" "search") }}
       <div
         x-cloak
         x-show="searchOpen"
@@ -34,24 +26,23 @@
         class="fixed inset-0 z-50 flex min-h-screen w-screen items-start justify-center bg-black/40 p-6"
       >
         <div class="w-full max-w-2xl rounded-2xl bg-white p-4">
-          <div class="flex items-center gap-3">
+          <div data-search-input-shell class="relative flex items-center rounded border border-purple-300 bg-white shadow-sm focus-within:border-purple-600 focus-within:ring-2 focus-within:ring-purple-200">
+            <div class="absolute pointer-events-none flex items-center pl-3 text-slate-500">
+              {{ partial "icon.html" (dict "name" "search" "class" "h-4 w-4") }}
+            </div>
             <input
               x-ref="searchInput"
               x-model="query"
               placeholder="Search posts"
-              class="w-full rounded border border-purple-300 px-3 py-2"
+              type="search"
+              class="min-w-0 flex-1 bg-transparent py-2 pr-12 pl-10 text-sm placeholder:text-slate-500 focus:outline-none"
               @keydown.enter.prevent="navigateToActiveResult()"
               @keydown.arrow-down.prevent="selectNextResult()"
               @keydown.arrow-up.prevent="selectPrevResult()"
             />
-            <button
-              type="button"
-              aria-label="Close search"
-              @click="closeSearch"
-              class="search-keycap inline-flex items-center justify-center rounded border border-purple-300 px-2.5 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-600"
-            >
-              ESC
-            </button>
+            <div class="absolute pointer-events-none flex items-center end-1.5">
+              <span class="rounded bg-purple-600 px-2 py-1 text-xs font-semibold leading-5 text-white shadow-sm">esc</span>
+            </div>
           </div>
           <template x-if="query.trim().length > 0 && query.trim().length < 3">
             <p class="mt-4 text-sm text-slate-500 text-center">
@@ -74,7 +65,7 @@
               <a
                 :href="buildHighlightedPostUrl(result.permalink, query)"
                 :data-result-index="index"
-                class="search-result-card block rounded border px-3 py-2 transition-colors"
+                class="search-result-card group block rounded border px-3 py-2 transition-colors"
                 :class="{ 'search-result-card-active border-purple-400': index === activeResultIndex }"
               >
                 <div
@@ -90,9 +81,9 @@
                   >
                     <span
                       x-text="item.label"
-                      class="search-result-meta-item shrink-0 text-xs"
+                      class="search-result-meta-item shrink-0 text-xs group-hover:text-slate-700"
                       :class="{
-                        'search-result-meta-series': item.kind === 'series' && !item.matched,
+                        'search-result-meta-series text-slate-400': item.kind === 'series' && !item.matched,
                         'search-result-meta-series-matched': item.kind === 'series' && item.matched,
                         'search-result-meta-tag': item.kind === 'tag' && !item.matched,
                         'search-result-meta-tag-matched': item.kind === 'tag' && item.matched,

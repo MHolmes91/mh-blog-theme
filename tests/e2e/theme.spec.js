@@ -108,6 +108,8 @@ test("home page renders shared chrome", async ({ page }) => {
     "https://github.com/example",
   );
   await expect(page.getByRole("button", { name: "Search" })).toBeVisible();
+  await expect(page.locator("button:not(.button-primary)")).toHaveCount(0);
+  await expect(page.locator("footer a.button-link-out")).toHaveCount(5);
   await expect(page.getByRole("button", { name: "Back to top" })).toHaveCount(
     0,
   );
@@ -750,12 +752,38 @@ test("search opens and shows matching posts", async ({ page }) => {
   await expect(resultLink).toBeVisible();
   await expect(resultLink.locator("mark")).toHaveText("paragraph");
 
-  await page.getByRole("button", { name: "Close search" }).click();
-  await expect(page.getByPlaceholder("Search posts")).toBeHidden();
-
-  await page.getByRole("button", { name: "Search" }).click();
   await page.keyboard.press("Escape");
   await expect(page.getByPlaceholder("Search posts")).toBeHidden();
+});
+
+test("search input reserves space for its leading icon", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+
+  const shell = page.locator("[data-search-input-shell]");
+  const input = page.getByPlaceholder("Search posts");
+  const [shellBox, inputBox, paddingLeft] = await Promise.all([
+    getBox(shell),
+    getBox(input),
+    input.evaluate((node) => Number.parseFloat(getComputedStyle(node).paddingLeft)),
+  ]);
+
+  expect(paddingLeft).toBeGreaterThanOrEqual(40);
+  expect(inputBox.left + paddingLeft).toBeGreaterThan(shellBox.left + 24);
+});
+
+test("search keycap remains inside the search popup", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Search" }).click();
+
+  const popup = page.getByTestId("search-overlay");
+  const keycap = popup.getByText("esc", { exact: true });
+  const [popupBox, keycapBox] = await Promise.all([getBox(popup), getBox(keycap)]);
+
+  expect(keycapBox.left).toBeGreaterThanOrEqual(popupBox.left);
+  expect(keycapBox.right).toBeLessThanOrEqual(popupBox.right);
+  expect(keycapBox.top).toBeGreaterThanOrEqual(popupBox.top);
+  expect(keycapBox.bottom).toBeLessThanOrEqual(popupBox.bottom);
 });
 
 test("search result body match highlights and scrolls on the post", async ({ page }) => {
@@ -1105,7 +1133,7 @@ test("search metadata styles series and tag spacing", async ({ page }) => {
   expect(metrics.seriesColor).toBe(metrics.markBackground);
 });
 
-test("search metadata uses regular text color for unmatched series", async ({ page }) => {
+test("search metadata uses slate-400 for unmatched series", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Search" }).click();
   await page.getByPlaceholder("Search posts").fill("part");
@@ -1118,19 +1146,35 @@ test("search metadata uses regular text color for unmatched series", async ({ pa
 
   await expect(result).toBeVisible();
   await expect(series).toBeVisible();
+  await expect(series).toHaveClass(/text-slate-400/);
+  await expect(series).toHaveClass(/group-hover:text-slate-700/);
 
   const colors = await series.evaluate((node) => {
     const sample = document.createElement("span");
-    sample.style.color = "var(--color-text)";
+    sample.className = "text-slate-400";
     document.body.appendChild(sample);
     const seriesColor = getComputedStyle(node).color;
-    const textColor = getComputedStyle(sample).color;
+    const slate400 = getComputedStyle(sample).color;
     sample.remove();
 
-    return { seriesColor, textColor };
+    return { seriesColor, slate400 };
   });
 
-  expect(colors.seriesColor).toBe(colors.textColor);
+  expect(colors.seriesColor).toBe(colors.slate400);
+
+  await result.hover();
+  const hoverColor = await series.evaluate((node) => {
+    const sample = document.createElement("span");
+    sample.style.color = "var(--color-slate-700)";
+    document.body.appendChild(sample);
+    const color = getComputedStyle(node).color;
+    const slate700 = getComputedStyle(sample).color;
+    sample.remove();
+
+    return { color, slate700 };
+  });
+
+  expect(hoverColor.color).toBe(hoverColor.slate700);
 });
 
 test("search metadata keeps series before matching tags", async ({ page }) => {
@@ -1444,6 +1488,30 @@ test("toc stress post highlights the active TOC entry while scrolling", async ({
   ).toContainText("Final Long Section");
 });
 
+test("mobile TOC controls match primary size and search alignment", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1000, height: 800 });
+  await page.goto("/posts/toc-stress-post/");
+
+  const search = page.getByRole("button", { name: "Search" });
+  const open = page.getByRole("button", { name: "Table of contents" });
+  const [searchBox, openBox] = await Promise.all([getBox(search), getBox(open)]);
+
+  expect(openBox.width).toBe(searchBox.width);
+  expect(openBox.height).toBe(searchBox.height);
+  expect(Math.abs(openBox.right - searchBox.right)).toBeLessThanOrEqual(1);
+
+  await open.click();
+
+  const close = page.getByRole("button", { name: "Close table of contents" });
+  const closeBox = await getBox(close);
+
+  expect(closeBox.width).toBe(searchBox.width);
+  expect(closeBox.height).toBe(searchBox.height);
+  expect(Math.abs(closeBox.right - searchBox.right)).toBeLessThanOrEqual(1);
+});
+
 test("single post exposes canonical and social metadata", async ({ page }) => {
   await page.goto("/posts/first-post/");
 
@@ -1481,6 +1549,23 @@ test("single post exposes canonical and social metadata", async ({ page }) => {
     : null;
 
   expect(socialImageResponse?.ok()).toBe(true);
+});
+
+test("series terms use the first post image for social metadata", async ({ page }) => {
+  await page.goto("/series/build-notes/");
+
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+    "content",
+    /\/images\/post-1\.jpg$/,
+  );
+  await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute(
+    "content",
+    /\/images\/post-1\.jpg$/,
+  );
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+    "content",
+    "summary_large_image",
+  );
 });
 
 test("post without optional metadata still renders", async ({ page }) => {

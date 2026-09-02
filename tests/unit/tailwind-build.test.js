@@ -23,5 +23,7 @@ describe('tailwind build output', () => {
     expect(css).toContain('.mx-auto')
     expect(css).toContain('.grid')
     expect(css).toContain('.text-3xl')
+    expect(css).toContain('.group-hover\\:text-slate-700')
+    expect(css).toContain('.hover\\:text-slate-700')
   })
 })

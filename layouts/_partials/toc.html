@@ -11,19 +11,13 @@
   </aside>
   <div
     class="fixed lg:hidden z-50 transition-all duration-300"
-    :style="`top: ${toolbarVisible ? '6rem' : '1.5rem'}; right: max(1.5rem, calc((100vw - 72rem) / 2 + 1.5rem))`"
+    :style="`top: ${toolbarVisible ? '6rem' : '1.5rem'}; right: ${tocOpen ? 'max(0.5rem, calc((100vw - 72rem) / 2 - 1rem))' : 'max(1.5rem, calc((100vw - 72rem) / 2))'}`"
     @keydown.escape.window="closeToc"
   >
     <div x-cloak x-show="tocOpen" @click="closeToc" class="fixed inset-0 -z-10"></div>
-    <div x-show="!tocOpen" @click="toggleToc">
-      <button
-        type="button"
-        aria-label="Table of contents"
-        class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/95 backdrop-blur-sm border border-purple-200 shadow-sm transition hover:shadow-md"
-      >
-        {{ partial "icon.html" (dict "name" "list" "class" "h-4 w-4") }}
-      </button>
-    </div>
+      <div x-show="!tocOpen" @click="toggleToc">
+        {{ partial "button.html" (dict "label" "Table of contents" "icon" "list") }}
+      </div>
     <div
       x-cloak
       x-show="tocOpen"
@@ -38,14 +32,7 @@
     >
       <div class="flex items-center justify-between p-4 pb-0">
         <h2 class="text-sm font-bold uppercase tracking-wide">Contents</h2>
-        <button
-          type="button"
-          aria-label="Close table of contents"
-          @click="closeToc"
-          class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-purple-300 transition hover:bg-purple-100"
-        >
-          {{ partial "icon.html" (dict "name" "x" "class" "h-3.5 w-3.5") }}
-        </button>
+        {{ partial "button.html" (dict "label" "Close table of contents" "click" "closeToc" "icon" "x") }}
       </div>
       <div class="p-4" @click="closeToc">
         {{ replaceRE `<nav id="TableOfContents">` `<nav id="TableOfContentsMobile">` .TableOfContents | safeHTML }}

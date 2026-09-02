@@ -1,0 +1,22 @@
+{{- $variant := .variant | default "primary" -}}
+{{- $iconClass := .iconClass | default "h-4 w-4" -}}
+{{- $class := "inline-flex h-10 w-10 items-center justify-center rounded-full" -}}
+{{- if eq $variant "link-out" -}}
+  {{- $class = printf "%s button-link-out border border-purple-200 text-purple-700 transition hover:bg-purple-50" $class -}}
+{{- else -}}
+  {{- $class = printf "%s button-primary bg-purple-600 text-white shadow-sm transition hover:bg-purple-700" $class -}}
+{{- end -}}
+{{- with .class -}}
+  {{- $class = printf "%s %s" $class . -}}
+{{- end -}}
+{{- if eq .element "a" -}}
+  <a href="{{ .href }}" aria-label="{{ .label }}" class="{{ $class }}"{{ if hasPrefix .href "http" }} target="_blank" rel="noreferrer"{{ end }}>
+    {{ partial "icon.html" (dict "name" .icon "class" $iconClass) }}
+    <span class="sr-only">{{ .label }}</span>
+  </a>
+{{- else -}}
+  <button type="{{ .type | default "button" }}" aria-label="{{ .label }}"{{ with .click }} @click="{{ . }}"{{ end }} class="{{ $class }}">
+    {{ partial "icon.html" (dict "name" .icon "class" $iconClass) }}
+    <span class="sr-only">{{ .label }}</span>
+  </button>
+{{- end -}}
