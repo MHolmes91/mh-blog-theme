@@ -1,5 +1,6 @@
 .worktrees/
 .playwright-mcp/
+hugo_stats.json
 test-results/
 */.hugo_build.lock
 */public/

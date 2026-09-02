@@ -1,0 +1,2 @@
+{{ $css := resources.Get "css/app.css" | css.TailwindCSS | minify | fingerprint }}
+<link rel="stylesheet" href="{{ $css.RelPermalink }}">
